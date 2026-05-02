@@ -1,126 +1,228 @@
-# Lesson 6: Matrices and matrix-vector multiplication
+# Lesson 6: Matrices and Matrix-Vector Multiplication
 
 ## Where this fits
 
-A neural network layer is, mechanically, the operation \\(\mathbf{y} = W \mathbf{x} + \mathbf{b}\\), where \\(W\\) is a matrix and \\(\mathbf{x}, \mathbf{y}, \mathbf{b}\\) are vectors. That's it. Add an "activation function" applied elementwise to the result and you have what `nn.Linear` does in PyTorch. If you understand what \\(W \mathbf{x}\\) computes, you understand the inner loop of every feedforward neural network. The next module will stack a bunch of these and call it deep learning, but the operation underneath is exactly what you're about to see.
+In lesson 5, you saw that the dot product of a weight vector and an observation vector scores how well the observation matches that weight vector's "interest." A neural network layer does that simultaneously for many weight vectors at once, producing a score for each one. That simultaneous scoring is matrix-vector multiplication. Once you understand what \\(W\mathbf{x} + \mathbf{b}\\) computes, you know what a neural network layer does. Every modern deep learning architecture, from the policy networks in AlphaZero to the value networks in deep CFR, is built by stacking this operation repeatedly with nonlinearities in between.
 
-## Concept
+## What is a matrix?
 
-A **matrix** is a rectangular grid of numbers. We say a matrix is "\\(m\\) by \\(n\\)" (or \\(m \times n\\)) when it has \\(m\\) rows and \\(n\\) columns. The order matters: rows first, then columns.
+A **matrix** is a rectangular grid of numbers arranged in rows and columns.
 
-There are two equally valid ways to think about a matrix, and you should hold both in your head:
+When we say a matrix is "m by n" (written m × n), we mean it has:
+- **m rows** (horizontal lines of numbers)
+- **n columns** (vertical lines of numbers)
 
-1. **As a stack of row vectors.** A 3-by-4 matrix is three row vectors of length 4 stacked on top of each other.
-2. **As a stack of column vectors.** That same 3-by-4 matrix is four column vectors of length 3 stacked side by side.
+Here is a 3 × 4 matrix (3 rows, 4 columns):
 
-Different operations lend themselves to different views. For matrix-vector multiplication, the row-vector view is the easier one.
+\\[
+W = \begin{pmatrix}
+1 & 0 & -1 & 2 \\\\
+0 & 1 &  1 & 0 \\\\
+-1 & 1 &  0 & 1
+\end{pmatrix}
+\\]
 
-## Matrix-vector multiplication
+Each row is a list of 4 numbers. There are 3 such rows. In total, the matrix contains 3 × 4 = 12 numbers.
 
-Take a matrix \\(W\\) of shape \\(m \times n\\) and a vector \\(\mathbf{x}\\) of length \\(n\\). The product \\(\mathbf{y} = W \mathbf{x}\\) is a new vector of length \\(m\\), where each entry is:
+We refer to individual entries using row and column indices. The notation \\(W_{ij}\\) means "the entry in row \\(i\\), column \\(j\\)." Row index first, column index second.
 
-\\[ y_i = \sum_{j=1}^{n} W_{ij} \, x_j \\]
+From the matrix above:
+- \\(W_{11} = 1\\) (row 1, column 1)
+- \\(W_{13} = -1\\) (row 1, column 3)
+- \\(W_{23} = 1\\) (row 2, column 3)
+- \\(W_{31} = -1\\) (row 3, column 1)
 
-Decoding the symbols:
+**The key insight**: each row of a matrix is a vector. A 3 × 4 matrix contains three row-vectors, each of length 4. Matrix-vector multiplication uses each of those row vectors to compute a dot product.
 
-- \\(W_{ij}\\) is the matrix entry in row \\(i\\), column \\(j\\).
-- \\(y_i\\) is the \\(i\\)-th entry of the output vector.
-- The sum runs over \\(j\\), the column index, which corresponds to the entries of \\(\mathbf{x}\\).
+## Matrix-vector multiplication: the core idea
 
-The clean way to read this: **\\(y_i\\) is the dot product of row \\(i\\) of \\(W\\) with \\(\mathbf{x}\\).**
+Suppose we have a weight matrix \\(W\\) with shape m × n and an input vector \\(\mathbf{x}\\) of length n. The matrix-vector product \\(W\mathbf{x}\\) produces an output vector \\(\mathbf{y}\\) of length m.
 
-That's the whole operation, and it's exactly the lesson 5 dot product, applied repeatedly. A matrix-vector multiplication is just \\(m\\) dot products done in parallel. Each row of \\(W\\) asks "how much does \\(\mathbf{x}\\) look like me?" and emits a single number. The output vector collects those answers.
+**The rule**: each entry of the output \\(\mathbf{y}\\) is the dot product of one row of \\(W\\) with the input \\(\mathbf{x}\\).
 
-The shapes have to line up. If \\(W\\) is \\(m \times n\\), then \\(\mathbf{x}\\) must have length \\(n\\) (matching the number of columns of \\(W\\)), and the result \\(\mathbf{y}\\) has length \\(m\\) (matching the number of rows). The "inner dimensions" must agree.
+Specifically:
+- \\(y_1\\) = (row 1 of W) · x
+- \\(y_2\\) = (row 2 of W) · x
+- \\(y_m\\) = (row m of W) · x
 
-## A neural network layer
+In formula form:
 
-A linear layer in a neural network adds a bias and (usually) an activation function:
+\\[ y_i = \sum_{j=1}^{n} W_{ij} \cdot x_j \\]
 
-\\[ \mathbf{y} = \sigma(W \mathbf{x} + \mathbf{b}) \\]
+**Decoding:**
 
-where \\(\mathbf{b}\\) is a vector of biases (length \\(m\\), one per output) and \\(\sigma\\) is some elementwise nonlinearity (like ReLU, which is just \\(\max(0, x)\\) applied elementwise). The activation function is what makes the network nonlinear and capable of learning complicated things; we'll cover it properly in module 2. For now, just know that the matrix-vector multiplication is the structural core, and the bias and activation are decorations on top.
+**\\(y_i\\)**: The i-th component of the output vector.
 
-When PyTorch defines `nn.Linear(in_features=4, out_features=3)`, what it creates internally is:
+**\\(\sum_{j=1}^{n}\\)**: Sum over j from 1 to n. This loops through the columns.
 
-- A learnable weight matrix \\(W\\) of shape \\(3 \times 4\\).
-- A learnable bias vector \\(\mathbf{b}\\) of length 3.
+**\\(W_{ij}\\)**: The entry in row i, column j of the weight matrix.
 
-When you call this layer on an input vector \\(\mathbf{x}\\) of length 4, it computes \\(W \mathbf{x} + \mathbf{b}\\) and returns a vector of length 3. The "learnable" part means that during training, the entries of \\(W\\) and \\(\mathbf{b}\\) get nudged to make the network's outputs more correct. We'll see how that nudging happens in lesson 7.
+**\\(x_j\\)**: The j-th component of the input vector.
 
-## Code
+**\\(W_{ij} \cdot x_j\\)**: Multiply the matrix entry by the input component.
 
-```python
-import torch
-import torch.nn as nn
+**Reading in English**: "The i-th output is computed by taking each entry in row i of W, multiplying it by the corresponding entry in x, and adding all those products up." That is a dot product.
 
-# Define a linear layer: 4-dimensional input, 3-dimensional output.
-layer = nn.Linear(in_features=4, out_features=3)
+## Step-by-step example
 
-# What's inside:
-print(layer.weight.shape)  # torch.Size([3, 4])  — 3 rows, 4 columns
-print(layer.bias.shape)    # torch.Size([3])     — 3 entries
+Let us work through a complete example by hand.
 
-# Apply it to an input.
-x = torch.tensor([1.0, 0.5, -1.0, 2.0])
-y = layer(x)
-print(y.shape)  # torch.Size([3])
+**Scenario**: You have a sensor processing pipeline. Your sensor returns a 4-dimensional observation:
 
-# Verify by hand: y should equal W @ x + b
-y_manual = layer.weight @ x + layer.bias
-print(torch.allclose(y, y_manual))  # True
-```
+\\[ \mathbf{x} = \begin{pmatrix} 0.8 \\ 0.2 \\ 0.1 \\ 0.6 \end{pmatrix} \\]
 
-The `@` operator in `layer.weight @ x` does the matrix-vector multiplication. The `nn.Linear` class is a convenience wrapper that bundles the weight matrix, the bias vector, and some bookkeeping for gradient tracking.
+These represent [conjunction_risk, debris_density, solar_activity, comms_window].
 
-A subtle naming convention: PyTorch stores weights with the **output dimension first** (rows = outputs), so a layer mapping length-4 to length-3 has a `weight` of shape `(3, 4)`. This is exactly the row-major view we just described.
+You want to compute scores for 3 possible operational responses. Your scoring matrix (one row per response, one column per observation feature) is:
 
-## Worked example: hand-computed forward pass
+\\[ W = \begin{pmatrix}
+1.0 & 0.5 & 0.0 & 0.2 \\\\
+0.1 & 0.0 & 0.0 & 1.0 \\\\
+0.3 & 0.8 & 0.2 & 0.1
+\end{pmatrix} \\]
 
-Let's do one by hand. Suppose:
+Row 1 weights for Response A (conjunction-focused).
+Row 2 weights for Response B (comms-focused).
+Row 3 weights for Response C (debris-monitoring).
 
-\\[ W = \begin{pmatrix} 1 & 0 & -1 & 2 \\ 0 & 1 & 1 & 0 \\ -1 & 1 & 0 & 1 \end{pmatrix}, \quad \mathbf{b} = \begin{pmatrix} 0 \\ -1 \\ 2 \end{pmatrix}, \quad \mathbf{x} = \begin{pmatrix} 2 \\ 1 \\ 3 \\ 1 \end{pmatrix} \\]
+**Computing y = Wx:**
 
-Compute \\(\mathbf{y} = W \mathbf{x} + \mathbf{b}\\).
+**Output y₁** (score for Response A):
+Dot product of row 1 with x:
 
-Row 1 of \\(W\\) dotted with \\(\mathbf{x}\\): \\((1)(2) + (0)(1) + (-1)(3) + (2)(1) = 2 + 0 - 3 + 2 = 1\\).
+| Row 1 entry | × | x entry | = | Product |
+|-------------|---|---------|---|---------|
+| 1.0 (col 1) | × | 0.8 (x₁) | = | 0.80 |
+| 0.5 (col 2) | × | 0.2 (x₂) | = | 0.10 |
+| 0.0 (col 3) | × | 0.1 (x₃) | = | 0.00 |
+| 0.2 (col 4) | × | 0.6 (x₄) | = | 0.12 |
+| **Sum** | | | | **1.02** |
 
-Row 2 of \\(W\\) dotted with \\(\mathbf{x}\\): \\((0)(2) + (1)(1) + (1)(3) + (0)(1) = 0 + 1 + 3 + 0 = 4\\).
+**Output y₂** (score for Response B):
+Dot product of row 2 with x:
 
-Row 3 of \\(W\\) dotted with \\(\mathbf{x}\\): \\((-1)(2) + (1)(1) + (0)(3) + (1)(1) = -2 + 1 + 0 + 1 = 0\\).
+| Row 2 entry | × | x entry | = | Product |
+|-------------|---|---------|---|---------|
+| 0.1 (col 1) | × | 0.8 (x₁) | = | 0.08 |
+| 0.0 (col 2) | × | 0.2 (x₂) | = | 0.00 |
+| 0.0 (col 3) | × | 0.1 (x₃) | = | 0.00 |
+| 1.0 (col 4) | × | 0.6 (x₄) | = | 0.60 |
+| **Sum** | | | | **0.68** |
 
-So \\(W \mathbf{x} = (1, 4, 0)\\). Add the bias to get \\(\mathbf{y} = (1, 3, 2)\\).
+**Output y₃** (score for Response C):
+Dot product of row 3 with x:
 
-Verify in code:
+| Row 3 entry | × | x entry | = | Product |
+|-------------|---|---------|---|---------|
+| 0.3 (col 1) | × | 0.8 (x₁) | = | 0.24 |
+| 0.8 (col 2) | × | 0.2 (x₂) | = | 0.16 |
+| 0.2 (col 3) | × | 0.1 (x₃) | = | 0.02 |
+| 0.1 (col 4) | × | 0.6 (x₄) | = | 0.06 |
+| **Sum** | | | | **0.48** |
+
+**Result**:
+
+\\[ \mathbf{y} = W\mathbf{x} = \begin{pmatrix} 1.02 \\ 0.68 \\ 0.48 \end{pmatrix} \\]
+
+Response A scores highest (1.02), Response B is second (0.68), Response C is lowest (0.48). Given the high conjunction risk (0.8) in the input, the conjunction-focused response dominates. Makes operational sense.
+
+In code:
 
 ```python
 import torch
 
 W = torch.tensor([
-    [ 1.0,  0.0, -1.0,  2.0],
-    [ 0.0,  1.0,  1.0,  0.0],
-    [-1.0,  1.0,  0.0,  1.0],
+    [1.0, 0.5, 0.0, 0.2],
+    [0.1, 0.0, 0.0, 1.0],
+    [0.3, 0.8, 0.2, 0.1]
 ])
-b = torch.tensor([0.0, -1.0, 2.0])
-x = torch.tensor([2.0, 1.0, 3.0, 1.0])
 
-y = W @ x + b
-print(y)  # tensor([1., 3., 2.])
+x = torch.tensor([0.8, 0.2, 0.1, 0.6])
+
+y = W @ x  # @ is the matrix-vector multiplication operator in Python
+print(y.tolist())  # [1.02, 0.68, 0.48]
+
+# Verify by computing row 1's dot product manually
+row1_dot = torch.dot(W[0], x)
+print(f"Row 1 dot product: {row1_dot.item()}")  # 1.02
 ```
 
-That's a forward pass through a linear layer. No machine learning, just arithmetic. The "learning" part will come from finding good values of \\(W\\) and \\(\mathbf{b}\\), which is the next lesson.
+The `@` operator is Python's matrix multiplication operator. For a matrix times a vector, it does exactly the row-by-row dot products you just computed by hand.
 
-## Why this matters going forward
+## Shape rules: why dimensions must match
 
-When the next module talks about a "two-layer MLP," what it means is: take an input vector, multiply by a matrix, apply a nonlinearity, multiply by another matrix, apply another nonlinearity. That is the entire architecture. Three layers means three matrices. Deep networks are stacks of these, with various tricks to keep training stable. Once you internalize "neural network = matrix-vector products with nonlinearities sprinkled in," nearly all of deep learning becomes much less mysterious.
+A matrix-vector multiplication \\(W\mathbf{x}\\) is only defined when the number of columns in \\(W\\) matches the length of \\(\mathbf{x}\\).
 
-Same story in OpenSpiel: when an algorithm uses a neural net to approximate a value function or a policy, the value function is `state_vector -> matrix -> nonlinearity -> matrix -> nonlinearity -> output`, and the policy is the same shape with a softmax at the end. We'll get to softmax in module 2.
+- If \\(W\\) is m × n and \\(\mathbf{x}\\) has length n, the result \\(\mathbf{y} = W\mathbf{x}\\) has length m.
+- The "inner" dimension (columns of W, length of x) must match.
+- The "outer" dimensions (rows of W, length of output) determine the result's shape.
 
-## A note on what we skipped
+In our example: W is 3 × 4, x has length 4. The 4s match (column dimension of W equals length of x). The result has length 3 (the number of rows).
 
-Matrix-matrix multiplication is just matrix-vector multiplication done multiple times in parallel (each column of the result vector matrix is the matrix multiplied by the corresponding column of the input matrix). PyTorch handles batched inputs by doing exactly this, and you'll see expressions like `Y = X @ W.T` for batched forward passes. The mechanics are the same.
+This matters practically: if you have an observation of length 4 and want to compute scores for 3 responses, your weight matrix must be 3 × 4. Not 4 × 3. Not 3 × 3. The dimensions encode the data flow.
 
-We skipped matrix inverses, determinants, ranks, eigenvectors, and eigenvalues. Inverses and determinants don't show up in our path. Eigenvectors will come back when we hit alpha-rank in module 6, and we'll handle them then with proper motivation. Skipping them now is the correct move.
+## Adding a bias: the full neural network layer
+
+In a real neural network layer, matrix multiplication is followed by adding a **bias vector** \\(\mathbf{b}\\):
+
+\\[ \mathbf{y} = W\mathbf{x} + \mathbf{b} \\]
+
+The bias vector \\(\mathbf{b}\\) has length m (same as the output). Adding the bias shifts each output score by a fixed amount, regardless of the input. This lets the network set a baseline level for each output even when the input is zero.
+
+Extending the example:
+
+\\[ \mathbf{b} = \begin{pmatrix} -0.5 \\ 0.3 \\ -0.1 \end{pmatrix} \\]
+
+\\[ \mathbf{y} = W\mathbf{x} + \mathbf{b} = \begin{pmatrix} 1.02 \\ 0.68 \\ 0.48 \end{pmatrix} + \begin{pmatrix} -0.5 \\ 0.3 \\ -0.1 \end{pmatrix} = \begin{pmatrix} 0.52 \\ 0.98 \\ 0.38 \end{pmatrix} \\]
+
+Now Response B scores highest. The bias shifted the scores, making Response B look more attractive even though its raw dot product was second. In a learned network, the bias values are adjusted during training to capture the prior attractiveness of each output independently of the input.
+
+## PyTorch's nn.Linear: what it does internally
+
+PyTorch's `nn.Linear` module is a pre-packaged version of \\(W\mathbf{x} + \mathbf{b}\\):
+
+```python
+import torch
+import torch.nn as nn
+
+# Create a linear layer: input dimension 4, output dimension 3
+layer = nn.Linear(in_features=4, out_features=3)
+
+# What does it contain?
+print(f"Weight shape: {layer.weight.shape}")  # torch.Size([3, 4]) = 3 rows, 4 columns
+print(f"Bias shape:   {layer.bias.shape}")    # torch.Size([3])   = 3 entries
+
+# Apply it to an input
+x = torch.tensor([0.8, 0.2, 0.1, 0.6])
+y = layer(x)
+print(f"Output shape: {y.shape}")  # torch.Size([3])
+
+# Verify it is computing W @ x + b
+y_manual = layer.weight @ x + layer.bias
+print(f"Manual matches: {torch.allclose(y, y_manual)}")  # True
+```
+
+The weight matrix is stored as shape (out_features, in_features), meaning rows correspond to output dimensions and columns correspond to input dimensions. This is the same convention we have been using: each row is a weight vector for one output neuron, and its dot product with the input gives that neuron's pre-activation value.
+
+## Why stacking layers requires nonlinearities
+
+You might wonder: if each layer is just \\(W\mathbf{x} + \mathbf{b}\\), what happens when you stack two layers?
+
+```
+y = W₂(W₁x + b₁) + b₂
+  = W₂W₁x + W₂b₁ + b₂
+  = W'x + b'
+```
+
+Where \\(W' = W_2 W_1\\) and \\(b' = W_2 b_1 + b_2\\). Stacking two linear layers gives you... another linear layer. The composition of linear functions is still linear.
+
+This means that without anything else, a deep network with many layers would be no more powerful than a single layer. It could only learn linear transformations of the input.
+
+What breaks this is the **activation function**: a nonlinear function applied elementwise to the output of each layer before passing it to the next. The most common is ReLU (Rectified Linear Unit): max(0, x). It is literally just: if the value is negative, set it to zero. If positive, leave it alone.
+
+With a nonlinearity between layers, the composition is no longer equivalent to a single linear layer. The network can represent curved decision boundaries, complex patterns, and sophisticated functions of its input. That is what makes deep neural networks powerful.
+
+In module 2 you will see this in full, including how the weights W are learned from data using the gradients from lesson 7. For now, just hold onto the idea: a layer is \\(W\mathbf{x} + \mathbf{b}\\), you can compute it as row-by-row dot products, and the W and b are what the network learns.
 
 ## Quiz
 

@@ -1,133 +1,305 @@
-# Lesson 5: Vectors and dot products
+# Lesson 5: Vectors and Dot Products
 
 ## Where this fits
 
-We're switching gears from probability to linear algebra. The reason is short: every input to a neural network, every state representation in RL, every action embedding, every observation in OpenSpiel, is a vector. And the single operation a neural network does most often is the dot product. If you understand what a vector means and what a dot product computes, you've understood the inner loop of nearly every deep learning library on Earth.
+Every state in a reinforcement learning system, every observation your agent receives, every action embedding, every intermediate representation inside a neural network, is a vector. The dot product is the single most common operation performed on those vectors: it is how a neural network layer evaluates whether its input "matches" a learned pattern. If you can look at a vector and say what it represents, and look at a dot product and say what it is measuring, you have the geometric intuition for 90% of what deep learning does internally.
 
-This lesson and the next are deliberately compressed. We are skipping eigenvalues, matrix inverses, determinants, ranks, and most of what a linear algebra course covers. We pick that up later if we ever need it (alpha-rank in module 6 will force us to learn one extra thing).
+## What is a vector? Start with the orbital state vector
 
-## Concept
+Suppose you are tracking a satellite. At any given moment, you need to know two things to describe its complete dynamical state: where it is and how fast it is moving. In three-dimensional space, position requires three numbers and velocity requires three numbers. You need six numbers total.
 
-A **vector** is an ordered list of numbers. That's the whole definition. A vector of length 3 is a triple of numbers. A vector of length 100 is a list of 100 numbers. The numbers themselves can mean anything.
+You could write these numbers separately:
 
-Some examples that show up in our work:
-
-- An orbital state vector: \\((x, y, z, v_x, v_y, v_z)\\), six numbers describing position and velocity.
-- A neural network input layer: a vector of feature values describing the current state of the world.
-- A neural network output layer for a policy: a vector of action logits, one entry per action.
-- An action probability distribution: a vector of probabilities summing to 1.
-- A "belief state" over which information set you're in: another vector of probabilities.
-
-The fact that all these things are vectors means we can apply the same operations to all of them. That generality is the whole reason linear algebra is the lingua franca of ML.
-
-## The dot product
-
-Given two vectors \\(\mathbf{v}\\) and \\(\mathbf{w}\\) of the same length \\(n\\), the **dot product** is:
-
-\\[ \mathbf{v} \cdot \mathbf{w} = \sum_{i=1}^{n} v_i w_i \\]
-
-Decoding: pair up the entries, multiply each pair, sum. That's it.
-
-The dot product has a geometric interpretation that's worth carrying around even if you never compute one by hand again:
-
-\\[ \mathbf{v} \cdot \mathbf{w} = |\mathbf{v}| \, |\mathbf{w}| \cos \theta \\]
-
-where \\(|\mathbf{v}|\\) means the **length** (or "norm") of the vector \\(\mathbf{v}\\), and \\(\theta\\) is the angle between the two vectors.
-
-What this tells you:
-
-- If \\(\mathbf{v}\\) and \\(\mathbf{w}\\) point in the same direction (\\(\theta = 0\\), \\(\cos\theta = 1\\)), the dot product is the product of their lengths. Maximally positive.
-- If they're perpendicular (\\(\theta = 90°\\), \\(\cos\theta = 0\\)), the dot product is zero. They don't "share direction" at all.
-- If they point in opposite directions (\\(\theta = 180°\\), \\(\cos\theta = -1\\)), the dot product is negative.
-
-So the dot product, intuitively, measures **alignment**. Same direction: big positive. Perpendicular: zero. Opposite: big negative. The magnitude is also affected by how long the vectors are.
-
-If you divide the dot product by the lengths to remove that magnitude effect, you get \\(\cos\theta\\) directly, which is called **cosine similarity**:
-
-\\[ \cos\theta = \frac{\mathbf{v} \cdot \mathbf{w}}{|\mathbf{v}| \, |\mathbf{w}|} \\]
-
-Cosine similarity is the version you usually want when you actually care about "how similar are these two things in direction" without caring about magnitude. Embedding-based search, recommender systems, and a lot of NLP machinery rely on it. (We don't, much, but it's good to recognize.)
-
-## Norms
-
-The **norm** of a vector is its length. The most common one is the Euclidean (or "L2") norm:
-
-\\[ |\mathbf{v}| = \sqrt{\sum_i v_i^2} = \sqrt{\mathbf{v} \cdot \mathbf{v}} \\]
-
-Notice that \\(|\mathbf{v}|^2 = \mathbf{v} \cdot \mathbf{v}\\), which is sometimes a useful shortcut. In code, it's just `torch.linalg.norm(v)`.
-
-Other norms exist (L1 is sum of absolute values, L-infinity is max absolute value), but L2 is the default and the one we'll use.
-
-## Code
-
-PyTorch makes vectors very easy. They're just 1-d tensors.
-
-```python
-import torch
-
-v = torch.tensor([1.0, 2.0, 3.0])
-w = torch.tensor([4.0, 5.0, 6.0])
-
-# Dot product. Three equivalent ways:
-print((v * w).sum().item())     # 32.0
-print(torch.dot(v, w).item())   # 32.0
-print((v @ w).item())           # 32.0  (matrix-mul operator works for vectors)
-
-# Norms
-print(torch.linalg.norm(v).item())  # ~3.7417 = sqrt(1 + 4 + 9)
-print(torch.linalg.norm(w).item())  # ~8.7750
-
-# Cosine similarity
-cos_sim = torch.dot(v, w) / (torch.linalg.norm(v) * torch.linalg.norm(w))
-print(cos_sim.item())  # ~0.9746  (very aligned; small angle)
+```
+Position x: 6,371 km     Velocity x: 7.5 km/s
+Position y: 0 km          Velocity y: 0.0 km/s
+Position z: 0 km          Velocity z: 0.0 km/s
 ```
 
-The `@` operator is Python's matrix multiplication operator. For two vectors of the same length, it does a dot product. For other shapes, it does what you'd expect from matrix multiplication. Get used to seeing it; it's everywhere.
+Or you could write them as an ordered list:
 
-## Worked example: relative motion direction
+```
+state = [6371, 0, 0, 7.5, 0.0, 0.0]
+```
 
-Two satellites have velocity vectors (in some inertial frame, in km/s):
+That ordered list is a **vector**. It contains six numbers, so we say it is a "six-dimensional vector" or a "vector of length 6." The order matters: the first number is always the x-position, the fourth is always the x-velocity, and so on.
 
-\\[ \mathbf{v}_1 = (7.5, 0.0, 0.0) \quad \mathbf{v}_2 = (5.3, 5.3, 0.0) \\]
+A vector is nothing more than an ordered list of numbers. The numbers can represent anything: positions, velocities, sensor readings, action probabilities, learned features. The abstract mathematical concept does not care what the numbers mean; it just provides tools for working with lists of numbers.
 
-Question: what's the angle between their velocity vectors? Are they roughly parallel, roughly perpendicular, or roughly opposed?
+Here are some vectors that appear constantly in our work:
 
-By hand:
+**A 6D orbital state vector** (position + velocity in Earth-centered inertial frame):
+```
+[x, y, z, vx, vy, vz]
+[6371.0, 500.0, -200.0, 7.2, 0.3, -0.1]
+```
 
-\\[ \mathbf{v}_1 \cdot \mathbf{v}_2 = 7.5 \cdot 5.3 + 0 \cdot 5.3 + 0 \cdot 0 = 39.75 \\]
+**A 4D action probability distribution** for an RL agent with 4 possible actions:
+```
+[P(action 0), P(action 1), P(action 2), P(action 3)]
+[0.10, 0.20, 0.30, 0.40]
+```
 
-\\[ |\mathbf{v}_1| = 7.5, \quad |\mathbf{v}_2| = \sqrt{5.3^2 + 5.3^2} = 5.3 \sqrt{2} \approx 7.495 \\]
+**A 3D observation vector** from a tracking sensor (range, angle, angular rate):
+```
+[range_km, azimuth_deg, elevation_deg]
+[850.3, 42.1, 15.6]
+```
 
-\\[ \cos\theta = \frac{39.75}{7.5 \cdot 7.495} \approx 0.7071 \\]
+Each of these is just a list of numbers. The mathematics of vectors applies equally to all of them.
 
-\\(\arccos(0.7071) \approx 45°\\). So the second satellite is moving at roughly 45° to the first. They're both moving in roughly the +x direction (the dot product is positive), but at a substantial angle.
+## Visualizing vectors as arrows
+
+In two dimensions, a vector [a, b] can be drawn as an arrow starting at the origin and ending at the point (a, b). The length of the arrow is the magnitude of the vector, and the direction the arrow points captures the relationship between the two components.
+
+This geometric picture generalizes to higher dimensions even though we cannot draw a 6D vector. The key properties of vectors as arrows:
+
+- **Longer arrows** represent vectors with larger magnitude (we will make this precise shortly with norms)
+- **Direction** captures the ratio and sign relationship between components
+- **Two arrows pointing in the same direction** represent vectors with the same ratios between components, even if one is longer
+
+For two velocity vectors representing satellites in similar orbits:
+```
+v1 = [7.5, 0.0, 0.1]   # moving mostly in +x direction
+v2 = [7.2, 0.3, 0.0]   # also mostly in +x, slightly in +y
+```
+These arrows point in nearly the same direction. Both satellites are moving primarily along the x-axis with small components in other directions. This "similarity of direction" is exactly what the dot product measures.
+
+## The length of a vector: norms
+
+Before we talk about dot products, we need to know how to measure the length of a vector.
+
+For a 2D vector [a, b], the Pythagorean theorem gives the length: √(a² + b²). A vector [3, 4] has length √(9 + 16) = √25 = 5.
+
+For a vector of any length [v₁, v₂, ..., vₙ], the same idea extends:
+
+\\[ \|\mathbf{v}\| = \sqrt{v_1^2 + v_2^2 + \ldots + v_n^2} = \sqrt{\sum_{i=1}^{n} v_i^2} \\]
+
+**Decoding each symbol:**
+
+**\\(\|\mathbf{v}\|\\)**: The "norm" or "magnitude" of vector v. The double vertical bars mean "length of." The bold v (as opposed to a plain v) indicates that v is a vector rather than a single number.
+
+**\\(\sqrt{\ldots}\\)**: Square root.
+
+**\\(v_i^2\\)**: The i-th component of the vector, squared. The subscript i selects one component.
+
+**\\(\sum_{i=1}^{n}\\)**: Sum all n components.
+
+**In plain English**: "Square every component, add them all up, take the square root." This is the Euclidean distance from the origin to the point represented by the vector.
+
+For the orbital state vector example:
+
+```
+v = [6371.0, 500.0, -200.0, 7.2, 0.3, -0.1]
+||v|| = sqrt(6371^2 + 500^2 + 200^2 + 7.2^2 + 0.3^2 + 0.1^2)
+      = sqrt(40,589,641 + 250,000 + 40,000 + 51.84 + 0.09 + 0.01)
+      ≈ sqrt(40,879,693)
+      ≈ 6,394 (a mix of km and km/s, so not physically meaningful,
+               but mathematically valid)
+```
 
 In code:
+```python
+import torch
+v = torch.tensor([6371.0, 500.0, -200.0, 7.2, 0.3, -0.1])
+norm = torch.linalg.norm(v)
+print(norm.item())  # approximately 6394
+```
+
+## The dot product: measuring alignment
+
+The **dot product** of two vectors of the same length is computed by:
+
+1. Multiplying corresponding components together
+2. Adding all the products
+
+For vectors **v** = [v₁, v₂, ..., vₙ] and **w** = [w₁, w₂, ..., wₙ]:
+
+\\[ \mathbf{v} \cdot \mathbf{w} = v_1 w_1 + v_2 w_2 + \ldots + v_n w_n = \sum_{i=1}^{n} v_i w_i \\]
+
+**Decoding:**
+
+**\\(\mathbf{v} \cdot \mathbf{w}\\)**: "The dot product of v and w." The bold letters indicate vectors. The centered dot is the dot product operation (not regular multiplication, which would give a vector).
+
+**\\(v_i w_i\\)**: Component i of v times component i of w. Subscripts connect corresponding components.
+
+**\\(\sum_{i=1}^{n} v_i w_i\\)**: Add up all those pairwise products.
+
+Let us compute it step by step for two small vectors:
+
+```
+v = [2, 3, -1]
+w = [4, -2, 5]
+
+Step 1: Multiply corresponding components
+  2 × 4  = 8
+  3 × (-2) = -6
+  (-1) × 5 = -5
+
+Step 2: Add the products
+  8 + (-6) + (-5) = -3
+
+Dot product: -3
+```
+
+In code:
+```python
+import torch
+v = torch.tensor([2.0, 3.0, -1.0])
+w = torch.tensor([4.0, -2.0, 5.0])
+
+# Three equivalent ways to compute the dot product
+print((v * w).sum().item())      # -3.0
+print(torch.dot(v, w).item())    # -3.0
+print((v @ w).item())            # -3.0
+```
+
+## What the dot product is measuring: alignment
+
+The arithmetic definition is straightforward. But what does the dot product actually tell us?
+
+The dot product has a geometric interpretation:
+
+\\[ \mathbf{v} \cdot \mathbf{w} = \|\mathbf{v}\| \cdot \|\mathbf{w}\| \cdot \cos(\theta) \\]
+
+where \\(\theta\\) (the Greek letter theta) is the angle between the two vectors.
+
+**Decoding:**
+
+**\\(\|\mathbf{v}\|\\)**: The norm (length) of v.
+**\\(\|\mathbf{w}\|\\)**: The norm (length) of w.
+**\\(\cos(\theta)\\)**: The cosine of the angle between them.
+
+You do not need to remember the details of cosine, but you need to know these key facts:
+- cos(0°) = 1: vectors pointing in exactly the same direction
+- cos(90°) = 0: vectors that are perpendicular (at right angles)
+- cos(180°) = -1: vectors pointing in exactly opposite directions
+
+So what does the dot product tell you?
+
+- **Large positive dot product**: the vectors point in roughly the same direction
+- **Zero dot product**: the vectors are perpendicular (completely "unrelated" in direction)
+- **Large negative dot product**: the vectors point in roughly opposite directions
+
+**In SSA terms**: if two satellites have velocity vectors with a large positive dot product, they are moving in roughly the same direction. Their relative speed is low and they will not approach each other quickly. If their dot products are large negative, they are moving toward each other on nearly head-on trajectories: higher collision risk. This is not how real conjunction analysis works, but the intuition is correct.
+
+## An SSA example: comparing approach geometries
+
+Two satellites are on potential collision courses. You want a quick sense of how "head-on" versus "overtaking" the geometry is.
 
 ```python
 import torch
 
-v1 = torch.tensor([7.5, 0.0, 0.0])
-v2 = torch.tensor([5.3, 5.3, 0.0])
+# Satellite 1 moving in +x direction at orbital velocity
+v1 = torch.tensor([7.5, 0.0, 0.0])  # km/s
 
-cos_theta = torch.dot(v1, v2) / (torch.linalg.norm(v1) * torch.linalg.norm(v2))
-angle_deg = torch.rad2deg(torch.acos(cos_theta))
-print(angle_deg.item())  # ~45.0
+# Case A: satellite 2 moving in -x direction (head-on collision geometry)
+v2_headon = torch.tensor([-7.5, 0.0, 0.0])
+
+# Case B: satellite 2 moving in +x direction but slower (overtaking geometry)
+v2_overtake = torch.tensor([6.8, 0.1, 0.0])
+
+# Case C: satellite 2 on an inclined orbit (crossing geometry)
+v2_cross = torch.tensor([0.0, 7.5, 0.0])
+
+# Dot products
+dot_headon   = torch.dot(v1, v2_headon)
+dot_overtake = torch.dot(v1, v2_overtake)
+dot_cross    = torch.dot(v1, v2_cross)
+
+print(f"Head-on geometry:    dot product = {dot_headon.item():.1f}")    # -56.25 (strongly negative)
+print(f"Overtaking geometry: dot product = {dot_overtake.item():.1f}")  # +51.0  (positive)
+print(f"Crossing geometry:   dot product = {dot_cross.item():.1f}")     # 0.0    (perpendicular)
+
+# Cosine similarity: normalize out the lengths to get just the direction
+norm_v1 = torch.linalg.norm(v1)
+norm_headon   = torch.linalg.norm(v2_headon)
+norm_overtake = torch.linalg.norm(v2_overtake)
+norm_cross    = torch.linalg.norm(v2_cross)
+
+cos_headon   = dot_headon   / (norm_v1 * norm_headon)
+cos_overtake = dot_overtake / (norm_v1 * norm_overtake)
+cos_cross    = dot_cross    / (norm_v1 * norm_cross)
+
+print(f"\nCosine similarity:")
+print(f"Head-on:    {cos_headon.item():.3f}   (angle: {torch.rad2deg(torch.acos(cos_headon)).item():.1f}°)")
+print(f"Overtaking: {cos_overtake.item():.3f}   (angle: {torch.rad2deg(torch.acos(cos_overtake)).item():.1f}°)")
+print(f"Crossing:   {cos_cross.item():.3f}   (angle: {torch.rad2deg(torch.acos(cos_cross)).item():.1f}°)")
 ```
 
-This kind of "are these motions aligned?" question shows up in basic conjunction analysis (objects on similar trajectories converge slowly; objects on perpendicular or opposing ones converge fast). It's also the same operation that a neural network does internally when it asks "how much does this input look like the pattern stored in this row of weights?"
+The head-on geometry gives a highly negative cosine (angle ≈ 180°), the crossing geometry gives zero (exactly 90°), and the overtaking geometry gives a high positive value (small angle, similar direction).
 
-## Vectors as features, dot products as scores
+## Dot products as scoring: the bridge to neural networks
 
-Here's the bridge to neural networks, which we'll cross properly in the next lesson.
+Here is the connection to machine learning that makes the dot product so important.
 
-Suppose we want to score states based on how "good" they are. A simple way is to define a weight vector \\(\mathbf{w}\\) of the same length as our state representation \\(\mathbf{s}\\), and define the score as their dot product:
+Suppose you want to score how much an observation "favors" a particular action. For example, you are operating a sensor, and based on the current observation vector (describing the state of the space environment), you want to score each possible pointing action.
 
-\\[ \text{score}(\mathbf{s}) = \mathbf{w} \cdot \mathbf{s} \\]
+You define a **weight vector** \\(\mathbf{w}\\) for each action. The weight vector describes what kind of observation the action is best suited for. The score for taking that action given observation \\(\mathbf{o}\\) is the dot product \\(\mathbf{w} \cdot \mathbf{o}\\).
 
-This is called a **linear function** of the state, and you can read it as: "each feature contributes some amount to the score, and the weights say how much." If \\(w_i\\) is positive, feature \\(i\\) increases the score when it's positive. If \\(w_i\\) is negative, that feature drags the score down. The dot product just adds up all those contributions.
+If the observation looks like what the weight vector describes (same direction, high alignment), the score is high. If the observation is perpendicular or opposite to the weight vector, the score is low or negative.
 
-This is, exactly and literally, what a single neuron in a neural network computes (before adding a bias and an activation function). When you stack many neurons in parallel, you get a matrix-vector product, which is the next lesson.
+This is exactly what a single neuron in a neural network computes. The neuron has a learned weight vector. Its output is the dot product of the weight vector and the input. The network learns weight vectors that give high scores to the kinds of inputs that should lead to good outputs.
+
+In the next lesson, we will stack many neurons in parallel. That will give us matrix-vector multiplication: the operation that defines a neural network layer.
+
+## Worked example: hand-computing a dot product for a sensor scoring task
+
+Your sensor has a 4D observation vector describing the current environment:
+
+```
+o = [conjunction_risk, debris_density, solar_activity, comms_window_fraction]
+o = [0.8, 0.2, 0.1, 0.6]
+```
+
+You have two candidate sensor pointing strategies, each represented by a weight vector that describes what conditions each strategy "cares about":
+
+```
+Strategy A (conjunction-focused): w_A = [1.0, 0.3, 0.0, 0.2]
+  (heavily weights conjunction risk, somewhat weights debris)
+
+Strategy B (comms-window-focused): w_B = [0.1, 0.0, 0.0, 1.0]
+  (mainly weights communications window availability)
+```
+
+**Score for Strategy A:**
+
+Step 1: Multiply corresponding components:
+- 0.8 × 1.0 = 0.80
+- 0.2 × 0.3 = 0.06
+- 0.1 × 0.0 = 0.00
+- 0.6 × 0.2 = 0.12
+
+Step 2: Add:
+- 0.80 + 0.06 + 0.00 + 0.12 = **0.98**
+
+**Score for Strategy B:**
+
+Step 1:
+- 0.8 × 0.1 = 0.08
+- 0.2 × 0.0 = 0.00
+- 0.1 × 0.0 = 0.00
+- 0.6 × 1.0 = 0.60
+
+Step 2:
+- 0.08 + 0.00 + 0.00 + 0.60 = **0.68**
+
+Strategy A scores 0.98, Strategy B scores 0.68. Given the current high conjunction risk (0.8) and available comms window (0.6), the conjunction-focused strategy is more strongly indicated by the dot-product scoring.
+
+```python
+import torch
+
+o   = torch.tensor([0.8, 0.2, 0.1, 0.6])
+w_A = torch.tensor([1.0, 0.3, 0.0, 0.2])
+w_B = torch.tensor([0.1, 0.0, 0.0, 1.0])
+
+score_A = torch.dot(o, w_A)
+score_B = torch.dot(o, w_B)
+print(f"Strategy A score: {score_A.item():.2f}")  # 0.98
+print(f"Strategy B score: {score_B.item():.2f}")  # 0.68
+```
+
+In a neural network, the weight vectors are learned from data rather than hand-designed. But the scoring mechanism is exactly this dot product. When we stack many weight vectors in the next lesson, we compute scores for many strategies simultaneously. That is a matrix-vector multiplication.
 
 ## Quiz
 

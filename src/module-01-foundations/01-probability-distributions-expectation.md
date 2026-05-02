@@ -1,128 +1,262 @@
-# Lesson 1: Probability, distributions, and expectation
+# Lesson 1: Probability, Distributions, and Expectation
 
 ## Where this fits
 
-Almost everything you'll read in this curriculum is, at its core, a sentence about expected value. Reinforcement learning maximizes expected return. CFR minimizes expected regret. MCTS rollouts estimate the expected value of a game node. Policy gradient methods compute expected gradients. The word "expected" in all those phrases is the same word and it means the same thing, and once you've internalized what it means, you've cleared the conceptual hurdle for half of OpenSpiel's source code.
+Every algorithm in this curriculum, from MCTS rollouts to CFR regret minimization to policy gradient training, is answering one core question: given that I am uncertain about the world, what should I expect? That question has a precise mathematical answer, and this lesson is that answer. Once you understand expectation, you understand the conceptual shape of half the algorithms in OpenSpiel. The rest is detail.
 
-This module is about tools. This lesson is about the tool we'll use most.
+## A space scenario to motivate everything
 
-## Concept
+Imagine you are working a conjunction assessment shift at a space operations center. Your ground radar just detected a new Resident Space Object (RSO) in low Earth orbit. Based on the radar cross-section measurement and preliminary orbital elements, your analyst has assigned probabilities to what this object might be:
 
-A **random variable** is a number whose value isn't known until something happens. Roll a die: the result is a random variable. Decide an attacker's first action in a satellite-jamming scenario: their action is a random variable (assuming they're not deterministic). Sample from a neural network's policy output: the action is a random variable.
+| Object type       | Probability |
+|-------------------|-------------|
+| Active satellite  | 0.80        |
+| Debris            | 0.15        |
+| Dead satellite    | 0.05        |
+| **Total**         | **1.00**    |
 
-A **distribution** is the rule that says how often each possible value of a random variable shows up. For a fair six-sided die, the distribution is "each of {1, 2, 3, 4, 5, 6} with probability 1/6." For a biased coin that lands heads 70% of the time, the distribution is "{heads: 0.7, tails: 0.3}." Distributions can be over discrete sets (like dice rolls) or continuous ranges (like a satellite's exact position, which is some real number with infinite possibilities).
+You cannot wait for perfect information. You need to decide right now how much sensor time to allocate to continued tracking, which operators to notify, and how urgently to treat this object. Different object types require different responses. This situation, having to reason and act when you do not know the truth for certain, is exactly the problem probability is designed for.
 
-The **expectation** of a random variable is its long-run average. If you rolled a fair die a million times and averaged the results, you'd get something extremely close to 3.5. That's because 3.5 is the expectation of a fair die roll, even though no actual roll ever produces 3.5. Expectation is a summary statistic, not a prediction of any single outcome.
+## What is a random variable?
 
-That's the entire conceptual content of this lesson. Everything below is making the formula match the intuition.
+A **random variable** is a number (or category) whose value you do not know yet, but where you know something about what values it could take.
 
-## The math
+The object type in your scenario is a random variable. It could be active satellite, debris, or dead satellite. Right now, before you have more sensor data, you are uncertain which it is. The "random" part just means you are uncertain. The "variable" part means it is a slot waiting to be filled with a value.
 
-For a discrete random variable \\(X\\) taking values \\(x_1, x_2, \ldots, x_n\\) with probabilities \\(p_1, p_2, \ldots, p_n\\), the expectation is:
+You will constantly encounter random variables in this curriculum:
+
+- The action an adversary's satellite takes during a conjunction (uncertain because you cannot read their intentions)
+- The reward an RL agent receives after making a move (uncertain because the environment is stochastic)
+- The object type of a newly detected RSO (uncertain because your sensor is imperfect)
+- The exact position of a satellite given imperfect tracking data (uncertain because measurement errors exist)
+
+They are all the same idea. A quantity that depends on something you have not fully observed yet.
+
+## What is a distribution?
+
+A **distribution** is the complete description of your uncertainty. It lists every possible value the random variable could take, and the probability of each one.
+
+Your RSO analysis produced a distribution:
+
+| Object type       | Probability |
+|-------------------|-------------|
+| Active satellite  | 0.80        |
+| Debris            | 0.15        |
+| Dead satellite    | 0.05        |
+
+Notice the probabilities sum to 1.00. This is always required. The distribution has to account for all possibilities. One of these outcomes will happen (or already has happened, you just do not know which yet). The probabilities just describe how likely each one is.
+
+### Two distributions you will see constantly
+
+**Categorical distribution**: a distribution over a finite list of named categories. The object-type example above is categorical. In reinforcement learning, your policy is a categorical distribution over actions: "there are four possible moves, with these probabilities."
+
+**Gaussian (Normal) distribution**: a distribution over all real numbers, shaped like a bell curve. The position of a satellite you are tracking is often modeled as Gaussian: you have a best estimate of where it is, and uncertainty spreads symmetrically around that estimate. A satellite with position uncertainty of 0.2 km is much more precisely tracked than one with uncertainty of 5 km, even if both have the same best estimate.
+
+## What is expectation? Building it from arithmetic
+
+Now suppose each object type has an associated sensor priority score:
+
+| Object type       | Probability | Priority score |
+|-------------------|-------------|----------------|
+| Active satellite  | 0.80        | 30             |
+| Debris            | 0.15        | 90             |
+| Dead satellite    | 0.05        | 80             |
+
+**Question**: what is the average priority score for this object, given your uncertainty about its type?
+
+Here is how to think about it without any formulas yet. Suppose you processed 1,000 similar radar detections using this same probability model. Based on those probabilities, you would expect:
+
+- About 800 to be active satellites (priority score 30)
+- About 150 to be debris (priority score 90)
+- About 50 to be dead satellites (priority score 80)
+
+To find the average priority score across all 1,000 detections:
+
+```
+Total priority points from active satellites: 800 × 30 = 24,000
+Total priority points from debris:            150 × 90 = 13,500
+Total priority points from dead satellites:    50 × 80 =  4,000
+                                              ─────────────────
+Total priority points:                                   41,500
+
+Average = 41,500 / 1,000 = 41.5
+```
+
+Now look at what those 800, 150, and 50 are. Divide each by 1,000 and you get 0.80, 0.15, and 0.05. Those are the probabilities. So the exact same arithmetic can be written more directly:
+
+```
+(0.80 × 30) + (0.15 × 90) + (0.05 × 80)
+= 24.0 + 13.5 + 4.0
+= 41.5
+```
+
+That is expectation. **Multiply each value by its probability, then add up the products.** The result is the probability-weighted average, called the expected value or expectation.
+
+A few things to notice:
+- The expected value (41.5) is not one of the possible values (30, 90, 80). That is fine. Expectation is a property of the distribution, not a prediction of any single outcome.
+- If you actually processed that radar contact, you would see a priority score of 30, 90, or 80, nothing else. The 41.5 is what you should plan around on average, before you know which one you got.
+- If the debris probability were much higher (say, 0.95), the expected priority would be much higher too. The expected value follows the probability mass.
+
+## The formula, built from the arithmetic you just did
+
+Here is the same calculation written compactly. Let us use symbols to represent the quantities:
+
+- Let \\(n\\) be the number of possible outcomes (in our case, 3)
+- Let \\(p_i\\) be the probability of outcome \\(i\\)
+- Let \\(x_i\\) be the value (priority score) for outcome \\(i\\)
+
+The expected value is written:
 
 \\[ \mathbb{E}[X] = \sum_{i=1}^{n} p_i \cdot x_i \\]
 
-Decoding the symbols:
+**Decoding every symbol, one at a time:**
 
-- \\(\mathbb{E}[X]\\) is "the expected value of \\(X\\)." Think of \\(\mathbb{E}\\) as a verb: "average."
-- \\(\sum_{i=1}^{n}\\) is "add up the following thing for \\(i\\) going from 1 to \\(n\\)." It's a `for` loop with an accumulator.
-- \\(p_i \cdot x_i\\) is "this outcome's value times this outcome's probability."
+**\\(\mathbb{E}[X]\\)**: Read this as "the expected value of X" or just "E of X." The double-struck capital E is a conventional notation for "take the expectation of." X is the random variable (our priority score). The brackets just mean we are asking for the expectation of that particular thing.
 
-So the whole expression reads as: "loop over every possible outcome, multiply each value by how likely it is, sum the results." That is just a weighted average.
+**\\(\sum_{i=1}^{n}\\)**: This is the capital Greek letter sigma, used here as a summation sign. Read it as "add up the following thing for every i, starting at i = 1 and ending at i = n." It is literally a for loop:
 
-For a function of a random variable, \\(\mathbb{E}[f(X)]\\), the formula has the same shape:
+```python
+total = 0
+for i in range(1, n + 1):
+    total += p_i * x_i
+```
+
+**\\(p_i\\)**: The probability of outcome i. The subscript i (written below and slightly to the right of p) connects this probability to the i-th outcome. When i = 1, this is the probability of outcome 1 (active satellite, 0.80). When i = 2, it is the probability of outcome 2 (debris, 0.15). And so on.
+
+**\\(x_i\\)**: The value (priority score) for outcome i. Same subscript convention: x with subscript 1 is the priority score when outcome 1 occurs (30), x with subscript 2 is the score when outcome 2 occurs (90), and so on.
+
+**\\(p_i \cdot x_i\\)**: The dot means multiplication. This is "probability of outcome i times value of outcome i."
+
+**Reading the whole formula in English**: "For each possible outcome (from i = 1 to i = n), multiply its probability by its value. Add up all those products. That total is the expected value."
+
+That is the calculation you already did by hand.
+
+### Expectation of a function
+
+One more version you will see often. Instead of taking the expectation of a raw value, sometimes you take the expectation of a function applied to the outcome:
 
 \\[ \mathbb{E}[f(X)] = \sum_{i=1}^{n} p_i \cdot f(x_i) \\]
 
-This is the form we actually care about. In RL, \\(f\\) is "return I get if I play action \\(X\\)." In CFR, \\(f\\) is "regret from this action." We almost never care about the expectation of a raw random variable; we care about the expectation of some function of it.
+Here \\(f(x_i)\\) means "apply the function f to outcome i, then use that result." For example, if \\(f(x) = x^2\\), then \\(f(x_i)\\) is the priority score squared.
 
-For continuous distributions, the sum becomes an integral and you'll see it written as \\(\int p(x) f(x) dx\\). We won't need this much, because sampling will rescue us from integrals (lesson 3).
+In RL, \\(f\\) is usually "the total reward you collect starting from this state." In CFR, \\(f\\) is "the regret from taking this action." The structure is always the same: for each outcome, compute f of that outcome, weight by probability, sum up.
 
-**Variance** measures how spread out a distribution is around its mean. The formal definition is \\(\text{Var}(X) = \mathbb{E}[(X - \mathbb{E}[X])^2]\\), but the intuition is: "if I sample from this distribution a bunch, how far do my samples typically land from the average?" High-variance distributions are unpredictable; low-variance distributions cluster tightly around their mean. We'll come back to variance in lesson 3, where it's going to bite us.
+## Variance: how spread out is the distribution?
+
+Expectation gives you the average. But two distributions can have the same average while behaving very differently.
+
+**Scenario A**: You always track active satellites, every single contact. Priority score is always 30. Expected priority: 30. Variance: zero. Your planning is perfectly predictable.
+
+**Scenario B**: 50% chance of a priority-10 object, 50% chance of a priority-50 object. Expected priority: (0.5 × 10) + (0.5 × 50) = 30. Same average, but your actual experience swings between 10 and 50.
+
+**Variance** measures the average squared distance from the expected value. "Squared distance" means you take the difference between an outcome and the expected value, then square it.
+
+For Scenario B:
+- Outcome 1 is priority 10. Distance from expected (30) is 10 - 30 = -20. Squared: 400.
+- Outcome 2 is priority 50. Distance from expected (30) is 50 - 30 = +20. Squared: 400.
+- Expected squared distance: (0.5 × 400) + (0.5 × 400) = 400.
+
+So variance is 400. The square root of variance is the **standard deviation**: √400 = 20. A typical sample lands about 20 priority points away from the mean. In Scenario A, standard deviation is zero: you always land exactly on the mean.
+
+Variance will come back in lesson 3 when it determines how noisy your Monte Carlo estimates are. High variance means you need more samples to get a reliable estimate.
 
 ## Code
 
-PyTorch ships a `distributions` module that's exactly the right level of abstraction. You define a distribution, then sample from it or compute probabilities of specific outcomes.
-
 ```python
 import torch
-from torch.distributions import Bernoulli, Categorical, Normal
+from torch.distributions import Categorical
 
-# A biased coin (Bernoulli distribution).
-# `probs` is the probability of "1" (heads).
-coin = Bernoulli(probs=torch.tensor(0.7))
-print(coin.sample(sample_shape=(10,)))  # 10 coin flips, each 0 or 1
+# Our RSO probability estimate.
+probs = torch.tensor([0.80, 0.15, 0.05])
+dist = Categorical(probs=probs)
 
-# A categorical distribution: pick one of N options with given probabilities.
-# This is the natural shape for action distributions in RL.
-action_probs = torch.tensor([0.1, 0.2, 0.3, 0.4])  # 4 possible actions
-policy = Categorical(probs=action_probs)
-print(policy.sample(sample_shape=(5,)))  # 5 sampled actions, each 0..3
+# Sample from the distribution: returns 0 (active sat), 1 (debris), or 2 (dead sat).
+sample = dist.sample()
+print(f"Sampled object type index: {sample.item()}")
 
-# A Gaussian distribution: parameterized by mean and standard deviation.
-# This is what we'd use for continuous quantities like sensor noise.
-position = Normal(loc=0.0, scale=1.0)  # mean 0, std 1
-print(position.sample(sample_shape=(5,)))
+# Sample many times to see the frequencies.
+many_samples = dist.sample(sample_shape=(10_000,))
+for i, label in enumerate(["Active sat", "Debris", "Dead sat"]):
+    freq = (many_samples == i).float().mean()
+    print(f"  {label}: {freq:.3f}  (expected: {probs[i]:.3f})")
 ```
 
-Two API gotchas worth flagging now. PyTorch calls the mean of a Normal `loc` and the standard deviation `scale`. And `Categorical`'s `probs` argument doesn't strictly have to sum to 1 (PyTorch will normalize it for you), but it's good hygiene to make it sum to 1 yourself so that bugs are visible.
-
-To compute an expectation analytically (without sampling), you just transliterate the formula:
+Computing expected priority directly:
 
 ```python
 import torch
 
-# Expected value of a fair die roll.
-values = torch.arange(1, 7).float()  # tensor([1., 2., 3., 4., 5., 6.])
-probs = torch.ones(6) / 6              # uniform
-expected_value = (probs * values).sum()
-print(expected_value.item())  # 3.5
+probs           = torch.tensor([0.80, 0.15, 0.05])
+priority_scores = torch.tensor([30.0, 90.0, 80.0])
+
+# E[priority] = sum of (p_i * x_i).
+# Step 1: multiply each probability by its priority score.
+products = probs * priority_scores
+print(f"Products:        {products.tolist()}")  # [24.0, 13.5, 4.0]
+
+# Step 2: sum the products.
+expected = products.sum()
+print(f"Expected priority: {expected.item()}")  # 41.5
 ```
 
-That is literally `sum(p_i * x_i)`.
+Notice how the Python arithmetic directly mirrors the formula. `probs * priority_scores` is the elementwise multiplication of all the \\(p_i \cdot x_i\\) terms. `.sum()` is the \\(\sum\\) symbol.
 
-## Worked example: expected mission value
+## Worked example: dwell time planning across two RSOs
 
-Suppose a small satellite has three possible operational outcomes for a given week:
+You are planning sensor dwell time for two simultaneously tracked RSOs on an upcoming pass. Each object type requires different dwell times:
 
-| Outcome   | Probability | Value (data units) |
-|-----------|-------------|--------------------|
-| Nominal   | 0.80        | 100                |
-| Degraded  | 0.15        | 30                 |
-| Lost      | 0.05        | 0                  |
+| Object type       | Dwell time needed (seconds) |
+|-------------------|-----------------------------|
+| Active satellite  | 5                           |
+| Debris            | 15                          |
+| Dead satellite    | 10                          |
 
-What's the expected weekly value?
+Your current probability estimates:
 
-By hand:
+| Object type       | RSO Alpha | RSO Beta |
+|-------------------|-----------|----------|
+| Active satellite  | 0.70      | 0.10     |
+| Debris            | 0.20      | 0.80     |
+| Dead satellite    | 0.10      | 0.10     |
 
-\\[ \mathbb{E}[V] = 0.80 \cdot 100 + 0.15 \cdot 30 + 0.05 \cdot 0 = 80 + 4.5 + 0 = 84.5 \\]
+**Expected dwell for RSO Alpha:**
 
-In code:
+Step 1, for each object type, multiply probability by dwell time:
+- Active satellite: 0.70 × 5 = 3.50 seconds
+- Debris: 0.20 × 15 = 3.00 seconds
+- Dead satellite: 0.10 × 10 = 1.00 second
+
+Step 2, sum:
+- 3.50 + 3.00 + 1.00 = **7.5 seconds expected dwell**
+
+**Expected dwell for RSO Beta:**
+
+Step 1:
+- Active satellite: 0.10 × 5 = 0.50 seconds
+- Debris: 0.80 × 15 = 12.00 seconds
+- Dead satellite: 0.10 × 10 = 1.00 second
+
+Step 2:
+- 0.50 + 12.00 + 1.00 = **13.5 seconds expected dwell**
+
+**Total expected dwell**: 7.5 + 13.5 = **21 seconds** for this pass.
+
+If your radar has 30 seconds of dwell capacity, you are comfortable. If it has 15 seconds, you have a prioritization problem to solve. Expectation gives you the planning number.
 
 ```python
 import torch
 
-probs  = torch.tensor([0.80, 0.15, 0.05])
-values = torch.tensor([100.0, 30.0, 0.0])
+dwell_times = torch.tensor([5.0, 15.0, 10.0])
+alpha_probs = torch.tensor([0.70, 0.20, 0.10])
+beta_probs  = torch.tensor([0.10, 0.80, 0.10])
 
-expected_value = (probs * values).sum()
-print(expected_value.item())  # 84.5
+alpha_dwell = (alpha_probs * dwell_times).sum()
+beta_dwell  = (beta_probs  * dwell_times).sum()
+
+print(f"Alpha expected dwell: {alpha_dwell.item():.1f}s")  # 7.5s
+print(f"Beta expected dwell:  {beta_dwell.item():.1f}s")   # 13.5s
+print(f"Total:                {(alpha_dwell + beta_dwell).item():.1f}s")  # 21.0s
 ```
-
-Now suppose we want \\(\mathbb{E}[V^2]\\) (this will be useful in a moment). Same shape, with \\(f(x) = x^2\\):
-
-```python
-expected_value_squared = (probs * values**2).sum()
-print(expected_value_squared.item())  # 8135.0
-```
-
-Variance falls out as \\(\mathbb{E}[V^2] - (\mathbb{E}[V])^2 = 8135 - 84.5^2 \approx 994\\). Standard deviation is \\(\sqrt{994} \approx 31.5\\) data units. So our weekly value is "about 84.5, plus or minus 30-ish in any given week." Both numbers matter for decision-making, and both fall out of the same distribution. The expectation tells you the long-run yield; the variance tells you how much you should hate any individual bad week.
-
-## Why this matters going forward
-
-When you read "the agent maximizes the expected discounted return," translate it as: "the agent considers all possible futures (weighted by how likely each is) and picks the action whose probability-weighted average outcome is best." That single translation will get you through most of the RL literature. The same translation works for "expected counterfactual regret," "expected gradient," and so on. The structure is always the same: enumerate outcomes, weight by probability, sum.
-
-The catch, which we'll deal with in lesson 3, is that we usually can't enumerate all the outcomes because there are too many of them. So we sample.
 
 ## Quiz
 
