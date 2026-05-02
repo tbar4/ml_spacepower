@@ -1,0 +1,68 @@
+[[questions]]
+id = "ddab0178-3242-5e28-8959-f2aaf95f09d3"
+type = "MultipleChoice"
+prompt.prompt = "What does P(A | B) mean?"
+prompt.distractors = [
+  "The probability that A causes B",
+  "The probability that A and B both happen",
+  "The probability that either A or B happens",
+]
+answer.answer = "The probability of A, given that we know B happened"
+context = "P(A | B) restricts attention to the worlds where B is true, then asks how much of that restricted set has A also true. It says nothing about causation."
+
+[[questions]]
+id = "dee834d8-f94d-5b73-a3fd-61308a195a8e"
+type = "MultipleChoice"
+prompt.prompt = "In Bayes' rule, P(H | E) = P(E | H) * P(H) / P(E), which term is the prior?"
+prompt.distractors = [
+  "P(H | E)",
+  "P(E | H)",
+  "P(E)",
+]
+answer.answer = "P(H)"
+context = "The prior is what you believed about the hypothesis before seeing any evidence. P(H | E) is the posterior (after evidence), P(E | H) is the likelihood, and P(E) is the marginal likelihood (normalizing constant)."
+
+[[questions]]
+id = "ae3c93b9-8d5a-5c4a-953a-8b83034cad2f"
+type = "MultipleChoice"
+prompt.prompt = "Why is the base rate fallacy a recurring problem in probabilistic reasoning?"
+prompt.distractors = [
+  "Because likelihoods are usually wrong",
+  "Because Bayes' rule is mathematically incorrect for rare events",
+  "Because posteriors are hard to compute",
+]
+answer.answer = "Because people focus on the likelihood and ignore the prior, even when the prior is what dominates"
+context = "If hostile objects are 1 in 10,000 in a region, even a 90% likelihood under 'hostile' yields a low posterior, because the prior is so small. Bayes' rule mechanically prevents this error if you apply it; the error comes from skipping the prior."
+
+[[questions]]
+id = "63122f48-0ec6-560c-9b0b-ce151dcd1e12"
+type = "ShortAnswer"
+prompt.prompt = "Two events are independent. Express P(A | B) in terms of P(A)."
+answer.answer = "P(A | B) = P(A)"
+context = "Independence means knowing B happened doesn't change your belief about A. Equivalently, the joint factors as P(A, B) = P(A) * P(B)."
+
+[[questions]]
+id = "0e39d645-0dda-5536-959d-b522e9f7f963"
+type = "ShortAnswer"
+prompt.prompt = """
+What does this print (rounded)?
+
+```python
+import torch
+prior      = torch.tensor([0.5, 0.5])
+likelihood = torch.tensor([0.9, 0.3])
+post = prior * likelihood
+post = post / post.sum()
+print(post)
+```
+"""
+answer.answer = "tensor([0.7500, 0.2500])"
+answer.alternatives = ["tensor([0.75, 0.25])", "[0.75, 0.25]"]
+context = "Unnormalized posterior is [0.45, 0.15], summing to 0.6. Dividing through gives [0.75, 0.25]. The first hypothesis went from 50% to 75% because the evidence was three times as likely under it."
+
+[[questions]]
+id = "7a705ac8-2ab3-5ea2-a1bf-6c601a4a3585"
+type = "ShortAnswer"
+prompt.prompt = "When updating a belief sequentially with two observations, what condition do you need for naive 'apply Bayes twice' to be correct?"
+answer.answer = "The two observations need to be conditionally independent given the hypothesis."
+context = "If they share an unmodeled common cause (e.g., both affected by the same atmospheric condition), sequential Bayes overcounts the evidence and produces an overconfident posterior."

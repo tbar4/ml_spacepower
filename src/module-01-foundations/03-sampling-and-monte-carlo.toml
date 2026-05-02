@@ -1,0 +1,66 @@
+[[questions]]
+id = "fc951768-3135-5191-8be3-2763708b9b0e"
+type = "MultipleChoice"
+prompt.prompt = "Why do we use Monte Carlo estimation instead of computing expectations directly?"
+prompt.distractors = [
+  "Sampling is always more accurate than direct computation",
+  "Monte Carlo eliminates randomness from the result",
+  "Direct computation is mathematically incorrect for continuous distributions",
+]
+answer.answer = "For most interesting distributions, direct computation is intractable, but sampling is easy"
+context = "When you have 10^50 possible game trajectories, you can't enumerate them. But you can simulate one. Monte Carlo trades exactness for tractability."
+
+[[questions]]
+id = "f735186d-78fa-50ab-ba39-ed02cc098ebd"
+type = "MultipleChoice"
+prompt.prompt = "If you take 10,000 samples and want to halve your standard error, roughly how many samples do you need?"
+prompt.distractors = [
+  "20,000 (twice as many)",
+  "5,000 (half as many)",
+  "100,000 (ten times as many)",
+]
+answer.answer = "40,000 (four times as many)"
+context = "Standard error scales as 1/sqrt(N). To halve the error, you need to multiply N by 4. This is the central tradeoff of Monte Carlo: better accuracy is expensive."
+
+[[questions]]
+id = "803e37de-1b38-5619-8c72-ba235fe9e469"
+type = "MultipleChoice"
+prompt.prompt = "What does it mean for a Monte Carlo estimator to be 'unbiased'?"
+prompt.distractors = [
+  "Every individual estimate is exactly correct",
+  "The variance of the estimator is zero",
+  "The estimator never produces values larger than the true expectation",
+]
+answer.answer = "On average across many runs, the estimator gives the true expectation"
+context = "Individual runs can be off in either direction; on average, they cancel out. Bias and variance are independent properties of estimators; you can have low/high of either."
+
+[[questions]]
+id = "79b6c3da-e8c0-544e-b399-160ccd971f3a"
+type = "ShortAnswer"
+prompt.prompt = "In one sentence, why does the Monte Carlo estimate of pi (4 * fraction of points inside the unit quarter-circle) work?"
+answer.answer = "Because the quarter-circle has area pi/4 and the unit square has area 1, so the fraction of uniformly-sampled points landing inside the circle estimates pi/4."
+context = "It's a geometric form of the same trick: estimate a ratio (area inside / area total) by counting samples. Multiply by 4 to recover pi."
+
+[[questions]]
+id = "3076687f-775b-5ac8-9d92-53e9ec7b182c"
+type = "ShortAnswer"
+prompt.prompt = """
+What is the expected output (approximately)?
+
+```python
+import torch
+torch.manual_seed(0)
+samples = torch.randn(1_000_000)        # standard normal: mean 0, std 1
+print(samples.mean().item())
+```
+"""
+answer.answer = "approximately 0"
+answer.alternatives = ["0", "near 0", "close to 0", "about 0"]
+context = "The mean of the standard normal is 0. With a million samples, the Monte Carlo estimate will be very close to 0, off by something on the order of 1/sqrt(1_000_000) = 0.001."
+
+[[questions]]
+id = "8b1fed83-5fdf-5c5f-821f-444841d836d6"
+type = "ShortAnswer"
+prompt.prompt = "Variance reduction techniques (like baselines in policy gradients) target which factor in the standard error formula sigma/sqrt(N)?"
+answer.answer = "Sigma (the standard deviation of the samples)."
+context = "You can lower the standard error by either increasing N (more samples) or decreasing sigma (less variable samples). Variance reduction tricks shrink sigma without changing the expectation being estimated."

@@ -1,0 +1,12 @@
+[book]
+authors = ["Trevor Barnes"]
+language = "en"
+src = "src"
+title = "ML for Spacepower Simulations"
+
+[output.html]
+mathjax-support = true
+
+[preprocessor.quiz]
+[preprocessor.repl]
+python.enable = true

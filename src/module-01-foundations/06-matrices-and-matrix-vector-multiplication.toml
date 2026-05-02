@@ -1,0 +1,68 @@
+[[questions]]
+id = "ffbd5e91-87f5-594a-a352-1d274cc9e0e5"
+type = "MultipleChoice"
+prompt.prompt = "If W is a 5x3 matrix and you compute Wx, what shape must x be, and what shape is the result?"
+prompt.distractors = [
+  "x must be length 5; result is length 3",
+  "x must be length 5; result is length 5",
+  "x must be length 3; result is length 3",
+]
+answer.answer = "x must be length 3; result is length 5"
+context = "The number of columns of W (3) must match the length of x. The number of rows of W (5) gives the length of the output."
+
+[[questions]]
+id = "81ac4fd6-18ea-5038-8fef-a099411dfbb7"
+type = "MultipleChoice"
+prompt.prompt = "What does the i-th entry of Wx equal?"
+prompt.distractors = [
+  "The product of all entries in column i of W",
+  "The sum of all entries in row i of W",
+  "The maximum of row i of W times x",
+]
+answer.answer = "The dot product of row i of W with x"
+context = "Matrix-vector multiplication is structurally m parallel dot products, one per row of the matrix. The output collects them into a vector."
+
+[[questions]]
+id = "0d068ef1-dadc-5578-a634-daa9466f065e"
+type = "MultipleChoice"
+prompt.prompt = "What is `nn.Linear(in_features=8, out_features=2)` doing under the hood?"
+prompt.distractors = [
+  "Storing 8 weight vectors of length 2 each",
+  "Storing a single 8x2 weight matrix and no bias",
+  "Storing a 8x8 weight matrix and a length-8 bias",
+]
+answer.answer = "Storing a 2x8 weight matrix and a length-2 bias, computing y = Wx + b"
+context = "PyTorch stores weights as (out_features, in_features), so a layer mapping length-8 to length-2 has a 2x8 matrix. The bias has length out_features."
+
+[[questions]]
+id = "e1f9f2b1-e5d0-5973-b2f9-7cb20bb617ea"
+type = "ShortAnswer"
+prompt.prompt = "Conceptually, what is each row of the weight matrix W in a linear layer 'asking' about the input x?"
+answer.answer = "How much the input looks like the pattern stored in that row (via the dot product)."
+context = "Each row is a learned template. The dot product measures alignment with that template. A neural net learns by adjusting its templates so that useful patterns are detected."
+
+[[questions]]
+id = "72a6b90e-16d8-5783-94c0-e0b52aef2cf8"
+type = "ShortAnswer"
+prompt.prompt = """
+What does this print?
+
+```python
+import torch
+W = torch.tensor([[1.0, 2.0],
+                  [3.0, 4.0],
+                  [5.0, 6.0]])
+x = torch.tensor([1.0, 1.0])
+print((W @ x).tolist())
+```
+"""
+answer.answer = "[3.0, 7.0, 11.0]"
+answer.alternatives = ["[3, 7, 11]"]
+context = "Row 1 dot x = 1+2 = 3. Row 2 dot x = 3+4 = 7. Row 3 dot x = 5+6 = 11. The output has length equal to the number of rows of W."
+
+[[questions]]
+id = "9c458d05-0697-5812-8991-ae060f8ec730"
+type = "ShortAnswer"
+prompt.prompt = "If you stack two linear layers Wx + b followed by W'(Wx + b) + b' (with no activation in between), what kind of function does the composed layer compute?"
+answer.answer = "Another linear function (it can be rewritten as W''x + b'' for some W'' and b'')."
+context = "Composition of linear maps is still linear. This is exactly why activation functions are necessary: without them, no matter how many layers you stack, you still have a linear function and gain no representational power. The next module covers this."

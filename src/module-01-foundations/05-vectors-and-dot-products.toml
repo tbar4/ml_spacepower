@@ -1,0 +1,66 @@
+[[questions]]
+id = "8f6b8d89-fa09-5905-bc89-9a3b75bbe0cc"
+type = "MultipleChoice"
+prompt.prompt = "What does the dot product of two vectors compute, geometrically?"
+prompt.distractors = [
+  "The Euclidean distance between them",
+  "The cross product of the two vectors",
+  "The midpoint between them",
+]
+answer.answer = "Their alignment, scaled by their magnitudes (|v||w|cos(theta))"
+context = "When normalized by lengths, the dot product is just cos(angle), which directly measures how aligned the vectors are. Same direction = 1, perpendicular = 0, opposite = -1."
+
+[[questions]]
+id = "cbf44ca6-6208-5da1-8258-d4ab0367d2cc"
+type = "MultipleChoice"
+prompt.prompt = "Two vectors have a dot product of 0. What does that tell you?"
+prompt.distractors = [
+  "They are equal",
+  "They are pointing in opposite directions",
+  "At least one of them is the zero vector",
+]
+answer.answer = "They are perpendicular (or one of them is the zero vector)"
+context = "cos(90°) = 0, so perpendicular vectors have a zero dot product. The zero vector trivially has a zero dot product with anything, which is the corner case."
+
+[[questions]]
+id = "5e1a9800-654b-5617-823b-58edd47c21d8"
+type = "MultipleChoice"
+prompt.prompt = "What does a single neuron in a neural network compute, before its bias and activation function?"
+prompt.distractors = [
+  "An average of its inputs",
+  "The maximum of its inputs",
+  "An entropy of its inputs",
+]
+answer.answer = "A dot product between its inputs and its weight vector"
+context = "Each neuron has a weight vector of the same length as its input. Its pre-activation output is the dot product of weights and inputs. Stack many neurons and you get the matrix-vector multiplication of the next lesson."
+
+[[questions]]
+id = "f528f0bf-77e9-50a5-aa44-925808cd3b8c"
+type = "ShortAnswer"
+prompt.prompt = "If two velocity vectors have a positive dot product, what can you say about the angle between them?"
+answer.answer = "The angle is less than 90 degrees (they share some direction)."
+context = "Positive dot product means cos(theta) > 0, which happens when theta is between 0 and 90 degrees. The vectors point at least somewhat in the same direction."
+
+[[questions]]
+id = "e531ab1f-afc5-506d-a1a6-56a01296e24b"
+type = "ShortAnswer"
+prompt.prompt = """
+What does this print?
+
+```python
+import torch
+v = torch.tensor([3.0, 4.0])
+w = torch.tensor([4.0, -3.0])
+print(torch.dot(v, w).item())
+```
+"""
+answer.answer = "0.0"
+answer.alternatives = ["0", "zero"]
+context = "3*4 + 4*(-3) = 12 - 12 = 0. These two vectors are perpendicular. (Both have length 5; angle between them is 90°.)"
+
+[[questions]]
+id = "9cd01b95-f875-5a14-929e-7c306296b94a"
+type = "ShortAnswer"
+prompt.prompt = "Why is cosine similarity often used instead of raw dot product for measuring 'how similar are these two vectors'?"
+answer.answer = "Because cosine similarity divides out the magnitudes, so it isolates direction (alignment) without confounding it with how long the vectors are."
+context = "A long vector has a large dot product with anything, even things it isn't meaningfully aligned with. Cosine similarity normalizes that out, giving a value in [-1, 1] that's purely about direction."

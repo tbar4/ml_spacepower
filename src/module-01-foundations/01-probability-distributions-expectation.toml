@@ -1,0 +1,65 @@
+[[questions]]
+id = "08448490-57d2-544c-8653-0bad355b57da"
+type = "MultipleChoice"
+prompt.prompt = "What does the expectation of a random variable represent?"
+prompt.distractors = [
+  "The most likely value the variable will take",
+  "The maximum possible value the variable can take",
+  "The midpoint between the smallest and largest possible values",
+]
+answer.answer = "The long-run average value if you sampled the variable many times"
+context = "The most likely outcome (the mode) and the expectation are different things. A fair die's expectation is 3.5, which is not even a possible outcome. Expectation is a summary statistic, not a prediction of any single outcome."
+
+[[questions]]
+id = "3dc6cc08-1f1b-5f5a-be4d-c8a0cf5a5492"
+type = "MultipleChoice"
+prompt.prompt = "A satellite mission has these outcomes: success (prob 0.6, value 100), partial success (prob 0.3, value 50), failure (prob 0.1, value 0). What is the expected value?"
+prompt.distractors = [
+  "100",
+  "50",
+  "60",
+]
+answer.answer = "75"
+context = "0.6 * 100 + 0.3 * 50 + 0.1 * 0 = 60 + 15 + 0 = 75. Each value gets weighted by its probability, and the weighted values are summed."
+
+[[questions]]
+id = "1df3a36b-610d-5a93-b26f-34be1bbb9bac"
+type = "MultipleChoice"
+prompt.prompt = "Which statement about expectation is true?"
+prompt.distractors = [
+  "The expectation is always one of the values the random variable can actually take",
+  "The expectation equals the most likely outcome for any distribution",
+  "The expectation only exists for discrete distributions",
+]
+answer.answer = "The expectation can be a value the random variable will never actually take (like 3.5 for a die roll)"
+context = "Expectation is a weighted average, not a prediction. It's perfectly normal for it to land between possible outcomes or to fall on a value with low or even zero probability."
+
+[[questions]]
+id = "c39bf158-dc4a-51ba-8a99-39f651f211a9"
+type = "ShortAnswer"
+prompt.prompt = "In one sentence, why does the formula for E[X] multiply each value by its probability before summing?"
+answer.answer = "Because expectation is a weighted average where each value's weight is its probability."
+context = "Higher-probability outcomes contribute more to the average; lower-probability outcomes contribute less. Since the probabilities sum to 1, the weights are properly normalized and the result is a true weighted mean."
+
+[[questions]]
+id = "07dd29ab-326f-508a-aa97-a254c2921710"
+type = "ShortAnswer"
+prompt.prompt = """
+What does this print?
+
+```python
+import torch
+probs  = torch.tensor([0.5, 0.3, 0.2])
+values = torch.tensor([10.0, 20.0, 30.0])
+print((probs * values).sum().item())
+```
+"""
+answer.answer = "17.0"
+context = "0.5*10 + 0.3*20 + 0.2*30 = 5 + 6 + 6 = 17.0. This is exactly the formula for E[X] transliterated into numpy/pytorch elementwise operations followed by a sum."
+
+[[questions]]
+id = "a7252a34-fb83-5e7e-b681-b24a2c6c0c4a"
+type = "ShortAnswer"
+prompt.prompt = "What does variance measure, in one sentence?"
+answer.answer = "How spread out a distribution is around its mean."
+context = "High variance means samples typically land far from the mean (unpredictable); low variance means they cluster tightly around the mean. Variance shows up later as the reason Monte Carlo estimators have noise."

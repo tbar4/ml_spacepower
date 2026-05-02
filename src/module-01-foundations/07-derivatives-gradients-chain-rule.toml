@@ -1,0 +1,67 @@
+[[questions]]
+id = "06b22be4-5c4c-5591-8e0b-16512a9ffc45"
+type = "MultipleChoice"
+prompt.prompt = "What does the gradient of a scalar function f(x) tell us, where x is a vector?"
+prompt.distractors = [
+  "The minimum value the function can take",
+  "The current value of the function",
+  "Whether the function is convex",
+]
+answer.answer = "The direction in input space that increases f most steeply"
+context = "We move in the *opposite* direction of the gradient during training, which is why it's called gradient *descent*. The magnitude of the gradient tells you how steep that direction is."
+
+[[questions]]
+id = "f41be303-2a04-596b-978e-dba1f582b30f"
+type = "MultipleChoice"
+prompt.prompt = "If y = f(g(x)), what does the chain rule say dy/dx equals?"
+prompt.distractors = [
+  "f'(x) * g'(x)",
+  "f'(g'(x))",
+  "f(x) * g'(x)",
+]
+answer.answer = "f'(g(x)) * g'(x)"
+context = "The chain rule says: rate of change of y per unit change in x equals (rate of change of y per unit change in u) times (rate of change of u per unit change in x), where u = g(x)."
+
+[[questions]]
+id = "3e5acde3-69c5-5f15-97e8-78e1a90ed15f"
+type = "MultipleChoice"
+prompt.prompt = "Why do we use a learning rate instead of taking a step equal to the full gradient?"
+prompt.distractors = [
+  "Because the gradient sometimes points in the wrong direction",
+  "Because PyTorch requires it",
+  "Because the gradient is always too small to make a useful step",
+]
+answer.answer = "Because the gradient is only a local linear approximation, so a full step can overshoot"
+context = "Far from where you computed the gradient, the function may curve away. Taking a step proportional to (but smaller than) the gradient keeps you in the regime where the linear approximation is accurate enough to make progress."
+
+[[questions]]
+id = "08358445-30fe-5cd7-8e7f-7ba7cbcf9ca5"
+type = "ShortAnswer"
+prompt.prompt = "What is backpropagation, in one sentence?"
+answer.answer = "The chain rule applied systematically to a computational graph, computing gradients of an output with respect to all inputs in a single backward pass."
+context = "Forward pass builds the graph and computes the output. Backward pass walks the graph in reverse, multiplying local derivatives at each node according to the chain rule. PyTorch's autograd is one implementation."
+
+[[questions]]
+id = "7c62452b-a491-5d45-977e-fcb4edc9c3fb"
+type = "ShortAnswer"
+prompt.prompt = """
+What is `x.grad.item()` after this code?
+
+```python
+import torch
+x = torch.tensor(2.0, requires_grad=True)
+y = x ** 3
+y.backward()
+print(x.grad.item())
+```
+"""
+answer.answer = "12.0"
+answer.alternatives = ["12"]
+context = "dy/dx = 3x^2. At x=2, that's 3 * 4 = 12. Autograd computes this from the chain rule applied to the operations PyTorch recorded."
+
+[[questions]]
+id = "e3741953-d18a-55bd-b60f-c84607aea7c2"
+type = "ShortAnswer"
+prompt.prompt = "Why must we call `x.grad.zero_()` between training iterations in a manual training loop?"
+answer.answer = "Because PyTorch accumulates gradients by default (it adds the new gradient to whatever is already in `.grad`), so without zeroing you'd be using a sum of past gradients."
+context = "Gradient accumulation is useful for techniques like simulating large batches across multiple forward passes, but in a normal training loop you want a fresh gradient each step. Optimizer classes (torch.optim.SGD, etc.) call `.zero_grad()` for you."
