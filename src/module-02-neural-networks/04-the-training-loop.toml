@@ -1,0 +1,62 @@
+[[questions]]
+id = "m02-l04-q01"
+type = "MultipleChoice"
+prompt.prompt = "In the training loop, why must optimizer.zero_grad() be called before loss.backward()?"
+prompt.distractors = [
+  "To reset the network weights to their initial values",
+  "To clear the training data from memory",
+  "PyTorch requires it for numerical stability",
+]
+answer.answer = "Because PyTorch accumulates gradients by default, so without zeroing, the gradient for this step would be added to gradients from the previous step"
+context = "If you do not zero the gradients, each call to .backward() adds to whatever was already in .grad. After two steps, the gradient would be the sum of two steps' worth of gradients, which is wrong. Adam and SGD both use the gradient from only the current step."
+
+[[questions]]
+id = "m02-l04-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is overfitting, and how do you detect it?"
+prompt.distractors = [
+  "The loss never decreasing; you detect it when loss stays constant",
+  "The network having too many parameters; you detect it by counting them",
+  "Gradients becoming zero; you detect it by checking .grad values",
+]
+answer.answer = "The training loss keeps decreasing while the validation loss plateaus or increases; you detect it by monitoring both losses and looking for them to diverge"
+context = "Overfitting means the network is memorizing training examples rather than learning generalizable patterns. The training loss looks great but the network performs poorly on new data. Monitoring a held-out validation set lets you see this divergence."
+
+[[questions]]
+id = "m02-l04-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why should you use model.eval() and torch.no_grad() when computing validation loss?"
+prompt.distractors = [
+  "Because evaluation uses a different loss function than training",
+  "Because validation data must be processed one example at a time",
+  "Because the model's weights should not change during evaluation",
+]
+answer.answer = "model.eval() disables training-specific behaviors (like Dropout), and torch.no_grad() skips building the computational graph since no .backward() call is needed, saving memory and computation"
+context = "Both are important but for different reasons. model.eval() changes the behavior of certain layers. torch.no_grad() is a performance optimization: if you are not going to call .backward(), there is no reason to build and store the computational graph."
+
+[[questions]]
+id = "m02-l04-q04"
+type = "ShortAnswer"
+prompt.prompt = "You have 5,000 training examples and use batch_size=50. How many optimizer steps occur per epoch?"
+answer.answer = "100"
+answer.alternatives = ["100 steps", "100 updates"]
+context = "5000 / 50 = 100 batches per epoch = 100 optimizer steps. Each step processes one batch, computes the loss, backpropagates, and updates the weights."
+
+[[questions]]
+id = "m02-l04-q05"
+type = "MultipleChoice"
+prompt.prompt = "You are training a network and notice: epoch 10 train_loss=0.05, val_loss=0.06; epoch 20 train_loss=0.02, val_loss=0.08; epoch 30 train_loss=0.01, val_loss=0.12. What is happening and what should you do?"
+prompt.distractors = [
+  "The network is underfitting; increase the learning rate",
+  "The network is learning correctly; continue training until epoch 100",
+  "The loss function is incorrect; switch from MSE to cross-entropy",
+]
+answer.answer = "The network is overfitting; stop training and use the checkpoint from around epoch 10-15 when validation loss was lowest"
+context = "After epoch 10, training loss kept dropping (from 0.05 to 0.01) but validation loss started increasing (from 0.06 to 0.12). This is the classic overfitting signature. The model from around epoch 10-15 would generalize better to new data."
+
+[[questions]]
+id = "m02-l04-q06"
+type = "ShortAnswer"
+prompt.prompt = "What does Adam do differently from basic SGD?"
+answer.answer = "Adam adapts the learning rate per parameter using running averages of gradients and squared gradients, giving larger steps to parameters with consistent gradients and smaller steps to parameters with noisy gradients."
+context = "SGD updates every parameter with the same learning rate: param -= lr * grad. Adam maintains per-parameter momentum estimates and scales each update, which typically converges faster and requires less learning-rate tuning."

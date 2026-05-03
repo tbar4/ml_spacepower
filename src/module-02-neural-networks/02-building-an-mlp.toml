@@ -1,0 +1,57 @@
+[[questions]]
+id = "m02-l02-q01"
+type = "MultipleChoice"
+prompt.prompt = "You define nn.Linear(6, 128). What are the shapes of the weight matrix and bias vector it contains?"
+prompt.distractors = [
+  "Weight: (6, 128), Bias: (6,)",
+  "Weight: (6, 6), Bias: (128,)",
+  "Weight: (128, 128), Bias: (6,)",
+]
+answer.answer = "Weight: (128, 6), Bias: (128,)"
+context = "PyTorch stores weights as (out_features, in_features): 128 rows (one per output neuron), 6 columns (one per input feature). The bias has one entry per output neuron, so shape (128,)."
+
+[[questions]]
+id = "m02-l02-q02"
+type = "MultipleChoice"
+prompt.prompt = "A network is defined as: Linear(4, 8) -> ReLU -> Linear(8, 3) -> Softmax. A batch of 16 inputs arrives with shape (16, 4). What is the output shape?"
+prompt.distractors = [
+  "(16, 8)",
+  "(4, 3)",
+  "(3,)",
+]
+answer.answer = "(16, 3)"
+context = "The batch dimension (16) flows through unchanged. The feature dimension transforms: 4 -> 8 (after first Linear), 8 -> 8 (ReLU does not change shape), 8 -> 3 (after second Linear), 3 -> 3 (Softmax does not change shape). Final shape: (16, 3)."
+
+[[questions]]
+id = "m02-l02-q03"
+type = "ShortAnswer"
+prompt.prompt = "A network has layers: Linear(10, 64), ReLU, Linear(64, 64), ReLU, Linear(64, 1). How many total trainable parameters does it have? Show your calculation."
+answer.answer = "4929"
+answer.alternatives = ["4,929"]
+context = "Layer 1: (64 × 10) + 64 = 640 + 64 = 704. Layer 2: (64 × 64) + 64 = 4096 + 64 = 4160. Layer 3: (1 × 64) + 1 = 64 + 1 = 65. Total: 704 + 4160 + 65 = 4929."
+
+[[questions]]
+id = "m02-l02-q04"
+type = "MultipleChoice"
+prompt.prompt = "What is the difference between defining a network with nn.Sequential versus defining it as a class inheriting from nn.Module?"
+prompt.distractors = [
+  "nn.Sequential networks cannot be trained; nn.Module ones can",
+  "nn.Sequential is faster to run; nn.Module is for prototyping only",
+  "They are identical; one is just older syntax",
+]
+answer.answer = "nn.Sequential is a convenience for simple stacks; nn.Module subclasses support custom forward logic, branches, skip connections, and reusable components"
+context = "Both produce trainable networks with tracked parameters. nn.Sequential is a shortcut for the common pattern of applying layers in order. For anything more complex (like residual connections or networks with multiple inputs/outputs), you write a class with a custom forward() method."
+
+[[questions]]
+id = "m02-l02-q05"
+type = "ShortAnswer"
+prompt.prompt = "In the nn.Module class pattern, what is the purpose of calling super().__init__() in __init__?"
+answer.answer = "It initializes the parent nn.Module class, which sets up the internal machinery for tracking parameters, submodules, and enabling features like .parameters() and .to(device)."
+context = "Without super().__init__(), PyTorch cannot track the layers you define as attributes. Parameter tracking, gradient computation, and device movement all depend on the nn.Module infrastructure being initialized first."
+
+[[questions]]
+id = "m02-l02-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why do we process data in batches during training rather than one example at a time?"
+answer.answer = "Batching uses matrix operations that modern hardware (GPUs) can run in parallel, making computation much faster than a loop over individual examples."
+context = "Processing a (32, 4) batch with a Linear layer does one matrix multiplication. Processing 32 individual (4,) vectors would require 32 separate matrix multiplications. The single batched operation is typically 10-100x faster on modern hardware."

@@ -1,0 +1,58 @@
+[[questions]]
+id = "m02-l01-q01"
+type = "MultipleChoice"
+prompt.prompt = "Why is a nonlinear activation function necessary between layers in a neural network?"
+prompt.distractors = [
+  "To prevent the weights from growing too large",
+  "To make the network faster to compute",
+  "To ensure outputs are always between 0 and 1",
+]
+answer.answer = "Without nonlinearity, any stack of linear layers reduces to a single linear layer, which cannot approximate curved or threshold-based functions"
+context = "A composition of linear functions is still linear: W₂(W₁x + b₁) + b₂ = W'x + b'. No matter how many layers you add without activation functions, you gain no expressive power beyond a single linear map."
+
+[[questions]]
+id = "m02-l01-q02"
+type = "MultipleChoice"
+prompt.prompt = "What does ReLU(x) return when x = -3.5?"
+prompt.distractors = [
+  "-3.5",
+  "3.5",
+  "-1.0",
+]
+answer.answer = "0.0"
+context = "ReLU is max(0, x). For any negative input, it returns 0. The neuron is 'inactive': it blocks the signal rather than passing it through."
+
+[[questions]]
+id = "m02-l01-q03"
+type = "MultipleChoice"
+prompt.prompt = "You have a policy network that should output action probabilities for 5 actions. Which activation should you use on the final layer?"
+prompt.distractors = [
+  "ReLU, because probabilities must be non-negative",
+  "tanh, because probabilities must be bounded",
+  "No activation; just use the raw linear outputs",
+]
+answer.answer = "Softmax, because it converts any real-valued logits into a valid probability distribution that sums to 1"
+context = "ReLU would zero out negative logits and break the normalization. Tanh outputs are in (-1, 1) and do not sum to 1. Raw linear outputs can be any values and do not form a valid distribution. Softmax is the standard choice for turning logits into action probabilities."
+
+[[questions]]
+id = "m02-l01-q04"
+type = "ShortAnswer"
+prompt.prompt = "A softmax input (logits) is [0.0, 0.0, 0.0, 0.0]. What is the output probability distribution? Explain why in one sentence."
+answer.answer = "[0.25, 0.25, 0.25, 0.25]"
+answer.alternatives = ["uniform distribution, each 0.25", "equal probability 0.25 for each", "uniform"]
+context = "When all logits are equal, all exponentials are equal (e^0 = 1 for all), so each probability is 1/4 = 0.25. This makes sense: with no evidence to distinguish actions, the policy has maximum entropy (is completely uncertain)."
+
+[[questions]]
+id = "m02-l01-q05"
+type = "ShortAnswer"
+prompt.prompt = "In one sentence: why does ReLU help with the vanishing gradient problem compared to tanh?"
+answer.answer = "ReLU's gradient is 1 for positive inputs (instead of a small fraction), so gradients do not shrink as they backpropagate through many layers."
+context = "Tanh saturates (gradient ≈ 0) for large positive or negative inputs, causing gradients to nearly vanish in deep networks. ReLU's gradient is exactly 1 for any positive input, keeping gradient magnitudes stable across many layers."
+
+[[questions]]
+id = "m02-l01-q06"
+type = "ShortAnswer"
+prompt.prompt = "A layer has output values [-2.1, 0.3, 1.5, -0.8, 2.2]. After applying ReLU, what are the output values?"
+answer.answer = "[0.0, 0.3, 1.5, 0.0, 2.2]"
+answer.alternatives = ["0.0, 0.3, 1.5, 0.0, 2.2", "[0, 0.3, 1.5, 0, 2.2]"]
+context = "ReLU zeroes out the two negative values (-2.1 and -0.8) and passes through the three positive values unchanged. Three neurons are inactive for this input; two are active."

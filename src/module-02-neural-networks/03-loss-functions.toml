@@ -1,0 +1,62 @@
+[[questions]]
+id = "m02-l03-q01"
+type = "MultipleChoice"
+prompt.prompt = "Your network predicts a continuous conjunction risk score between 0 and 1. Which loss function is the natural choice?"
+prompt.distractors = [
+  "Cross-entropy loss, because the output is bounded between 0 and 1",
+  "Softmax loss, because the output needs to be normalized",
+  "No loss needed; use the raw output directly",
+]
+answer.answer = "Mean squared error, because we are predicting a continuous value and MSE measures how far predictions are from targets"
+context = "Cross-entropy is for categorical predictions (probability distributions over discrete classes). MSE is for regression: predicting a continuous number. Being bounded between 0 and 1 does not make something categorical."
+
+[[questions]]
+id = "m02-l03-q02"
+type = "ShortAnswer"
+prompt.prompt = "A network predicts risk scores [0.8, 0.3, 0.6] for three examples with true scores [0.9, 0.2, 0.7]. What is the MSE? Show your work."
+answer.answer = "0.01"
+answer.alternatives = ["1/100", "0.010"]
+context = "Squared errors: (0.8-0.9)² = 0.01, (0.3-0.2)² = 0.01, (0.6-0.7)² = 0.01. Mean: (0.01 + 0.01 + 0.01) / 3 = 0.01."
+
+[[questions]]
+id = "m02-l03-q03"
+type = "MultipleChoice"
+prompt.prompt = "You pass logits through softmax and get probabilities [0.05, 0.90, 0.05] for classes [low, medium, high]. The true class is medium. What is the cross-entropy loss?"
+prompt.distractors = [
+  "0.90",
+  "0.10",
+  "0.05",
+]
+answer.answer = "Approximately 0.105 (= -log(0.90))"
+context = "Cross-entropy loss for a one-hot true distribution is just -log(P(true class)). The network assigned probability 0.90 to the correct class (medium), so loss = -log(0.90) ≈ 0.105. The probabilities for the wrong classes do not contribute."
+
+[[questions]]
+id = "m02-l03-q04"
+type = "MultipleChoice"
+prompt.prompt = "Why does PyTorch's F.cross_entropy() take raw logits rather than softmax probabilities as input?"
+prompt.distractors = [
+  "It is a bug that was never fixed",
+  "Because cross-entropy is defined on logits, not probabilities",
+  "Because you should apply log_softmax yourself first",
+]
+answer.answer = "Combining softmax and log internally is more numerically stable than applying them separately"
+context = "The log-sum-exp trick can be applied when softmax and log are fused, avoiding overflow/underflow from large exponentials. If you apply softmax first, you lose this numerical stability. Always pass raw logits to F.cross_entropy."
+
+[[questions]]
+id = "m02-l03-q05"
+type = "ShortAnswer"
+prompt.prompt = "Why does cross-entropy loss grow very large when the network assigns very low probability to the correct class?"
+answer.answer = "Because -log(p) grows rapidly as p approaches 0: the logarithm of a very small number is a very large negative number, so the negation gives a very large positive loss."
+context = "When p = 0.01, loss = -log(0.01) ≈ 4.6. When p = 0.001, loss ≈ 6.9. This rapid growth provides a strong gradient signal when predictions are badly wrong, pushing the network to quickly fix confident wrong predictions."
+
+[[questions]]
+id = "m02-l03-q06"
+type = "MultipleChoice"
+prompt.prompt = "You are training a network to approximate Q-values (expected cumulative rewards) in a DQN. The Q-values are continuous numbers, possibly negative. Which loss function do you use?"
+prompt.distractors = [
+  "Cross-entropy, because you want the Q-values to form a probability distribution",
+  "Softmax loss, to normalize the Q-values",
+  "No loss; Q-values are computed analytically",
+]
+answer.answer = "MSE, because Q-values are continuous regression targets, not probability distributions"
+context = "Q-values are just real numbers (possibly negative, possibly greater than 1). The network is doing regression: predicting the Q-value for each state-action pair. MSE is the standard choice. Cross-entropy requires a probability distribution target, which Q-values are not."
