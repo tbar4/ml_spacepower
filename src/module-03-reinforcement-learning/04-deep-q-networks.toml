@@ -1,0 +1,66 @@
+[[questions]]
+id = "m03-l04-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is the main change going from tabular Q-learning to DQN?"
+prompt.distractors = [
+  "DQN uses a different Bellman equation",
+  "DQN does not require exploration",
+  "DQN works only for continuous action spaces",
+]
+answer.answer = "Q values are computed by a neural network that takes the state as input and outputs Q values for all actions, instead of being stored in a table"
+context = "The Bellman equation, the TD error, the use of max over next-state values, and the need for exploration are all unchanged. Only the storage of Q (table → neural network) and the update mechanism (assignment → gradient descent) change."
+
+[[questions]]
+id = "m03-l04-q02"
+type = "MultipleChoice"
+prompt.prompt = "Why does DQN use a replay buffer instead of training on the most recent transition?"
+prompt.distractors = [
+  "To save memory by not processing every transition",
+  "Because the Bellman equation requires multiple samples",
+  "To make the algorithm parallel",
+]
+answer.answer = "Sequential transitions are highly correlated, which violates the i.i.d. assumption of supervised learning; sampling from a buffer breaks the correlation"
+context = "Standard gradient descent assumes training samples are independent. Consecutive RL transitions are not independent: state at t+1 is fully determined by state at t. Random sampling from a large buffer approximates i.i.d. samples and stabilizes training."
+
+[[questions]]
+id = "m03-l04-q03"
+type = "MultipleChoice"
+prompt.prompt = "What problem does the target network solve?"
+prompt.distractors = [
+  "It allows the network to handle continuous actions",
+  "It speeds up gradient computation",
+  "It eliminates the need for exploration",
+]
+answer.answer = "Without it, the TD target depends on the same network being updated, making the target move every time we take a gradient step (chasing a moving goal)"
+context = "Computing the TD target with the same network you are updating creates instability: each gradient step changes the network, which changes the target, which changes the loss surface. A frozen target network gives a stable goal to train against, then is periodically synced."
+
+[[questions]]
+id = "m03-l04-q04"
+type = "ShortAnswer"
+prompt.prompt = "In the DQN loss formula, why do we wrap the target computation in `with torch.no_grad()`?"
+answer.answer = "Because we don't want gradients to flow back through the target. The target is meant to be a stable supervisory signal; we are training the network to match the target, not training the target to match the network."
+context = "If gradients flowed through the target, the optimizer would try to make the target match the prediction (in addition to making the prediction match the target), which is the wrong objective. torch.no_grad() detaches the target from the computational graph."
+
+[[questions]]
+id = "m03-l04-q05"
+type = "MultipleChoice"
+prompt.prompt = "When the next state of a transition is terminal (done = True), how should the TD target be computed?"
+prompt.distractors = [
+  "target = γ * max Q(next_state, a')",
+  "target = max Q(next_state, a')",
+  "target = 0",
+]
+answer.answer = "target = reward (no future-value term)"
+context = "When the episode ends, there are no future rewards. The Bellman equation reduces to just the immediate reward. In code, this is often implemented as target = reward + γ * max_q * (1 - done), where done = 1 zeroes out the bootstrap term."
+
+[[questions]]
+id = "m03-l04-q06"
+type = "MultipleChoice"
+prompt.prompt = "Why is DQN unsuitable for continuous action spaces?"
+prompt.distractors = [
+  "Neural networks cannot handle continuous outputs",
+  "The Bellman equation requires discrete actions",
+  "Replay buffers do not work with continuous actions",
+]
+answer.answer = "DQN's update requires computing max over actions, which is straightforward for discrete actions (just look at all Q values) but hard for continuous actions"
+context = "With discrete actions, max is just argmax over a small list. With continuous actions, max requires solving an optimization problem in action space at every step. Methods like DDPG and SAC handle this by learning a separate policy network that approximates the argmax."

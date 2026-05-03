@@ -1,0 +1,61 @@
+[[questions]]
+id = "m03-l06-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does the actor in actor-critic do?"
+prompt.distractors = [
+  "Estimates the value V(s) of states",
+  "Stores past transitions in a replay buffer",
+  "Computes the discount factor γ",
+]
+answer.answer = "Outputs a probability distribution over actions (the policy)"
+context = "The actor IS the policy network. It is trained using policy gradient with the critic providing a baseline. The actor is what selects actions during interaction with the environment."
+
+[[questions]]
+id = "m03-l06-q02"
+type = "MultipleChoice"
+prompt.prompt = "What does the critic in actor-critic do?"
+prompt.distractors = [
+  "Provides exploration noise to the actor",
+  "Selects which actions the agent will try",
+  "Stores the policy parameters",
+]
+answer.answer = "Estimates V(s), the expected return from each state, used as a baseline for the policy gradient"
+context = "The critic is a value network. It is trained using TD learning (similar to DQN). Its job is to estimate V(s); these estimates are subtracted from returns to compute advantages, which reduces the variance of policy gradient updates."
+
+[[questions]]
+id = "m03-l06-q03"
+type = "MultipleChoice"
+prompt.prompt = "What is the advantage A(s, a)?"
+prompt.distractors = [
+  "The probability that action a will be optimal",
+  "The number of times action a has been tried in state s",
+  "The reward for taking action a in state s",
+]
+answer.answer = "G_t - V(s_t): how much better the actual return was than the average expected return from this state"
+context = "If A is positive, the action led to better-than-expected outcomes (good, increase its probability). If A is negative, worse than expected (decrease its probability). Subtracting V(s) from G_t does not bias the policy gradient (V(s) does not depend on the action) but dramatically reduces variance."
+
+[[questions]]
+id = "m03-l06-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why is the advantage typically computed as `returns - values.detach()` rather than `returns - values` in PyTorch?"
+answer.answer = "To prevent gradients from flowing through the critic when computing the actor's policy gradient. The critic should be updated only by its own loss (MSE between V and returns), not by the actor's gradient signal."
+context = "If you don't detach, the policy gradient flows back through V(s_t), incorrectly modifying the critic to make advantages look better. Detaching breaks the computational graph at the critic's output, isolating the actor's gradient from the critic."
+
+[[questions]]
+id = "m03-l06-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why include an entropy bonus in the actor-critic loss?"
+prompt.distractors = [
+  "To make the loss positive for numerical stability",
+  "To regularize the value function",
+  "To penalize incorrect predictions more harshly",
+]
+answer.answer = "To encourage exploration by rewarding policies that maintain randomness; without it, the policy collapses to a single action too quickly"
+context = "Once a policy commits to one action, it stops exploring alternatives that might be better. The entropy bonus (rewarding higher-entropy distributions) keeps the policy stochastic during training, allowing continued exploration. The coefficient is tuned per problem."
+
+[[questions]]
+id = "m03-l06-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why do many actor-critic implementations share lower layers between the actor and critic networks?"
+answer.answer = "Computational efficiency (one forward pass produces both outputs) and representation learning (the shared layers learn features useful for both predicting value and selecting actions)."
+context = "The states relevant to estimating value are typically also the states relevant to choosing actions. Sharing layers means both heads benefit from any improvement in the shared feature representation. Some research variants use fully separate networks; both approaches work."

@@ -1,0 +1,62 @@
+[[questions]]
+id = "m03-l03-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is the TD error in Q-learning?"
+prompt.distractors = [
+  "The reward received in the current step",
+  "The discount factor multiplied by the next-state value",
+  "The total return at the end of the episode",
+]
+answer.answer = "The difference between the Bellman target (r + γ max_a' Q(s', a')) and the current Q estimate"
+context = "The TD error tells us how much our current estimate is off from what the Bellman equation says it should be (according to this one sample). The Q value is updated by moving a small fraction of the way toward closing this error."
+
+[[questions]]
+id = "m03-l03-q02"
+type = "ShortAnswer"
+prompt.prompt = "Compute the Q-learning update for: Q(s,a) = 2.0, reward = 1.0, max_a' Q(s', a') = 5.0, γ = 0.9, α = 0.1. What is the new Q(s,a)?"
+answer.answer = "2.35"
+answer.alternatives = ["2.350"]
+context = "Target = 1.0 + 0.9 * 5.0 = 5.5. TD error = 5.5 - 2.0 = 3.5. Update = 0.1 * 3.5 = 0.35. New Q = 2.0 + 0.35 = 2.35."
+
+[[questions]]
+id = "m03-l03-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why is exploration necessary in Q-learning?"
+prompt.distractors = [
+  "Without exploration, the algorithm cannot compute Q values",
+  "Random actions improve numerical stability",
+  "Exploration is required by the Bellman equation",
+]
+answer.answer = "Without exploration, the agent might lock in on a suboptimal action whose Q value happens to be highest early in training, never trying alternatives that might be better"
+context = "Pure greedy action selection means the agent only learns about actions it has already chosen. If an action has low Q early due to bad luck or insufficient samples, the agent never tries it again. Exploration ensures all actions get sampled enough for their true values to be estimated."
+
+[[questions]]
+id = "m03-l03-q04"
+type = "MultipleChoice"
+prompt.prompt = "What does it mean that Q-learning is 'off-policy'?"
+prompt.distractors = [
+  "The agent never follows the policy it is learning",
+  "Q-learning cannot be used with stochastic policies",
+  "The policy and value function are computed separately",
+]
+answer.answer = "Q-learning learns about the optimal policy regardless of what action the agent actually takes, because the update uses max over next-state Q values rather than the policy's actual choice"
+context = "On-policy methods like SARSA update toward the action the policy actually selects. Off-policy methods like Q-learning update toward the action the optimal policy would select (the max). This means Q-learning can learn the optimal policy while exploring with a suboptimal policy."
+
+[[questions]]
+id = "m03-l03-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why does tabular Q-learning not scale to large problems like chess or continuous state spaces?"
+prompt.distractors = [
+  "The Bellman equation does not work for large problems",
+  "The learning rate cannot be tuned for large state spaces",
+  "Exploration becomes impossible with too many actions",
+]
+answer.answer = "It requires one table entry per state-action pair, which is infeasible for large or continuous state spaces"
+context = "Chess has roughly 10^47 states. Even storing one bit per state-action pair would require more memory than exists in the observable universe. For continuous state spaces (like real-valued sensor readings), the state space is literally infinite. Function approximation (Module 3 lesson 4) is the solution."
+
+[[questions]]
+id = "m03-l03-q06"
+type = "ShortAnswer"
+prompt.prompt = "What is the role of the learning rate α in Q-learning, and what happens if it is too high or too low?"
+answer.answer = "α controls how much each update moves the Q estimate toward the new target. Too high causes oscillation (estimates jump around without converging); too low causes slow convergence."
+context = "A learning rate of 0.1 means we move 10% of the way toward each new target. With α = 1.0, we replace the old estimate entirely with each sample, which is too noisy. With α = 0.0001, we make tiny updates and need millions of episodes to converge."

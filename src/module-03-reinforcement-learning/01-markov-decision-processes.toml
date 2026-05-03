@@ -1,0 +1,61 @@
+[[questions]]
+id = "m03-l01-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does the Markov property require?"
+prompt.distractors = [
+  "That the action space be finite",
+  "That all transitions be deterministic",
+  "That the reward function be bounded",
+]
+answer.answer = "That the next state depends only on the current state and action, not on the history of how the agent reached the current state"
+context = "The Markov property is what makes the MDP framework tractable. If the future depends on the entire history, the state space effectively grows without bound. By demanding that the current state contain all relevant information, we make decision-making well-defined."
+
+[[questions]]
+id = "m03-l01-q02"
+type = "MultipleChoice"
+prompt.prompt = "An agent receives rewards of 2.0 immediately, 4.0 after one step, and 8.0 after two steps. With γ = 0.5, what is the discounted return?"
+prompt.distractors = [
+  "14.0",
+  "8.0",
+  "5.0",
+]
+answer.answer = "6.0"
+context = "Discounted return = 2.0 + 0.5 × 4.0 + 0.5² × 8.0 = 2.0 + 2.0 + 2.0 = 6.0. Each future reward is multiplied by γ raised to its number of steps in the future."
+
+[[questions]]
+id = "m03-l01-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why is a discount factor γ < 1 useful?"
+prompt.distractors = [
+  "It makes neural network training more stable",
+  "It is required by the Bellman equation",
+  "It increases the variance of value estimates",
+]
+answer.answer = "It ensures the total return is finite over infinite horizons, models uncertainty about distant futures, and incentivizes timely action"
+context = "All three reasons matter in practice. Mathematical: the geometric series 1 + γ + γ² + ... only converges when γ < 1. Practical: distant rewards are uncertain, so we discount them. Behavioral: with γ = 1, the agent has no preference between getting reward now versus later."
+
+[[questions]]
+id = "m03-l01-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is the difference between a deterministic policy and a stochastic policy?"
+answer.answer = "A deterministic policy maps each state to one specific action; a stochastic policy maps each state to a probability distribution over actions."
+context = "Stochastic policies are denoted π(a|s) and assign a probability to each possible action. Deterministic policies are denoted π(s) and just return one action. Stochastic policies are needed for exploration, for game-theoretic equilibria, and for some partially observable settings."
+
+[[questions]]
+id = "m03-l01-q05"
+type = "MultipleChoice"
+prompt.prompt = "In an MDP, what does P(s' | s, a) represent?"
+prompt.distractors = [
+  "The probability of receiving reward in state s' after taking action a from state s",
+  "The probability that action a is the optimal action in state s",
+  "The probability that state s' is the optimal next state",
+]
+answer.answer = "The probability of transitioning to state s' when taking action a from state s"
+context = "The transition function captures the dynamics of the environment. It encodes both the deterministic and stochastic effects of actions. In a deterministic environment, P(s' | s, a) is 1 for one specific s' and 0 for all others."
+
+[[questions]]
+id = "m03-l01-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does designing the reward function matter so much in RL?"
+answer.answer = "Because the agent will optimize whatever you reward; subtle mistakes in the reward function can lead to behaviors that maximize the literal reward but fail to achieve the intended goal."
+context = "This is sometimes called 'reward hacking' or 'specification gaming.' For example, rewarding 'time spent observing satellites' might cause the agent to point at one satellite forever. The reward function is the agent's true objective, regardless of what you intended."

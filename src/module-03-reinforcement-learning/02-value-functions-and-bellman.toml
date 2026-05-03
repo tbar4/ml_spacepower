@@ -1,0 +1,61 @@
+[[questions]]
+id = "m03-l02-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does V^π(s) represent?"
+prompt.distractors = [
+  "The reward received in state s",
+  "The probability of being in state s under policy π",
+  "The number of actions available in state s",
+]
+answer.answer = "The expected total discounted return when starting in state s and following policy π afterward"
+context = "V is a forward-looking quantity: it includes the immediate reward AND all future rewards (discounted) the agent will collect under the policy. It depends on both the state and the policy."
+
+[[questions]]
+id = "m03-l02-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is the key difference between V(s) and Q(s, a)?"
+prompt.distractors = [
+  "V is for stochastic policies; Q is for deterministic policies",
+  "V is computed exactly; Q is always estimated",
+  "V is for episodic problems; Q is for continuing problems",
+]
+answer.answer = "V tells you how good a state is (under some policy); Q tells you how good a specific action is in that state"
+context = "Q gives finer-grained information. If you know all Q values in a state, you can compute V by averaging over the policy's action distribution. Q is more useful for action selection because you can pick the action with the highest Q."
+
+[[questions]]
+id = "m03-l02-q03"
+type = "MultipleChoice"
+prompt.prompt = "The Bellman equation expresses the value of a state in terms of:"
+prompt.distractors = [
+  "The values of all states in the MDP",
+  "The discount factor only",
+  "The rewards received in past episodes",
+]
+answer.answer = "The immediate reward plus the discounted values of successor states"
+context = "The Bellman equation is the recursive relationship V(s) = E[R + γV(s')]. The value of a state is the expected immediate reward plus the discounted expected value of where you end up next."
+
+[[questions]]
+id = "m03-l02-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is the difference between V^π and V*?"
+answer.answer = "V^π is the value function under a specific policy π; V* is the value function under the optimal policy (the maximum value achievable across all policies)."
+context = "V^π evaluates a given policy. V* tells you the best possible value, regardless of policy. The Bellman equations differ: V^π averages over the policy's action distribution, V* takes the maximum over actions."
+
+[[questions]]
+id = "m03-l02-q05"
+type = "MultipleChoice"
+prompt.prompt = "Which equation must be solved to find Q*?"
+prompt.distractors = [
+  "Q*(s, a) = R(s, a) (just the immediate reward)",
+  "Q*(s, a) = γ Q*(s', a') (without rewards)",
+  "Q*(s, a) = sum over a' of π(a' | s') Q*(s', a')",
+]
+answer.answer = "Q*(s, a) = E[R(s, a, s') + γ max_a' Q*(s', a')]"
+context = "The Bellman optimality equation has the max over future actions because the optimal policy always takes the best action. The expectation handles the stochasticity in transitions and rewards."
+
+[[questions]]
+id = "m03-l02-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does value iteration require knowing the transition probabilities P(s'|s,a) and rewards R(s,a,s'), while Q-learning (next lesson) does not?"
+answer.answer = "Value iteration computes the expectation in the Bellman equation analytically by summing over all possible next states. Q-learning replaces this analytic expectation with samples from actual experience, so it does not need the model."
+context = "This is the model-based vs. model-free distinction. Value iteration is model-based: you must have a model of the dynamics. Q-learning is model-free: you learn from interaction. In real problems where the dynamics are unknown, model-free methods are essential."

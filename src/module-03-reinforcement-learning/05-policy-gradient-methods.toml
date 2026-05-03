@@ -1,0 +1,61 @@
+[[questions]]
+id = "m03-l05-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is the fundamental difference between value-based methods (like Q-learning) and policy gradient methods (like REINFORCE)?"
+prompt.distractors = [
+  "Value-based methods are deterministic; policy gradient methods are stochastic",
+  "Value-based methods use neural networks; policy gradient methods do not",
+  "Value-based methods optimize the policy directly; policy gradient methods do not",
+]
+answer.answer = "Value-based methods learn a value function and derive a policy from it; policy gradient methods learn the policy directly"
+context = "In Q-learning, the policy is implicit (greedy w.r.t. Q). In REINFORCE, the policy IS the network being trained. This difference has consequences for what kinds of policies you can represent (stochastic, continuous-action, etc.) and how training proceeds."
+
+[[questions]]
+id = "m03-l05-q02"
+type = "MultipleChoice"
+prompt.prompt = "In the REINFORCE update, why is the log-probability of the action multiplied by the return?"
+prompt.distractors = [
+  "To convert log-probabilities back into probabilities",
+  "To make the gradient numerically stable",
+  "Because the Bellman equation requires this product",
+]
+answer.answer = "To make the gradient increase the probability of actions that led to high returns and decrease the probability of actions that led to low returns"
+context = "The product G_t * ∇log π(a_t|s_t) is the policy gradient. Multiplying by G_t weights the gradient by how good the trajectory was. Actions in good trajectories get reinforced; actions in bad trajectories get discouraged."
+
+[[questions]]
+id = "m03-l05-q03"
+type = "ShortAnswer"
+prompt.prompt = "Why does the REINFORCE loss in PyTorch have a negative sign: loss = -(log_probs * returns).sum()?"
+answer.answer = "Because PyTorch optimizers do gradient descent (minimization), but we want to do gradient ascent on the return (maximization). The negative sign flips the sign so descent on the negated objective is the same as ascent on the original."
+context = "If we want to maximize J(θ), one option is to compute ∇J and step θ in the positive direction. Another is to define L = -J and minimize L using standard descent. The two are equivalent. The negative sign in the loss formula does this conversion."
+
+[[questions]]
+id = "m03-l05-q04"
+type = "MultipleChoice"
+prompt.prompt = "Why does REINFORCE typically have high variance?"
+prompt.distractors = [
+  "Because neural networks introduce randomness",
+  "Because the discount factor is too small",
+  "Because the action space is finite",
+]
+answer.answer = "Because returns G_t can vary dramatically across episodes (chance, environment stochasticity, policy randomness), and the gradient is scaled by these returns"
+context = "One episode might give G = 100, the next G = -50. Both gradient updates use these G values to weight the policy update. The result is a noisy signal that requires many samples to average out."
+
+[[questions]]
+id = "m03-l05-q05"
+type = "MultipleChoice"
+prompt.prompt = "What is a baseline in policy gradient methods, and why does it help?"
+prompt.distractors = [
+  "A reward target that the policy must achieve before training begins",
+  "A minimum probability that prevents actions from being totally ignored",
+  "A regularization term added to the loss",
+]
+answer.answer = "A function (often the value V(s)) subtracted from G_t before computing the policy gradient; it does not change the expected gradient but reduces variance"
+context = "By subtracting V(s_t) from G_t, we replace the absolute return with the 'advantage' (how much better was this trajectory than expected). The variance of advantages is much lower than the variance of raw returns, which makes learning faster."
+
+[[questions]]
+id = "m03-l05-q06"
+type = "ShortAnswer"
+prompt.prompt = "Name one situation where policy gradient methods are preferred over value-based methods."
+answer.answer = "Continuous action spaces (where max over actions in DQN is intractable), or any time you need a genuinely stochastic policy."
+context = "Other situations: when you need to combine policy learning with a planning algorithm (AlphaZero), when the optimal policy is mixed (game theory), or when you want to optimize the policy directly under some constraint."
