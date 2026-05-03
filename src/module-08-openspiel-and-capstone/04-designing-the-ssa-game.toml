@@ -1,0 +1,61 @@
+[[questions]]
+id = "m08-l04-q01"
+type = "MultipleChoice"
+prompt.prompt = "Why is the capstone game a single-shot game (one decision per player) rather than a multi-step game?"
+prompt.distractors = [
+  "Multi-step games cannot be solved with CFR",
+  "Multi-step games require neural networks",
+  "Multi-step games are not relevant to SSA",
+]
+answer.answer = "Vanilla CFR scales poorly with game length, and the strategic structure (mixed strategies, hidden information) is preserved in the single-shot version"
+context = "A single-shot version isolates the game-theoretic structure from the temporal complexity. Multi-step games are absolutely solvable but typically require MCCFR or deep CFR. The capstone implements both, so adding multi-step extensions is a natural follow-up."
+
+[[questions]]
+id = "m08-l04-q02"
+type = "MultipleChoice"
+prompt.prompt = "How many information sets does the capstone game have?"
+prompt.distractors = [
+  "9",
+  "12",
+  "1",
+]
+answer.answer = "3 (two for the Adversary, one for the Defender)"
+context = "The Adversary has two info sets because they see the opportunity (Yes or No). The Defender has one info set because they have no information when they act. CFR maintains regret and strategy tables for each of these three info sets."
+
+[[questions]]
+id = "m08-l04-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why does the capstone include a 'scaled' variant of the game?"
+prompt.distractors = [
+  "Because the basic game cannot be solved",
+  "To make the project longer",
+  "To require GPU hardware",
+]
+answer.answer = "So you can exercise deep CFR on a problem where you can also run tabular CFR for ground-truth verification"
+context = "Deep CFR's mechanics are easier to verify when there's a tabular oracle to compare against. The scaled game is large enough that the network's interpolation is observable, but small enough that tabular CFR still works as a sanity check."
+
+[[questions]]
+id = "m08-l04-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why is the Defender's information state empty (the empty string) in the capstone game?"
+answer.answer = "Because the Defender does not see anything before deciding. They don't see the opportunity, they don't see the Adversary's choice, and they make their decision before the detection event occurs."
+context = "An empty information state is a valid choice when the player has literally no information. The Defender's strategy is simply a probability distribution over allocations, with no conditioning. CFR handles this fine: the regret table has just one entry for the empty string."
+
+[[questions]]
+id = "m08-l04-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why does the capstone include nonzero detection probabilities for the 'None' intensity?"
+prompt.distractors = [
+  "To make the math harder",
+  "Because real sensors always detect movement",
+  "To prevent the game from being trivial",
+]
+answer.answer = "To model false positives in real sensor systems, which makes the strategic problem more realistic"
+context = "Real sensors produce occasional false positives. The 0.05 probability for 'None' makes the Defender's choice meaningful even when no maneuver occurs (a Wide allocation has a slightly higher false-positive rate than nothing). It also prevents the equilibrium from collapsing to a degenerate solution."
+
+[[questions]]
+id = "m08-l04-q06"
+type = "ShortAnswer"
+prompt.prompt = "What is the 'clone_state' method on the Rust GameState trait, and why is it needed for CFR?"
+answer.answer = "It produces a deep copy of the state. CFR traverses the game tree by recursively trying actions, and each recursion needs its own state copy to avoid mutating the parent's state."
+context = "OpenSpiel's clone() works the same way in Python. We use a custom method (rather than the standard Clone trait) because state cloning is intentional and we want it to be visible. For our small game, cloning is cheap; for larger games, you might use persistent data structures for efficiency."

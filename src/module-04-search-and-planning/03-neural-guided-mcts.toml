@@ -1,0 +1,61 @@
+[[questions]]
+id = "m04-l03-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does the value network do in neural-guided MCTS?"
+prompt.distractors = [
+  "Decides which child to visit during selection",
+  "Stores the visit counts for backpropagation",
+  "Computes the priors for new nodes",
+]
+answer.answer = "Replaces the random rollout: predicts the expected outcome from a position directly, without simulating to a terminal state"
+context = "Pure MCTS plays random moves to a terminal state to estimate value. Neural-guided MCTS just asks the value network: 'what is the expected outcome from here?' This is faster and (when the network is well-trained) more accurate than random rollouts."
+
+[[questions]]
+id = "m04-l03-q02"
+type = "MultipleChoice"
+prompt.prompt = "What does the policy network do in neural-guided MCTS?"
+prompt.distractors = [
+  "Computes the value estimate for terminal positions",
+  "Determines when to stop the search",
+  "Backs up rewards through the tree",
+]
+answer.answer = "Provides a prior probability for each child action, which biases the PUCT formula during selection toward moves the network thinks are good"
+context = "The policy network's output P(a|s) appears in the PUCT exploration term, multiplied by the visit-count factor. Children with higher prior get explored more. This focuses search on moves that look promising according to learned knowledge."
+
+[[questions]]
+id = "m04-l03-q03"
+type = "MultipleChoice"
+prompt.prompt = "How does PUCT differ from UCT?"
+prompt.distractors = [
+  "PUCT does not require a parent node",
+  "PUCT computes minimum, not maximum",
+  "PUCT uses a different tree structure",
+]
+answer.answer = "PUCT multiplies the exploration term by the prior probability from the policy network"
+context = "UCT explores all children equally a priori (just based on visit counts). PUCT incorporates the prior P(child), so children the policy network thinks are good get more exploration than children it considers unlikely. This is the only mathematical change from UCT to PUCT."
+
+[[questions]]
+id = "m04-l03-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why does the visit-count distribution from MCTS form a 'better policy' than the raw policy network output?"
+answer.answer = "Because the search refines the network's prior by actually exploring consequences. Bad moves the network initially assigned probability to get fewer visits because the search discovers their poor outcomes; good moves get more visits."
+context = "This is the key insight that AlphaZero training relies on. The search is a 'policy improvement operator': it makes the network's policy better. Training the network on the search's improved policy produces a stronger network. Iterate to improve."
+
+[[questions]]
+id = "m04-l03-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why does AlphaZero use a single network with two heads instead of two separate networks for value and policy?"
+prompt.distractors = [
+  "Because PyTorch only supports single-network models",
+  "Because the value head is faster than the policy head",
+  "Because the Bellman equation requires a shared network",
+]
+answer.answer = "The shared lower layers can learn features useful for both tasks, and one forward pass produces both outputs (efficiency)"
+context = "This is the same logic as the actor-critic architecture from Module 3 lesson 6. State features useful for predicting value are typically also useful for selecting actions. Sharing layers means both heads benefit from improvements in the shared representation, and inference cost is essentially halved."
+
+[[questions]]
+id = "m04-l03-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why is the temperature parameter in MCTS move selection useful during training but typically set to 0 during evaluation?"
+answer.answer = "During training, higher temperature makes the agent play diverse games, exploring more positions. During evaluation, you want the strongest play, which means picking the most-visited (highest-confidence) move."
+context = "Temperature 1 samples proportional to visit counts, which can pick lower-visit moves. Temperature 0 always picks the most-visited move (strongest, but no exploration). AlphaZero uses temperature 1 for the first 30 moves of self-play games and temperature 0 thereafter, balancing diversity with quality."

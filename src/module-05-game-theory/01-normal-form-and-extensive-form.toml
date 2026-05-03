@@ -1,0 +1,61 @@
+[[questions]]
+id = "m05-l01-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is a Nash equilibrium?"
+prompt.distractors = [
+  "A strategy profile that maximizes the sum of all players' payoffs",
+  "A strategy profile that produces equal payoffs for all players",
+  "A strategy profile where one player dominates the other",
+]
+answer.answer = "A strategy profile in which no player can improve their payoff by unilaterally changing their strategy"
+context = "Nash equilibrium captures stability: if everyone is playing a Nash strategy, no individual has a private incentive to deviate. It is not necessarily fair or efficient; it is just stable under selfish optimization."
+
+[[questions]]
+id = "m05-l01-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is the difference between a normal-form and an extensive-form game?"
+prompt.distractors = [
+  "Normal-form games have only two players; extensive-form can have many",
+  "Normal-form games are zero-sum; extensive-form are general-sum",
+  "Normal-form games use real numbers; extensive-form use integers",
+]
+answer.answer = "Normal-form represents simultaneous moves; extensive-form represents sequential decisions as a tree of possible game states"
+context = "A normal-form game is a single-shot decision (everyone moves at once, with no information about others' choices). An extensive-form game is played out over time as a tree of decisions, possibly with chance nodes and information sets representing hidden information."
+
+[[questions]]
+id = "m05-l01-q03"
+type = "MultipleChoice"
+prompt.prompt = "What is a pure strategy versus a mixed strategy?"
+prompt.distractors = [
+  "Pure strategies are honest; mixed strategies are deceptive",
+  "Pure strategies are simple; mixed strategies are complex",
+  "Pure strategies have no randomness in the environment; mixed strategies do",
+]
+answer.answer = "A pure strategy is one specific action; a mixed strategy is a probability distribution over actions"
+context = "A pure strategy is deterministic: 'always do X'. A mixed strategy randomizes: 'do X with probability 0.6, Y with probability 0.4'. Many games (like matching pennies) have no pure-strategy Nash equilibrium, only mixed."
+
+[[questions]]
+id = "m05-l01-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why does matching pennies have no pure-strategy Nash equilibrium?"
+answer.answer = "Because for any pure strategy profile, one player would always benefit from deviating: if they would lose, they can switch to win instead."
+context = "If both pick H, Player 2 (who loses on matches) would switch to T to win. If both pick T, same logic. If they differ, the loser would switch to match. No pure profile is stable. The mixed equilibrium (each plays 50-50) is the unique Nash."
+
+[[questions]]
+id = "m05-l01-q05"
+type = "MultipleChoice"
+prompt.prompt = "What is an information set in an extensive-form game?"
+prompt.distractors = [
+  "The total set of payoffs the player can receive",
+  "The set of all possible game states",
+  "The history of all moves played so far",
+]
+answer.answer = "A set of game tree nodes that the current player cannot distinguish, requiring them to use the same strategy at all of these nodes"
+context = "Information sets model hidden information. If you cannot tell whether you are at node A or node B (because you cannot see what your opponent did), you must use the same strategy at both. Information sets are the formal way game theory handles partial observability."
+
+[[questions]]
+id = "m05-l01-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why are general-sum games (like the conjunction maneuver game) often more difficult than zero-sum games?"
+answer.answer = "Because general-sum games can have multiple Nash equilibria, and which one gets played depends on factors outside the game (coordination, conventions, communication). In zero-sum two-player games, the Nash equilibrium is unique and well-defined."
+context = "Zero-sum two-player games have a unique value (the maximin/minimax value) and computationally tractable Nash equilibria. General-sum games can have multiple equilibria with no single 'right' one. Real conjunction-avoidance protocols use external coordination (priority rules, communication) to resolve this multiplicity."

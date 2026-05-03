@@ -3,7 +3,7 @@
 [Introduction](README.md)
 [Curriculum layout](CURRICULUM.md)
 
-## Module 1: Foundations
+# Module 1: Foundations
 
 - [Overview](module-01-foundations/00-overview.md)
 - [Probability, distributions, and expectation](module-01-foundations/01-probability-distributions-expectation.md)
@@ -15,7 +15,7 @@
 - [Derivatives, gradients, and the chain rule](module-01-foundations/07-derivatives-gradients-chain-rule.md)
 - [Project: Monte Carlo conjunction probability](module-01-foundations/project.md)
 
-## Module 2: Neural Networks as Function Approximators
+# Module 2: Neural Networks as Function Approximators
 
 - [Overview](module-02-neural-networks/00-overview.md)
 - [Activation functions](module-02-neural-networks/01-activation-functions.md)
@@ -24,7 +24,7 @@
 - [The training loop](module-02-neural-networks/04-the-training-loop.md)
 - [Project: approximating a conjunction-risk value function](module-02-neural-networks/project.md)
 
-## Module 3: Reinforcement Learning Fundamentals
+# Module 3: Reinforcement Learning Fundamentals
 
 - [Overview](module-03-reinforcement-learning/00-overview.md)
 - [Markov Decision Processes](module-03-reinforcement-learning/01-markov-decision-processes.md)
@@ -34,3 +34,49 @@
 - [Policy gradient methods](module-03-reinforcement-learning/05-policy-gradient-methods.md)
 - [Actor-critic](module-03-reinforcement-learning/06-actor-critic.md)
 - [Project: a DQN sensor allocation agent](module-03-reinforcement-learning/project.md)
+
+# Module 4: Search and Planning
+
+- [Overview](module-04-search-and-planning/00-overview.md)
+- [Tree search fundamentals](module-04-search-and-planning/01-tree-search-fundamentals.md)
+- [Monte Carlo Tree Search](module-04-search-and-planning/02-monte-carlo-tree-search.md)
+- [Neural-guided MCTS](module-04-search-and-planning/03-neural-guided-mcts.md)
+- [AlphaZero self-play training](module-04-search-and-planning/04-alphazero-self-play.md)
+- [Project: AlphaZero-lite for pursuit-evasion](module-04-search-and-planning/project.md)
+
+# Module 5: Game Theory and Equilibrium Computation
+
+- [Overview](module-05-game-theory/00-overview.md)
+- [Normal-form and extensive-form games](module-05-game-theory/01-normal-form-and-extensive-form.md)
+- [Extensive-form games in detail](module-05-game-theory/02-extensive-form-games-in-detail.md)
+- [Counterfactual Regret Minimization](module-05-game-theory/03-counterfactual-regret-minimization.md)
+- [Monte Carlo CFR](module-05-game-theory/04-monte-carlo-cfr.md)
+- [Deep CFR](module-05-game-theory/05-deep-cfr.md)
+- [Project: vanilla CFR for conjunction maneuver coordination](module-05-game-theory/project.md)
+
+# Module 6: Multi-Agent Reinforcement Learning
+
+- [Overview](module-06-multi-agent-rl/00-overview.md)
+- [The multi-agent problem](module-06-multi-agent-rl/01-multi-agent-problem.md)
+- [Fictitious play](module-06-multi-agent-rl/02-fictitious-play.md)
+- [Policy-Space Response Oracles (PSRO)](module-06-multi-agent-rl/03-psro.md)
+- [Alpha-rank](module-06-multi-agent-rl/04-alpha-rank.md)
+- [Project: PSRO for satellite constellation coverage](module-06-multi-agent-rl/project.md)
+
+# Module 7: Partial Observability
+
+- [Overview](module-07-partial-observability/00-overview.md)
+- [POMDPs](module-07-partial-observability/01-pomdps.md)
+- [Belief state representation](module-07-partial-observability/02-belief-state-representation.md)
+- [Imperfect-information games](module-07-partial-observability/03-imperfect-information-games.md)
+- [Opponent modeling](module-07-partial-observability/04-opponent-modeling.md)
+- [Project: particle-filter belief tracker](module-07-partial-observability/project.md)
+
+# Module 8: OpenSpiel and the Rust Capstone
+
+- [Overview](module-08-openspiel-and-capstone/00-overview.md)
+- [OpenSpiel architecture](module-08-openspiel-and-capstone/01-openspiel-architecture.md)
+- [Implementing a custom game](module-08-openspiel-and-capstone/02-implementing-custom-games.md)
+- [Rust and burn: the production gap](module-08-openspiel-and-capstone/03-rust-and-burn.md)
+- [Designing the SSA game](module-08-openspiel-and-capstone/04-designing-the-ssa-game.md)
+- [Capstone: a Rust CFR solver for an SSA conjunction-masking game](module-08-openspiel-and-capstone/project.md)

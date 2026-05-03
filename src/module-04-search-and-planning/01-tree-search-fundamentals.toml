@@ -1,0 +1,61 @@
+[[questions]]
+id = "m04-l01-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does minimax compute?"
+prompt.distractors = [
+  "The average outcome of all possible game paths",
+  "The most likely outcome assuming random play",
+  "The value of the position assuming the maximizing player plays optimally and the minimizing player plays randomly",
+]
+answer.answer = "The value of the position assuming both players play optimally"
+context = "Minimax assumes both players are perfect optimizers, each playing in their own favor. The maximizer picks the best of their options; the minimizer picks the worst (from the maximizer's perspective). The value is what results from optimal play by both."
+
+[[questions]]
+id = "m04-l01-q02"
+type = "MultipleChoice"
+prompt.prompt = "Why is pure minimax infeasible for chess?"
+prompt.distractors = [
+  "The minimax value cannot be computed for chess",
+  "Chess has too many players",
+  "The Bellman equation does not apply to chess",
+]
+answer.answer = "The game tree has roughly 10^120 nodes, vastly more than can be enumerated"
+context = "Minimax visits every node in the game tree. With branching factor ~35 and game depth ~80, chess produces 10^120 leaf nodes. That is more than the number of atoms in the observable universe (~10^80). Even visiting them at the speed of light would take longer than the age of the universe."
+
+[[questions]]
+id = "m04-l01-q03"
+type = "MultipleChoice"
+prompt.prompt = "What does alpha-beta pruning accomplish?"
+prompt.distractors = [
+  "Computes a different (faster but less accurate) value than minimax",
+  "Replaces minimax with random sampling",
+  "Allows minimax to handle stochastic games",
+]
+answer.answer = "Computes the same minimax value as full search, but skips evaluating subtrees that provably cannot affect the root value"
+context = "Alpha-beta is exact: it always returns the same value as full minimax. The speedup comes from pruning: when one player has secured a value better than the other player would ever allow, exploring the rest of that subtree is wasted work. With perfect move ordering, alpha-beta reduces the effective branching factor from b to sqrt(b)."
+
+[[questions]]
+id = "m04-l01-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is the difference in approach between minimax/alpha-beta and MCTS?"
+answer.answer = "Minimax exhaustively explores (parts of) the game tree to compute exact values. MCTS samples paths through the tree to estimate values, focusing on promising moves and using sampling efficiency to handle larger games."
+context = "Minimax is exact but limited by tree size. MCTS is approximate but anytime: it gives you better answers as you give it more compute, and it focuses computation on important parts of the tree rather than spreading it uniformly."
+
+[[questions]]
+id = "m04-l01-q05"
+type = "MultipleChoice"
+prompt.prompt = "Which factor most determines whether minimax (or alpha-beta) is feasible for a game?"
+prompt.distractors = [
+  "Whether the game is two-player or multi-player",
+  "Whether the game is deterministic or stochastic",
+  "Whether the game has been studied before",
+]
+answer.answer = "The branching factor (number of moves per position) and the game depth"
+context = "Minimax cost grows as b^d, where b is branching factor and d is depth. Even alpha-beta only reduces this to sqrt(b)^d. Games with high branching factor (like Go, b ≈ 250) are infeasible regardless of how many cores you throw at the problem."
+
+[[questions]]
+id = "m04-l01-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why was alpha-beta pruning historically successful for chess but not for Go?"
+answer.answer = "Chess has a moderate branching factor (~35) and good heuristic evaluation functions are possible (material, piece-square tables). Go has a much higher branching factor (~250) and crafting a good static evaluation function is much harder."
+context = "Alpha-beta needs both feasible search depth AND a good leaf-node evaluation when the depth limit is reached. Chess satisfies both: the branching factor is manageable, and chess engines have well-developed evaluation functions. Go fails on both counts."

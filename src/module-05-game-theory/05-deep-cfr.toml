@@ -1,0 +1,61 @@
+[[questions]]
+id = "m05-l05-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does deep CFR replace from tabular CFR?"
+prompt.distractors = [
+  "The Nash equilibrium concept",
+  "The information set abstraction",
+  "The counterfactual regret formula",
+]
+answer.answer = "The regret table (one entry per information set) is replaced with a neural network that predicts regrets from information set encodings"
+context = "The conceptual structure is the same as DQN replacing the Q table with a Q network. Instead of storing R(I, a) in a table cell, deep CFR stores it in a function R(I, a; θ). The network can generalize: similar information sets get similar regret predictions without each one needing its own table entry."
+
+[[questions]]
+id = "m05-l05-q02"
+type = "MultipleChoice"
+prompt.prompt = "Why is deep CFR's training a 'moving target' problem?"
+prompt.distractors = [
+  "The Nash equilibrium changes during training",
+  "The opponents' strategies are unknown",
+  "Information sets are added to the game over time",
+]
+answer.answer = "The regret targets are computed using the current network's predictions, so as the network updates, its targets also change"
+context = "Same pathology as DQN before target networks. Tabular CFR has fixed targets per iteration (the previous iteration's regrets); deep CFR's targets shift with every gradient step. Practical implementations mitigate this with replay buffers, slow learning rates, and (sometimes) target networks."
+
+[[questions]]
+id = "m05-l05-q03"
+type = "MultipleChoice"
+prompt.prompt = "What is the main advantage of deep CFR over tabular MCCFR?"
+prompt.distractors = [
+  "It converges faster on small games",
+  "It is theoretically simpler",
+  "It does not require neural networks",
+]
+answer.answer = "Memory efficiency: a fixed-size network can represent regrets for huge numbers of information sets that would not fit in any table"
+context = "The crucial scaling: tabular methods need memory proportional to the number of information sets. For poker-sized games (10^14 info sets), tables are infeasible. A deep CFR network with millions of parameters approximates regrets for all of them."
+
+[[questions]]
+id = "m05-l05-q04"
+type = "ShortAnswer"
+prompt.prompt = "What kind of training data does deep CFR generate, and what loss function trains the regret network?"
+answer.answer = "Training examples are pairs of (information set encoding, counterfactual regret estimate). The regret network is trained with MSE loss to predict the regret values from the encodings."
+context = "Each tree traversal generates regret estimates at every information set the traverser visits. These are stored as supervised learning examples. MSE loss is appropriate because regrets are continuous-valued targets, like Q-values in DQN."
+
+[[questions]]
+id = "m05-l05-q05"
+type = "MultipleChoice"
+prompt.prompt = "What does Pluribus (superhuman 6-player no-limit Hold'em) use that distinguishes it from earlier CFR work?"
+prompt.distractors = [
+  "Pure tabular CFR with no abstractions",
+  "Q-learning instead of CFR",
+  "Random play with selective deviation",
+]
+answer.answer = "Precomputed blueprint strategy from CFR on an abstracted game, plus real-time subgame solving (a CFR variant) during actual play"
+context = "For multi-player and very large games, no single algorithm suffices. The blueprint strategy is a starting policy computed offline. Subgame solving refines this in real time at each decision, using current information about the play in progress. Deep variants of these are essential."
+
+[[questions]]
+id = "m05-l05-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does deep CFR have weaker theoretical convergence guarantees than tabular CFR?"
+answer.answer = "Because tabular CFR has provable convergence to Nash, but deep CFR introduces approximation errors from the network and training noise from sampling and finite-data optimization. In practice it works well, but no clean proof of convergence exists."
+context = "Tabular CFR's convergence proof relies on exact regret accumulation. Approximation errors break this guarantee. The same situation exists in deep RL: tabular Q-learning provably converges; DQN does not, but works well in practice. We accept the trade-off because the alternative (no algorithm at all for large games) is worse."

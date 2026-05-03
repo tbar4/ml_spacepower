@@ -1,0 +1,61 @@
+[[questions]]
+id = "m08-l03-q01"
+type = "MultipleChoice"
+prompt.prompt = "Why does the capstone use `burn` rather than `tch-rs` for the deep learning components?"
+prompt.distractors = [
+  "tch-rs cannot do autograd",
+  "burn is faster on all hardware",
+  "tch-rs does not support neural networks",
+]
+answer.answer = "burn is pure Rust without a libtorch C++ dependency, which fits a Rust-native research artifact better"
+context = "tch-rs is fully featured (it wraps PyTorch's C++ API) but pulling in libtorch makes deployment heavier. For a pedagogical research crate that demonstrates Rust-native ML capability, burn is more idiomatic."
+
+[[questions]]
+id = "m08-l03-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is the primary reason no Rust-native equivalent to OpenSpiel exists?"
+prompt.distractors = [
+  "Rust cannot represent game trees",
+  "Rust's standard library lacks HashMap",
+  "OpenSpiel's algorithms cannot be implemented in Rust",
+]
+answer.answer = "The community using game-theoretic algorithms is small and Python-heavy, so there has been little pull to build comprehensive game-theory tooling in Rust"
+context = "The Rust ML ecosystem has prioritized inference and deployment use cases. Game-theoretic algorithm research is academic and Python-dominant. The result is a real gap that the capstone partially fills for one specific use case."
+
+[[questions]]
+id = "m08-l03-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why does the capstone implement CFR from scratch rather than depending on the `cfr` or `cfr-rs` crates?"
+prompt.distractors = [
+  "Those crates do not work",
+  "The crates require Python interop",
+  "The crates only support 2-player games",
+]
+answer.answer = "Writing CFR yourself is the pedagogical point of the project, and owning the code lets you extend it for your specific SSA scenarios without being constrained by a third-party API"
+context = "The third-party crates are functional but narrow. Owning the implementation means you can change anything (game representation, sampling strategy, etc.) for your future thesis algorithms without fighting an external API."
+
+[[questions]]
+id = "m08-l03-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is one trade-off between Rust and Python for deep CFR implementation?"
+answer.answer = "Rust is faster (no language overhead, no GIL, easier to integrate into larger systems) but has longer compile times and less ergonomic debugging (no REPL, more verbose error messages around generics)."
+context = "For research-iteration speed, Python is easier. For embedding in production systems, Rust is better. The capstone is sized to be feasible in Rust while still demonstrating both pieces."
+
+[[questions]]
+id = "m08-l03-q05"
+type = "MultipleChoice"
+prompt.prompt = "What does the `Module` derive macro in burn do?"
+prompt.distractors = [
+  "Marks the struct as a top-level binary entry point",
+  "Generates serialization code",
+  "Provides a default Debug implementation only",
+]
+answer.answer = "Registers the struct's fields as trainable parameters so burn can track them in the autograd graph and update them during training"
+context = "Without the derive macro, burn would not know which fields contain trainable parameters. The macro lets you write a struct with named fields (layer1, layer2, etc.) and have all the bookkeeping handled automatically."
+
+[[questions]]
+id = "m08-l03-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does the capstone organize the code as a Cargo workspace with multiple crates?"
+answer.answer = "To enforce clean separation between the game definition, the solver algorithms, and the user-facing CLI. This makes each piece independently testable and reusable, and keeps the dependency graph small (the game crate doesn't need to depend on burn, for example)."
+context = "Three crates: `game` (no neural network dependency), `solver` (depends on game and burn for the neural network variant), `cli` (depends on solver and provides the user interface). This is good Rust hygiene and makes the architecture visible from the directory structure."

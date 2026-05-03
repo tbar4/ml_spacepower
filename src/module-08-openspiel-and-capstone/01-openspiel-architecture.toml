@@ -1,0 +1,61 @@
+[[questions]]
+id = "m08-l01-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is the difference between a Game and a State in OpenSpiel?"
+prompt.distractors = [
+  "A Game is a Python object; a State is a C++ object",
+  "A Game contains only public information; a State contains all hidden information",
+  "A Game is for single-player games; a State is for multi-player games",
+]
+answer.answer = "A Game is the immutable rules; a State is a mutable position derived from those rules"
+context = "You define a Game once. From it you can derive many State objects. The Game describes WHAT a state can be (number of actions, players, etc.); each State IS a particular position. This separation lets algorithms clone states without copying the rules."
+
+[[questions]]
+id = "m08-l01-q02"
+type = "MultipleChoice"
+prompt.prompt = "How does OpenSpiel handle stochastic events (like card deals or dice rolls)?"
+prompt.distractors = [
+  "They are treated as actions taken by player 0",
+  "They are precomputed at game initialization and cannot vary",
+  "They are stored as random seeds in the State",
+]
+answer.answer = "Through chance nodes: at a chance node, current_player() returns a special CHANCE sentinel and chance_outcomes() lists the (action, probability) pairs"
+context = "Chance is not a player. Algorithms that handle uncertainty (CFR, MCTS) treat chance nodes specially: they sum or average over the outcomes rather than choosing among them strategically."
+
+[[questions]]
+id = "m08-l01-q03"
+type = "MultipleChoice"
+prompt.prompt = "In an imperfect-information game, what is the difference between a 'state' and an 'information state'?"
+prompt.distractors = [
+  "They are the same thing in OpenSpiel",
+  "An information state is a single number; a state is a tensor",
+  "An information state is per-game; a state is per-player",
+]
+answer.answer = "A state describes the full world (including hidden information); an information state describes what one player knows (typically the history of their observations and actions)"
+context = "Two world states that produce the same observation history for a player are indistinguishable to that player; they belong to the same 'information set.' CFR and other game-theoretic algorithms operate at the information set level, not the state level, because a player's strategy must be a function of what they know, not of what is hidden."
+
+[[questions]]
+id = "m08-l01-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why is the clone() method on State important for algorithms like MCTS?"
+answer.answer = "Because MCTS needs to explore hypothetical futures (rolling out possible action sequences) without mutating the actual game state. Cloning lets the algorithm work on copies."
+context = "Without clone(), every search call would corrupt the real state. Clone is also used for parallelizing across multiple search threads or batching states for neural network inference."
+
+[[questions]]
+id = "m08-l01-q05"
+type = "MultipleChoice"
+prompt.prompt = "Where in the OpenSpiel codebase should you look first when learning a new algorithm?"
+prompt.distractors = [
+  "open_spiel/games/",
+  "open_spiel/integration_tests/",
+  "open_spiel/algorithms/ (the C++ implementations)",
+]
+answer.answer = "open_spiel/python/algorithms/ (the Python implementations are easier to read)"
+context = "The Python implementations are usually slower but much easier to follow. Once you understand the algorithm, you can look at the C++ version for the optimized implementation."
+
+[[questions]]
+id = "m08-l01-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does OpenSpiel separate the Bot interface from the Algorithm itself?"
+answer.answer = "The Bot interface is a thin wrapper that lets a trained policy or algorithm play a game by selecting actions. Separating it lets the same algorithm be used in many ways (training, evaluation, tournaments) and lets different algorithms be evaluated against each other through a uniform interface."
+context = "An algorithm produces a strategy or value function. A Bot is what actually plays the game step by step. The same trained CFR strategy might be wrapped in a Bot for tournament evaluation, or used inside another algorithm for opponent modeling."

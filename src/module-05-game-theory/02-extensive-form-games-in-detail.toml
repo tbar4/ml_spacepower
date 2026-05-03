@@ -1,0 +1,61 @@
+[[questions]]
+id = "m05-l02-q01"
+type = "MultipleChoice"
+prompt.prompt = "What is an information set in an extensive-form game?"
+prompt.distractors = [
+  "The set of all actions a player can take",
+  "The set of payoffs a player has received",
+  "The set of states the game has visited so far",
+]
+answer.answer = "A set of game tree nodes that the current player cannot distinguish, requiring identical strategy at all of them"
+context = "Information sets formalize hidden information. A player must make the same decision at every node within an information set, because they cannot tell which underlying node they are at. In games with perfect information, every node is its own information set."
+
+[[questions]]
+id = "m05-l02-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is the difference between a 'strategy' (game theory) and a 'policy' (RL)?"
+prompt.distractors = [
+  "They are different names for the same concept",
+  "Strategies are deterministic; policies are stochastic",
+  "Strategies are for two-player games; policies are for one-player",
+]
+answer.answer = "A strategy maps information sets to action distributions; a policy maps states to action distributions. In imperfect-information games, multiple states may share an information set, requiring identical strategy at all of them."
+context = "In perfect-information games, every state is its own information set, so policy and strategy coincide. In imperfect-information games, the strategy must be constant within information sets even though the underlying state varies. CFR operates on strategies (per information set), not policies."
+
+[[questions]]
+id = "m05-l02-q03"
+type = "MultipleChoice"
+prompt.prompt = "What is the reach probability of a node in an extensive-form game?"
+prompt.distractors = [
+  "The probability that the node is a terminal state",
+  "The probability that the node has been visited in the past",
+  "The probability that any player can reach this node",
+]
+answer.answer = "The probability that the game actually arrives at this node when played according to a given strategy profile and chance distributions"
+context = "Reach probability is the product of all the probabilities (chance and strategy) along the path from the root to the node. Nodes with high reach probability contribute more to expected outcomes; CFR uses this to weight updates appropriately."
+
+[[questions]]
+id = "m05-l02-q04"
+type = "ShortAnswer"
+prompt.prompt = "What does the counterfactual reach probability for player i at information set I represent?"
+answer.answer = "The probability of reaching information set I if player i were trying to reach it, computed using chance probabilities and all OTHER players' actual strategies (excluding player i's contribution)."
+context = "It separates the player's own contribution to reach probability from everyone else's. CFR uses this to compute regrets that say 'how much could I improve in this information set, given how the rest of the game plays out?' This separation is what makes CFR a correct local algorithm."
+
+[[questions]]
+id = "m05-l02-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why is computing exact Nash equilibria for large extensive-form games difficult?"
+prompt.distractors = [
+  "Nash equilibria do not exist for large games",
+  "Computing the payoff matrix is exponentially expensive",
+  "The Bellman equation cannot be applied",
+]
+answer.answer = "The space of strategy profiles is enormous (exponential in the number of information sets), and pure-strategy equilibria may not exist"
+context = "For a game with N information sets each with k actions, the strategy space has dimension N(k-1) (for the simplex of probabilities at each set). Direct optimization over this space is infeasible for large games. CFR is a clever algorithm that finds Nash equilibria without explicitly enumerating strategies."
+
+[[questions]]
+id = "m05-l02-q06"
+type = "ShortAnswer"
+prompt.prompt = "What is an ε-Nash equilibrium, and why is it more practical than an exact Nash equilibrium?"
+answer.answer = "An ε-Nash equilibrium is a strategy profile where no player can improve their payoff by more than ε through unilateral deviation. It is practical because it can be computed in finite time, while exact Nash often requires infinite iterations."
+context = "CFR converges to ε-Nash with ε shrinking over iterations. In practice, ε around 0.01 to 0.001 is sufficient for most applications. Pluribus (the superhuman poker bot) used ε in this range for the blueprint strategy."

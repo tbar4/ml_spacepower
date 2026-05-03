@@ -1,0 +1,61 @@
+[[questions]]
+id = "m05-l04-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does MCCFR replace in vanilla CFR?"
+prompt.distractors = [
+  "The Nash equilibrium concept",
+  "The regret matching update",
+  "The information set abstraction",
+]
+answer.answer = "The full game tree traversal at each iteration is replaced with a sampled traversal"
+context = "Vanilla CFR visits every game tree node every iteration (O(N) per iteration). MCCFR samples one path (outcome sampling) or a subtree (external sampling), making each iteration much cheaper at the cost of higher variance per update."
+
+[[questions]]
+id = "m05-l04-q02"
+type = "MultipleChoice"
+prompt.prompt = "What is the key difference between outcome sampling and external sampling?"
+prompt.distractors = [
+  "Outcome sampling converges faster than external sampling",
+  "External sampling cannot handle imperfect information",
+  "Outcome sampling is for two-player games only",
+]
+answer.answer = "External sampling explores all of the traversing player's actions but samples chance and other-player actions; outcome sampling samples one action everywhere"
+context = "External sampling has lower variance because it explores more (all of one player's choices). Outcome sampling has lower per-iteration cost because it samples everything. External sampling is more popular in practice because the lower variance leads to faster overall convergence."
+
+[[questions]]
+id = "m05-l04-q03"
+type = "MultipleChoice"
+prompt.prompt = "Why does MCCFR need importance weighting in the regret update?"
+prompt.distractors = [
+  "To make the algorithm parallel",
+  "To reduce memory usage",
+  "To make Nash equilibria unique",
+]
+answer.answer = "To produce an unbiased estimate of the vanilla CFR update; without it, sampled regrets would systematically over- or under-weight different parts of the tree"
+context = "Importance weighting (dividing by sampling probabilities) ensures that the expected sampled update equals the deterministic vanilla CFR update. This is the same trick used throughout statistics (importance sampling) and ensures convergence guarantees carry over from vanilla CFR."
+
+[[questions]]
+id = "m05-l04-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is the trade-off MCCFR offers compared to vanilla CFR?"
+answer.answer = "Lower per-iteration cost (sampled traversals are much cheaper than full traversals), but higher variance per iteration (each update is noisier). Total wall-clock time to convergence is usually faster for large games."
+context = "Same trade-off as Monte Carlo vs. exact computation. Sampling is cheap per iteration but has 1/sqrt(N) noise. For large games where vanilla CFR cannot afford even one iteration in reasonable time, MCCFR is the only choice."
+
+[[questions]]
+id = "m05-l04-q05"
+type = "MultipleChoice"
+prompt.prompt = "Which CFR variant did Pluribus (the superhuman 6-player no-limit Hold'em bot) use?"
+prompt.distractors = [
+  "Vanilla CFR with no modifications",
+  "Pure outcome sampling",
+  "Q-learning instead of CFR",
+]
+answer.answer = "Linear MCCFR with various heuristic improvements (e.g., subgame solving for the actual gameplay)"
+context = "Production CFR implementations always use improved variants: Linear CFR, CFR+, discounted CFR, etc. For 6-player no-limit, even MCCFR alone is not enough; subgame solving (a real-time variant of CFR for actual play) is layered on top of the precomputed blueprint strategy."
+
+[[questions]]
+id = "m05-l04-q06"
+type = "ShortAnswer"
+prompt.prompt = "What is the limitation of MCCFR (and CFR generally) that motivates deep CFR (next lesson)?"
+answer.answer = "Both vanilla and MCCFR store regrets in a table indexed by information set, requiring memory proportional to the number of information sets. For very large games, this memory is infeasible."
+context = "No-limit Hold'em has ~10^14 information sets. Even one byte per regret would require 100 TB of memory. Deep CFR uses a neural network to approximate the regret table, generalizing across similar information sets and dramatically reducing memory. The trade-off is that the network can only approximate, so convergence guarantees weaken."

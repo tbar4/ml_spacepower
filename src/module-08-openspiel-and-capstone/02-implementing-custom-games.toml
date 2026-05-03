@@ -1,0 +1,61 @@
+[[questions]]
+id = "m08-l02-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does information_state_string() need to return for two states to be in the same information set?"
+prompt.distractors = [
+  "The same Python object reference",
+  "The same hash value",
+  "Strings whose first character matches",
+]
+answer.answer = "Identical strings (string equality)"
+context = "OpenSpiel uses information state string equality to group states into information sets. CFR and other algorithms key their tables by these strings, so any two states the player cannot distinguish must produce identical strings."
+
+[[questions]]
+id = "m08-l02-q02"
+type = "MultipleChoice"
+prompt.prompt = "Why does information_state_string() take a player parameter?"
+prompt.distractors = [
+  "Because OpenSpiel does not know which player is acting",
+  "To support games with shared state across players",
+  "Because the function returns different formats per player",
+]
+answer.answer = "Different players see different things; each player has their own information sets and needs their own string"
+context = "In an imperfect-information game, what player 0 knows is different from what player 1 knows. The same world state produces a different information state string for each player. This is fundamental to imperfect-information game representation."
+
+[[questions]]
+id = "m08-l02-q03"
+type = "MultipleChoice"
+prompt.prompt = "What is exploitability used to measure?"
+prompt.distractors = [
+  "The size of the game tree",
+  "The runtime of the algorithm",
+  "The variance of stochastic outcomes",
+]
+answer.answer = "How much a player could gain by unilaterally switching to a best response against the opponent's strategy"
+context = "If exploitability is 0, the strategy profile is a Nash equilibrium: no player can improve by deviating. As CFR converges, exploitability decreases. It is the standard metric for measuring convergence to equilibrium."
+
+[[questions]]
+id = "m08-l02-q04"
+type = "ShortAnswer"
+prompt.prompt = "In Mini Maneuver, the Operator's information state needs to include the card. What does the Observer's information state need to include?"
+answer.answer = "The Operator's action (the public signal). The Observer does not see the card, only the signal."
+context = "The Observer's information state must encode everything the Observer knows. They saw the Operator's choice (signal or quiet), so that goes in the information state. They did NOT see the card, so the card does not appear."
+
+[[questions]]
+id = "m08-l02-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why do information_state_tensor() representations need to be fixed-length, even at different points in the game?"
+prompt.distractors = [
+  "Because OpenSpiel can only store fixed-size tensors",
+  "Because the game tree must be balanced",
+  "Because chance nodes do not produce tensors",
+]
+answer.answer = "Because they are typically used as input to neural networks, which expect fixed-size inputs"
+context = "Variable-length representations (like the information state STRING) work fine for tabular algorithms, but neural network inputs need a consistent size. The tensor representation typically uses fields that are zero when irrelevant and one-hot or numerical when active."
+
+[[questions]]
+id = "m08-l02-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why does Mini Maneuver use TERMINAL reward model rather than per-step REWARDS?"
+answer.answer = "Because all the payoff in this game comes at the end (after both players have acted). There is no meaningful per-step reward; the win/lose outcome is determined by the combination of card and final actions."
+context = "Many games naturally fit the terminal-reward model: chess, poker, Go, our SSA capstone game. Per-step rewards are more natural for control problems (RL on Atari, robotics) where each step provides feedback. CFR is designed primarily for terminal-reward games."

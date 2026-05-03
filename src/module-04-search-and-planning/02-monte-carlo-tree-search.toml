@@ -1,0 +1,61 @@
+[[questions]]
+id = "m04-l02-q01"
+type = "MultipleChoice"
+prompt.prompt = "What are the four phases of an MCTS iteration?"
+prompt.distractors = [
+  "Initialize, train, evaluate, prune",
+  "Read, write, compute, sync",
+  "Sample, average, normalize, sort",
+]
+answer.answer = "Selection, expansion, simulation, backpropagation"
+context = "Selection: walk down the tree using UCT until you hit a node with unexplored children. Expansion: add a new child to the tree. Simulation: rollout from the new node to a terminal state. Backpropagation: walk back up updating statistics. Repeat."
+
+[[questions]]
+id = "m04-l02-q02"
+type = "MultipleChoice"
+prompt.prompt = "What does the UCT formula balance?"
+prompt.distractors = [
+  "Speed and accuracy",
+  "Tree depth and breadth",
+  "Forward search and backward induction",
+]
+answer.answer = "Exploitation (visiting children with high average value so far) and exploration (visiting children that have not been visited much)"
+context = "The first term W/N is the exploitation: prefer children with high empirical win rates. The second term grows when N is small relative to siblings: prefer children that have been visited rarely. The constant c controls how much exploration relative to exploitation."
+
+[[questions]]
+id = "m04-l02-q03"
+type = "MultipleChoice"
+prompt.prompt = "When MCTS finishes its iterations and needs to pick a move, what selection criterion is typically used?"
+prompt.distractors = [
+  "The child with the highest UCT value",
+  "The child with the largest exploration bonus",
+  "A random child weighted by visit counts",
+]
+answer.answer = "The child with the most visits (highest N)"
+context = "The most-visited move is the most-explored, and by UCT design also the move that consistently looked most promising. It is more robust than picking by average value, because high-visit nodes have more reliable statistics. Some variants pick by average value or by a temperature-adjusted distribution over visits."
+
+[[questions]]
+id = "m04-l02-q04"
+type = "ShortAnswer"
+prompt.prompt = "Why does MCTS scale better than minimax to games with high branching factors?"
+answer.answer = "Because MCTS samples paths through the tree rather than enumerating all of them, and UCT focuses sampling on promising branches. The tree grows asymmetrically, deeper in promising directions and barely at all in unpromising ones."
+context = "Minimax visits every node of the tree (or every node up to a depth cutoff). MCTS visits only as many nodes as you give it time for, and it uses its sampling budget intelligently. For high-branching-factor games like Go, this is the difference between feasibility and infeasibility."
+
+[[questions]]
+id = "m04-l02-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why is the exploration constant c in UCT important?"
+prompt.distractors = [
+  "It determines how fast MCTS runs",
+  "It is required by the Bellman equation",
+  "It controls the discount factor",
+]
+answer.answer = "It controls the trade-off between exploring less-visited children and exploiting children with high average value"
+context = "A small c makes MCTS greedy (mostly exploit). A large c makes it explore widely. The right value depends on the game and the reward scale. For binary win/loss games, sqrt(2) is the theoretically motivated default; in practice you tune it."
+
+[[questions]]
+id = "m04-l02-q06"
+type = "ShortAnswer"
+prompt.prompt = "What are two limitations of pure MCTS that motivated AlphaZero's design?"
+answer.answer = "Random rollouts are often poor value estimates (especially in games where most random play loses), and pure MCTS has no generalization across states (every position is searched fresh, with no prior knowledge from past games)."
+context = "AlphaZero replaces the random rollout with a value network's prediction (no need for rollouts at all), and uses a policy network to bias the UCT formula toward likely-good moves. Both fixes use neural networks to inject learned knowledge into the search."

@@ -1,0 +1,61 @@
+[[questions]]
+id = "m05-l03-q01"
+type = "MultipleChoice"
+prompt.prompt = "What does the regret of an action measure in CFR?"
+prompt.distractors = [
+  "How often the action was selected by the strategy",
+  "The probability that the action is optimal",
+  "The variance of the action's payoffs",
+]
+answer.answer = "How much extra payoff would have been earned by always playing this action instead of the current strategy"
+context = "Regret is counterfactual: 'what if I had played this action consistently instead of what I actually did?' Positive regret means the action would have been better than what was played. CFR uses cumulative regret to update strategies via regret matching."
+
+[[questions]]
+id = "m05-l03-q02"
+type = "MultipleChoice"
+prompt.prompt = "In regret matching, how is the next strategy computed from cumulative regrets?"
+prompt.distractors = [
+  "Probability of each action equals its regret divided by total regret",
+  "Probability of each action equals 1 / (1 + regret)",
+  "Probability of each action equals exp(regret) divided by sum of exp(regret)",
+]
+answer.answer = "Probability of each action is proportional to max(0, regret); if all regrets are non-positive, the strategy is uniform"
+context = "Regret matching: σ(a) = max(0, R(a)) / sum max(0, R(a')). Negative regrets are clipped to zero (the action would have been worse than current play, so don't increase its probability). If all regrets are zero or negative, the strategy is uniform across actions."
+
+[[questions]]
+id = "m05-l03-q03"
+type = "MultipleChoice"
+prompt.prompt = "What converges to a Nash equilibrium when CFR is run for many iterations?"
+prompt.distractors = [
+  "The current strategy",
+  "The cumulative regret",
+  "The counterfactual values",
+]
+answer.answer = "The time-averaged strategy (the average of all the strategies played across iterations)"
+context = "This is a subtle but crucial detail. The current strategy at iteration t is not the Nash equilibrium; it is just the regret-matching response to accumulated regret. The AVERAGE of all strategies played from iteration 1 to t converges to a Nash equilibrium. CFR implementations track both the current strategy and the running average."
+
+[[questions]]
+id = "m05-l03-q04"
+type = "ShortAnswer"
+prompt.prompt = "What is the convergence rate of CFR?"
+answer.answer = "O(1/sqrt(T)) where T is the number of iterations: doubling accuracy requires 4x more iterations."
+context = "Same scaling as Monte Carlo. This is asymptotically slow, but in practice CFR can solve nontrivial games in millions of iterations because each iteration is cheap (just one tree traversal). For huge games, MCCFR (next lesson) speeds this up further by sampling."
+
+[[questions]]
+id = "m05-l03-q05"
+type = "MultipleChoice"
+prompt.prompt = "Why is vanilla CFR impractical for large games like no-limit Texas Hold'em?"
+prompt.distractors = [
+  "It does not converge for games with imperfect information",
+  "It cannot handle stochastic chance nodes",
+  "Nash equilibria do not exist for large games",
+]
+answer.answer = "Each iteration must traverse the entire game tree, which has too many nodes (~10^14 information sets in no-limit Hold'em)"
+context = "Vanilla CFR's per-iteration cost is proportional to the game tree size. For huge games, even one iteration takes too long. MCCFR (next lesson) replaces full traversal with sampled traversals, allowing many more iterations per unit of compute."
+
+[[questions]]
+id = "m05-l03-q06"
+type = "ShortAnswer"
+prompt.prompt = "Why is regret computed per information set rather than per game tree node in CFR?"
+answer.answer = "Because the player's strategy must be the same at all nodes within an information set (the player cannot distinguish them). Regret per information set respects this constraint, while regret per node would not."
+context = "Information sets are the right level of abstraction for strategies in imperfect-information games. CFR aggregates regrets across all nodes in the same information set (weighted by counterfactual reach) into a single regret per information set, which then drives the strategy update for that information set."
