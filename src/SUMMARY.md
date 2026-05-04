@@ -13,6 +13,9 @@
 - [Vectors and dot products](module-01-foundations/05-vectors-and-dot-products.md)
 - [Matrices and matrix-vector multiplication](module-01-foundations/06-matrices-and-matrix-vector-multiplication.md)
 - [Derivatives, gradients, and the chain rule](module-01-foundations/07-derivatives-gradients-chain-rule.md)
+- [Matrix decompositions: SVD and Cholesky](module-01-foundations/08-matrix-decompositions.md)
+- [The multivariate Gaussian](module-01-foundations/09-multivariate-gaussian.md)
+- [Constrained optimization and Lagrange multipliers](module-01-foundations/10-constrained-optimization.md)
 - [Project: Monte Carlo conjunction probability](module-01-foundations/project.md)
 
 # Module 2: Neural Networks as Function Approximators

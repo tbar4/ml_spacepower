@@ -1,0 +1,35 @@
+[[questions]]
+id = "e3f4a5b6-c7d8-9012-efab-234567890123"
+type = "MultipleChoice"
+prompt.prompt = "In the Lagrangian L(x, λ) = f(x) + λ g(x) for a constrained minimization problem min f(x) s.t. g(x) = 0, what is the geometric meaning of the stationarity condition ∇_x f = -λ ∇_x g?"
+prompt.distractors = [
+  "The gradient of f is zero at the optimum because the constraint removes one degree of freedom",
+  "The Hessian of f must equal the Hessian of g at the optimum, ensuring equal curvature",
+  "The constraint g is locally flat at the optimum, making it equivalent to an unconstrained problem",
+]
+answer.answer = "The gradient of the objective f and the gradient of the constraint g are parallel at the optimum — the level curves of f are tangent to the constraint surface"
+context = "At a constrained optimum, you cannot decrease f by moving along the constraint g(x)=0, because any such direction would need a component along ∇f. The only point where no feasible move improves f is where ∇f is normal to the constraint — i.e., parallel to ∇g. The multiplier λ is the ratio of their magnitudes. In sensor scheduling, this condition identifies optimal dwell times when constrained by a total time budget."
+
+[[questions]]
+id = "e3f4a5b6-c7d8-9012-efab-234567890124"
+type = "MultipleChoice"
+prompt.prompt = "For an inequality constraint g(x) ≤ 0, the KKT complementary slackness condition requires λ g(x) = 0. What does this enforce?"
+prompt.distractors = [
+  "The constraint must be violated by exactly λ units at the optimum",
+  "The Lagrange multiplier λ must be zero, since inequality constraints are handled differently than equalities",
+  "The objective f must equal the constraint g at the optimum",
+]
+answer.answer = "Either the constraint is active (g(x) = 0) and the multiplier λ can be nonzero, or the constraint is inactive (g(x) < 0) and the multiplier must be zero — the constraint only 'matters' when it is binding"
+context = "This condition captures a clean intuition: if the constraint is slack (g(x) < 0), the solution is interior and behaves as if unconstrained (λ = 0). If the constraint is tight (g(x) = 0), the multiplier λ ≥ 0 measures how much we'd gain by relaxing the constraint. In PPO, the KL penalty term acts as an approximate inequality constraint on policy change, with the adaptive penalty coefficient playing the role of a KKT multiplier."
+
+[[questions]]
+id = "e3f4a5b6-c7d8-9012-efab-234567890125"
+type = "MultipleChoice"
+prompt.prompt = "Why does L2 regularization (adding λ||w||^2 to the loss) correspond to MAP estimation with a Gaussian prior on weights?"
+prompt.distractors = [
+  "Because the Gaussian prior adds a log-likelihood term proportional to the squared mean of the weights",
+  "Because L2 regularization is equivalent to constraining the weights to lie on a sphere",
+  "Because L2 penalizes large weights in the same way a Gaussian penalizes outliers in data",
+]
+answer.answer = "The log of a Gaussian prior N(0, 1/λ · I) on w is -λ/2 · ||w||^2, so maximizing the log-posterior log p(w|D) = log p(D|w) + log p(w) subtracts this term, which is exactly the L2 penalty"
+context = "MAP = MLE + log prior. For a Gaussian prior with precision λ, log p(w) = -λ/2 ||w||^2 + const. Adding this to the log-likelihood gives MAP, which is equivalent to minimizing the negative log-likelihood plus λ||w||^2. This is why L2 regularization is 'Gaussian prior in disguise' — the strength λ sets the precision (inverse variance) of the prior. Tighter priors (larger λ) shrink weights toward zero more aggressively."

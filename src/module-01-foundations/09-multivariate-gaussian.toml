@@ -1,0 +1,35 @@
+[[questions]]
+id = "d2e3f4a5-b6c7-8901-defa-123456789012"
+type = "MultipleChoice"
+prompt.prompt = "What does the Mahalanobis distance d_M(x, μ) = sqrt((x-μ)^T Σ^{-1} (x-μ)) measure that Euclidean distance does not?"
+prompt.distractors = [
+  "The L1 (taxicab) distance between x and μ after normalizing each dimension to unit variance",
+  "The angle between the vectors x and μ in the high-dimensional state space",
+  "The probability density of x under the Gaussian, which equals e^{-d_M^2 / 2}",
+]
+answer.answer = "How many standard deviations x lies from μ, accounting for both the scale and the correlations of each dimension"
+context = "Euclidean distance treats all dimensions equally. Mahalanobis distance rescales by the covariance — a point far from μ along a high-variance direction is less surprising than the same displacement along a low-variance direction. For a CDM covariance matrix, Mahalanobis distance is the natural measure of separation between two RSOs: it determines conjunction probability far more accurately than raw miss distance."
+
+[[questions]]
+id = "d2e3f4a5-b6c7-8901-defa-123456789013"
+type = "MultipleChoice"
+prompt.prompt = "If (x, y) are jointly Gaussian with mean (μ_x, μ_y) and block covariance [[Σ_xx, Σ_xy], [Σ_yx, Σ_yy]], what is the conditional distribution p(x | y = y_0)?"
+prompt.distractors = [
+  "N(μ_x, Σ_xx), because conditioning on y does not change the marginal of x",
+  "N(Σ_xy y_0, Σ_xx - Σ_xy Σ_yy^{-1} Σ_yx), with the Schur complement as covariance",
+  "N(μ_x + Σ_xy y_0, Σ_xx), because the Gaussian cross-term adds directly to the mean",
+]
+answer.answer = "N(μ_x + Σ_xy Σ_yy^{-1} (y_0 - μ_y), Σ_xx - Σ_xy Σ_yy^{-1} Σ_yx)"
+context = "The conditional mean shifts from μ_x by an amount proportional to how much y_0 deviates from its mean, weighted by the cross-covariance. The conditional covariance (the Schur complement) is always smaller than Σ_xx — observing y reduces uncertainty about x whenever they are correlated. This is exactly the Kalman filter update: the observation y is a radar measurement, x is orbital state, and the gain Σ_xy Σ_yy^{-1} is the Kalman gain."
+
+[[questions]]
+id = "d2e3f4a5-b6c7-8901-defa-123456789014"
+type = "MultipleChoice"
+prompt.prompt = "If x ~ N(μ, Σ) and y = Ax + b for a matrix A, what is the distribution of y?"
+prompt.distractors = [
+  "N(Aμ, Σ), because the linear transformation does not change the covariance",
+  "N(Aμ + b, A^T Σ A), because the covariance transforms by the transpose",
+  "N(μ + b, A Σ), because only the mean shifts by the translation b",
+]
+answer.answer = "N(Aμ + b, A Σ A^T)"
+context = "Linear transformations preserve Gaussianity. The mean transforms linearly: E[Ax+b] = Aμ+b. The covariance transforms by the congruence transformation: Cov(Ax) = A·Cov(x)·A^T = AΣA^T. This is used in SSA whenever converting an orbital uncertainty covariance from one reference frame to another (e.g., ECI to RSW), using the Jacobian of the frame rotation as A."

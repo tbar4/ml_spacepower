@@ -1,0 +1,35 @@
+[[questions]]
+id = "c1d2e3f4-a5b6-7890-cdef-012345678901"
+type = "MultipleChoice"
+prompt.prompt = "In the SVD A = UΣV^T, what does the matrix V^T represent geometrically?"
+prompt.distractors = [
+  "A rotation in the output space that aligns the image of A with the coordinate axes",
+  "A scaling transformation that stretches or compresses along each coordinate axis",
+  "The inverse of U, which undoes the rotation applied after scaling",
+]
+answer.answer = "A rotation in the input space that aligns the right singular vectors with the coordinate axes before scaling"
+context = "SVD applies three transformations in sequence: V^T rotates the input, Σ scales each dimension, and U rotates the result into the output space. V's columns are the right singular vectors — the directions in input space that map to the principal axes of the output ellipsoid. This is why V^T appears first: it changes basis before scaling."
+
+[[questions]]
+id = "c1d2e3f4-a5b6-7890-cdef-012345678902"
+type = "MultipleChoice"
+prompt.prompt = "Why is the Cholesky decomposition Σ = LL^T particularly useful for sampling from a multivariate Gaussian N(μ, Σ)?"
+prompt.distractors = [
+  "It provides the eigenvectors of Σ, which define the principal axes of the uncertainty ellipsoid",
+  "It computes the inverse Σ^{-1} needed to evaluate the Gaussian PDF at a sample point",
+  "It reduces the sampling problem to computing the pseudoinverse of the covariance matrix",
+]
+answer.answer = "It converts the problem to sampling standard normals: if z ~ N(0, I), then μ + Lz ~ N(μ, Σ), because Cov(Lz) = L·I·L^T = LL^T = Σ"
+context = "The Cholesky factor L acts as a 'square root' of the covariance matrix. Multiplying standard normal samples by L stretches and correlates them to match the target distribution. This is numerically stable and avoids the cost of directly computing a matrix square root. In SSA, this is used to generate Monte Carlo samples of orbital state uncertainty."
+
+[[questions]]
+id = "c1d2e3f4-a5b6-7890-cdef-012345678903"
+type = "MultipleChoice"
+prompt.prompt = "The Eckart-Young theorem states that the best rank-k approximation to matrix A (in Frobenius norm) is A_k = U_k Σ_k V_k^T. What does 'best' mean here?"
+prompt.distractors = [
+  "A_k minimizes the number of non-zero entries in A - A_k",
+  "A_k minimizes the spectral radius (largest eigenvalue) of A - A_k",
+  "A_k maximizes the explained variance of each column of A independently",
+]
+answer.answer = "No other rank-k matrix is closer to A in Frobenius norm — A_k minimizes ||A - B||_F over all rank-k matrices B"
+context = "The theorem guarantees that truncating SVD to the top k singular values/vectors gives the optimal low-rank approximation. The approximation error equals the sum of squared discarded singular values. For an RSO catalog, keeping the top k singular values captures the dominant variance patterns across measurements while compressing storage by a factor of (m+n)/k."
