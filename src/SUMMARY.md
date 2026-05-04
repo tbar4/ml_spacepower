@@ -42,7 +42,7 @@
   - [Information Set MCTS](module-04-search-and-planning/05-information-set-mcts.md)
   - [Project: AlphaZero-lite for pursuit-evasion](module-04-search-and-planning/project.md)
 
--[Module 5: Game Theory and Equilibrium Computation](module-05-game-theory/00-overview.md)
+- [Module 5: Game Theory and Equilibrium Computation](module-05-game-theory/00-overview.md)
   - [Normal-form and extensive-form games](module-05-game-theory/01-normal-form-and-extensive-form.md)
   - [Extensive-form games in detail](module-05-game-theory/02-extensive-form-games-in-detail.md)
   - [Counterfactual Regret Minimization](module-05-game-theory/03-counterfactual-regret-minimization.md)
