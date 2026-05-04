@@ -1,0 +1,35 @@
+[[questions]]
+id = "a7b8c9d0-e1f2-3456-abcd-567890123456"
+type = "MultipleChoice"
+prompt.prompt = "What distinguishes an imperfect-information game from a POMDP?"
+prompt.distractors = [
+  "POMDPs have stochastic transitions; imperfect-information games are deterministic",
+  "POMDPs use continuous state spaces; imperfect-information games are always discrete",
+  "Imperfect-information games require more observations to solve",
+]
+answer.answer = "In a POMDP there is one decision-maker with a hidden state; in an imperfect-information game multiple players have private information and strategic incentives"
+context = "The key addition in imperfect-information games is strategic interaction. Each player must reason not only about the hidden state but also about the other player's private information and their likely strategy. This is what makes CFR necessary: it reasons about both players' information sets simultaneously."
+
+[[questions]]
+id = "a7b8c9d0-e1f2-3456-abcd-567890123457"
+type = "MultipleChoice"
+prompt.prompt = "In an ISR pursuit-evasion game, if the defender learns that the attacker has low fuel remaining, how should this update the defender's strategy?"
+prompt.distractors = [
+  "The defender should become more aggressive, knowing the attacker cannot maneuver much",
+  "The defender should ignore fuel information since orbital mechanics dominate",
+  "The defender should randomize more, to avoid being predictable to the attacker",
+]
+answer.answer = "The defender should update their belief about the attacker's type and best-respond to the updated belief — acting more aggressively if low fuel limits the attacker's evasion options"
+context = "This is Bayesian reasoning applied to opponent type. The defender maintains a belief over attacker fuel levels. Observing an indicator of low fuel shifts probability toward constrained-maneuver types. The optimal response to a belief-weighted mixture of attacker types may differ significantly from the prior-optimal response."
+
+[[questions]]
+id = "a7b8c9d0-e1f2-3456-abcd-567890123458"
+type = "MultipleChoice"
+prompt.prompt = "What does 'value of information' measure in a POMDP or imperfect-information game?"
+prompt.distractors = [
+  "The reduction in state space size from receiving an informative observation",
+  "The number of observations required to fully identify the hidden state",
+  "The entropy of the observation distribution under the current policy",
+]
+answer.answer = "The expected increase in utility from learning the value of a hidden variable before acting, compared to acting under the current uncertainty"
+context = "VoI = E[V*(b after learning x)] - V*(b before learning x). If the hidden variable is the attacker's fuel, and knowing it would change the optimal response significantly, VoI is high. If it would not change the decision, VoI is near zero. High VoI information is worth collecting; low VoI information is not worth the cost."

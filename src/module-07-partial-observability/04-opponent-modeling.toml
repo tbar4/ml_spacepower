@@ -1,0 +1,35 @@
+[[questions]]
+id = "b8c9d0e1-f2a3-4567-bcde-678901234567"
+type = "MultipleChoice"
+prompt.prompt = "What is the main tradeoff between exploiting an opponent model and playing a Nash equilibrium strategy?"
+prompt.distractors = [
+  "Opponent models are computationally cheaper but require more memory",
+  "Nash equilibrium strategies are faster to compute but less accurate",
+  "Opponent models always outperform Nash strategies in practice",
+]
+answer.answer = "An opponent model can exploit known weaknesses for higher payoff, but is itself exploitable by an adaptive opponent; Nash is unexploitable but may leave value on the table against a predictable opponent"
+context = "If your opponent model is accurate, best-responding to it beats Nash. But if the opponent detects your exploitation strategy and adapts, they can counter-exploit you. Nash is the 'safe' floor — no strategy can do better against you in expectation than the Nash payoff. The choice depends on how adaptive and sophisticated the actual opponent is."
+
+[[questions]]
+id = "b8c9d0e1-f2a3-4567-bcde-678901234568"
+type = "MultipleChoice"
+prompt.prompt = "In Bayesian opponent modeling with three types (aggressive, conservative, random), what triggers a large update to the type posterior?"
+prompt.distractors = [
+  "Observing many actions in quick succession",
+  "The opponent switching to a new communication channel",
+  "A long period of no observed actions (silence)",
+]
+answer.answer = "An action whose likelihood ratio strongly distinguishes one type from the others — high P(action | type A) and low P(action | types B and C)"
+context = "This is Bayes' rule applied to types. An observation shifts probability toward types that predict it well. If all types predict an action equally, the posterior is unchanged. The more a specific action is a signature of one type, the larger the update — exactly like the RCS measurement scenario in Module 1."
+
+[[questions]]
+id = "b8c9d0e1-f2a3-4567-bcde-678901234569"
+type = "MultipleChoice"
+prompt.prompt = "How does KL divergence help detect when an opponent model has become stale or wrong?"
+prompt.distractors = [
+  "KL divergence measures how fast the opponent is learning, not model accuracy",
+  "A high KL divergence between the current policy and Nash indicates overexploitation",
+  "KL divergence requires knowing the opponent's true type, which is unavailable",
+]
+answer.answer = "KL divergence between the model's predicted action distribution and the observed action frequencies signals model drift: high KL means the model's predictions no longer match reality"
+context = "If your opponent model predicts action probabilities [0.8, 0.1, 0.1] but you observe [0.2, 0.5, 0.3] over the last 50 decisions, the KL from observed to predicted is high. This is a signal that the model is wrong — perhaps the opponent changed strategy — and you should reset or re-estimate the model."

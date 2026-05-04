@@ -1,0 +1,35 @@
+[[questions]]
+id = "c3d4e5f6-a7b8-9012-cdef-123456789012"
+type = "MultipleChoice"
+prompt.prompt = "In PSRO, what is the 'oracle' step?"
+prompt.distractors = [
+  "Computing the Nash equilibrium of the full game",
+  "Sampling a random strategy from the current population",
+  "Evaluating all pairs of strategies in the population against each other",
+]
+answer.answer = "Training a best-response agent (via RL) against the current Nash mixture over the population"
+context = "The oracle takes the current strategy population and the meta-game Nash equilibrium (a mixture over those strategies) and trains a full RL agent to best-respond to that mixture. The resulting policy, which is new and potentially diverse, is added to the population."
+
+[[questions]]
+id = "c3d4e5f6-a7b8-9012-cdef-123456789013"
+type = "MultipleChoice"
+prompt.prompt = "Why is the PSRO meta-game tractable even when the underlying game has a huge state space?"
+prompt.distractors = [
+  "PSRO approximates the game with a linear model",
+  "PSRO only considers terminal states, ignoring intermediate decisions",
+  "PSRO reduces the game to a two-action normal form",
+]
+answer.answer = "The meta-game matrix is small — it only has one entry per pair of policies in the population, regardless of the underlying game's state space"
+context = "If the population has k strategies, the meta-game is a k×k matrix of head-to-head expected payoffs. Solving a k×k normal-form game is cheap (linear program), even if k grows. The expensive part is training each best-response oracle, not solving the meta-game."
+
+[[questions]]
+id = "c3d4e5f6-a7b8-9012-cdef-123456789014"
+type = "MultipleChoice"
+prompt.prompt = "What property makes PSRO particularly valuable for SSA satellite coverage games?"
+prompt.distractors = [
+  "PSRO requires less data than independent Q-learning",
+  "PSRO works only for cooperative games, which is the common SSA case",
+  "PSRO runs faster than CFR for games with continuous state spaces",
+]
+answer.answer = "PSRO builds a diverse population of strategies, making the resulting mixed equilibrium robust against a range of opponent behaviors rather than just one"
+context = "In real satellite operations, adversary behavior is uncertain. A pure Nash strategy is optimal against the worst-case opponent but may be brittle against unusual tactics. PSRO's population-based approach naturally produces strategies that perform well across a variety of opponent policies."

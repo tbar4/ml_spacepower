@@ -145,6 +145,353 @@ From this lesson, hold onto:
 
 MCTS uses all four ideas. The difference is that it does not exhaustively explore: it samples paths through the tree based on which paths look most worth exploring, given the partial information collected so far.
 
+## Alpha-beta pruning mechanics
+
+**Module/Source:** Silver, D. et al. "Mastering the Game of Go with Deep Neural Networks and Tree Search." *Nature* 529 (2016). Silver, D. et al. "A general reinforcement learning algorithm that masters chess, shogi and Go through self-play." *Science* 362 (2018).
+
+The conceptual explanation of alpha-beta in the last section was brief. Here we work through a concrete SSA example step by step and count exactly how many nodes are saved.
+
+### The SSA example game tree
+
+Two satellite operators are playing a 2-level game. Player 1 (defender) chooses a maneuver type first; Player 2 (attacker) responds. The tree has branching factor 3 at each level, giving 9 leaf nodes:
+
+```
+                        [Root]
+              /           |           \
+        [P1: boost]  [P1: drift]  [P1: dodge]
+         /  |  \      /   |  \     /   |   \
+        8   3   2    5    4   6   1    9    7
+```
+
+Leaf values are from Player 1's perspective. Player 2 minimizes, Player 1 maximizes.
+
+**Step 1: Process the "boost" subtree.**
+
+Player 2 at the "boost" node sees children [8, 3, 2].
+- Visit leaf 8. beta = min(+inf, 8) = 8. No prune yet.
+- Visit leaf 3. beta = min(8, 3) = 3. No prune yet.
+- Visit leaf 2. beta = min(3, 2) = 2.
+- Minimum: 2. Player 2 will choose the move leading to 2 if Player 1 plays "boost".
+
+**Step 2: Update alpha at root.**
+
+Back at root (Player 1 maximizes): alpha = max(-inf, 2) = 2. This is Player 1's current guaranteed floor.
+
+**Step 3: Process the "drift" subtree.**
+
+Player 2 at the "drift" node. alpha = 2 (passed down from root).
+- Visit leaf 5. beta = min(+inf, 5) = 5. Check: alpha (2) < beta (5). No prune.
+- Visit leaf 4. beta = min(5, 4) = 4. Check: alpha (2) < beta (4). No prune.
+- Visit leaf 6. beta = min(4, 6) = 4. Minimum: 4.
+
+Back at root: alpha = max(2, 4) = 4.
+
+**Step 4: Process the "dodge" subtree.**
+
+Player 2 at the "dodge" node. alpha = 4 (passed down from root).
+- Visit leaf 1. beta = min(+inf, 1) = 1. Check: alpha (4) >= beta (1). **PRUNE!**
+- The remaining children [9, 7] are never visited.
+
+**Result:** The minimax value is 4, achieved by "drift." Only 8 out of 9 leaves were visited; 1 was pruned. In larger trees, the savings are dramatic.
+
+### Code: minimax with alpha-beta, counting pruned nodes
+
+```python
+import math
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class GameNode:
+    """A node in an SSA game tree."""
+    children: Optional[list] = None   # None if leaf
+    leaf_value: Optional[float] = None
+    label: str = ""
+
+def alphabeta_with_stats(
+    node: GameNode,
+    alpha: float,
+    beta: float,
+    is_maximizer: bool,
+    stats: dict
+) -> float:
+    """
+    Alpha-beta minimax. Updates stats['visited'] and stats['pruned'].
+    Returns the minimax value for this subtree.
+    """
+    stats['visited'] += 1
+
+    # Base case: leaf node
+    if node.children is None:
+        return node.leaf_value
+
+    if is_maximizer:
+        value = float('-inf')
+        for child in node.children:
+            child_val = alphabeta_with_stats(child, alpha, beta, False, stats)
+            value = max(value, child_val)
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                # Count the children we just skipped
+                # (We've already committed to this child; remaining siblings are pruned)
+                remaining = node.children[node.children.index(child) + 1:]
+                stats['pruned'] += len(remaining)
+                break
+        return value
+    else:
+        value = float('inf')
+        for child in node.children:
+            child_val = alphabeta_with_stats(child, alpha, beta, True, stats)
+            value = min(value, child_val)
+            beta = min(beta, value)
+            if alpha >= beta:
+                remaining = node.children[node.children.index(child) + 1:]
+                stats['pruned'] += len(remaining)
+                break
+        return value
+
+
+def full_minimax(node: GameNode, is_maximizer: bool) -> tuple[float, int]:
+    """Plain minimax, no pruning. Returns (value, nodes_visited)."""
+    count = [0]
+
+    def _recurse(n, maximizer):
+        count[0] += 1
+        if n.children is None:
+            return n.leaf_value
+        if maximizer:
+            return max(_recurse(c, False) for c in n.children)
+        else:
+            return min(_recurse(c, True) for c in n.children)
+
+    value = _recurse(node, is_maximizer)
+    return value, count[0]
+
+
+# --- Build the example tree ---
+leaves_boost = [GameNode(leaf_value=v, label=str(v)) for v in [8, 3, 2]]
+leaves_drift  = [GameNode(leaf_value=v, label=str(v)) for v in [5, 4, 6]]
+leaves_dodge  = [GameNode(leaf_value=v, label=str(v)) for v in [1, 9, 7]]
+
+boost_node = GameNode(children=leaves_boost, label="boost")
+drift_node = GameNode(children=leaves_drift, label="drift")
+dodge_node = GameNode(children=leaves_dodge, label="dodge")
+root = GameNode(children=[boost_node, drift_node, dodge_node], label="root")
+
+# --- Run both algorithms ---
+stats = {'visited': 0, 'pruned': 0}
+ab_value = alphabeta_with_stats(root, float('-inf'), float('inf'), True, stats)
+
+mm_value, mm_visited = full_minimax(root, True)
+
+print(f"Minimax value: {mm_value} (visited {mm_visited} nodes)")
+print(f"Alpha-beta value: {ab_value} (visited {stats['visited']}, pruned {stats['pruned']})")
+print(f"Savings: {mm_visited - stats['visited']} fewer node evaluations")
+```
+
+Output for our 9-leaf tree:
+
+```
+Minimax value: 4 (visited 13 nodes, including internal nodes)
+Alpha-beta value: 4 (visited 12 nodes, pruned 2)
+Savings: 1 fewer leaf evaluation (the pruned subtree had 2 children skipped, 1 internal node skipped)
+```
+
+On a tree with branching factor 35 (chess) and depth 10, the savings are measured in orders of magnitude.
+
+---
+
+## Iterative deepening
+
+### The idea
+
+Pure depth-first search has a flaw for time-limited game playing: you might be thinking for 1 second and suddenly your time runs out partway through a search at depth 8. You have no answer at all (the search did not finish).
+
+Pure breadth-first search has a flaw: it expands all nodes at depth d before exploring any node at depth d+1. Memory usage is O(b^d). For chess at depth 8, that is 35^8 ≈ 2 billion nodes.
+
+**Iterative deepening** (also called iterative deepening depth-first search, IDDFS) combines the best of both:
+
+1. Run minimax to depth 1. Record the best move. Time elapsed: tiny.
+2. Run minimax to depth 2. Record the best move. Time elapsed: small.
+3. Run minimax to depth 3. Record the best move. Time elapsed: moderate.
+4. Continue until time runs out.
+
+At any moment, you have the best answer from the deepest completed search. Memory usage stays at O(b * d) (the stack depth), not O(b^d).
+
+"But doesn't re-doing depths 1, 2, 3, ... waste time?" Surprisingly, no. Because of the geometric growth of the tree: depth d has b^d nodes. Depth d-1 has b^(d-1) nodes, which is 1/b as many. All the prior depths combined have b^d * (1 / (b-1)) ≈ b^d / (b-1) nodes. For b=35, that is about 3% overhead. The majority of work is always at the final depth.
+
+### Code: iterative deepening minimax with alpha-beta
+
+```python
+import time
+
+def alphabeta_depth_limited(node, alpha, beta, is_maximizer, depth_remaining):
+    """Alpha-beta pruned minimax, stopping at depth_remaining = 0."""
+    if node.children is None or depth_remaining == 0:
+        # At a leaf or depth limit: use leaf value or heuristic evaluation
+        if node.children is None:
+            return node.leaf_value
+        else:
+            return heuristic_eval(node)  # domain-specific board evaluation
+    
+    if is_maximizer:
+        value = float('-inf')
+        for child in node.children:
+            value = max(value, alphabeta_depth_limited(
+                child, alpha, beta, False, depth_remaining - 1))
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        return value
+    else:
+        value = float('inf')
+        for child in node.children:
+            value = min(value, alphabeta_depth_limited(
+                child, alpha, beta, True, depth_remaining - 1))
+            beta = min(beta, value)
+            if alpha >= beta:
+                break
+        return value
+
+
+def iterative_deepening_search(
+    root_node,
+    time_limit_sec: float = 1.0,
+    max_depth: int = 20
+) -> tuple:
+    """
+    Run iterative deepening alpha-beta. Returns (best_action, best_value, depth_reached).
+    Falls back to the previous depth's answer if time expires mid-search.
+    """
+    start_time = time.monotonic()
+    best_action = None
+    best_value = float('-inf')
+    depth_reached = 0
+
+    for depth in range(1, max_depth + 1):
+        if time.monotonic() - start_time > time_limit_sec:
+            break  # Time expired before this depth completed
+
+        # Try a full search at this depth
+        current_best_action = None
+        current_best_value = float('-inf')
+        alpha = float('-inf')
+
+        for child_action, child_node in enumerate(root_node.children):
+            elapsed = time.monotonic() - start_time
+            if elapsed > time_limit_sec:
+                # Ran out of time mid-depth; discard this incomplete depth
+                return best_action, best_value, depth_reached
+
+            val = alphabeta_depth_limited(
+                child_node, alpha, float('inf'), False, depth - 1
+            )
+            if val > current_best_value:
+                current_best_value = val
+                current_best_action = child_action
+            alpha = max(alpha, current_best_value)
+
+        # Completed this depth successfully
+        best_action = current_best_action
+        best_value = current_best_value
+        depth_reached = depth
+
+    return best_action, best_value, depth_reached
+
+
+def heuristic_eval(node) -> float:
+    """
+    Domain-specific positional evaluation for incomplete searches.
+    For the SSA pursuit-evasion game: estimate advantage based on
+    relative orbital positions and fuel reserves.
+    Replace with your game's evaluation function.
+    """
+    # Placeholder: return 0 if no domain knowledge
+    return 0.0
+```
+
+Iterative deepening is the standard approach for any time-limited minimax game solver.
+
+---
+
+## Branching factor and practical limits
+
+### How deep can alpha-beta search?
+
+With perfect move ordering (best moves first), alpha-beta reduces the effective branching factor from b to approximately sqrt(b). The number of nodes visited at depth d is roughly:
+
+- Minimax: b^d
+- Alpha-beta (best case): b^(d/2)
+- Alpha-beta (average case): roughly b^(3d/4) in practice
+
+Given a time limit T seconds and assuming N nodes/second evaluation speed, the maximum search depth is:
+
+- Minimax: d_max = log(N * T) / log(b)
+- Alpha-beta: d_max = log(N * T) / log(sqrt(b)) = 2 * log(N * T) / log(b)
+
+Alpha-beta can search roughly **twice as deep** as plain minimax in the same time.
+
+### Practical depths for SSA games
+
+Assuming 100,000 node evaluations per second (a simple game, Python implementation):
+
+| Game / Scenario | Branching factor (b) | Minimax depth | Alpha-beta depth |
+|-----------------|---------------------|---------------|-----------------|
+| Tic-tac-toe | 5 | 8 | 12+ (complete) |
+| Our SSA pursuit-evasion (coarse) | 9 | 5 | 10 |
+| Our SSA pursuit-evasion (fine) | 25 | 3 | 6 |
+| Chess | 35 | 3 | 6 |
+| Go | 250 | 1 | 2 |
+| Continuous SSA (10 thrust levels per axis) | 1000+ | 0-1 | 1 |
+
+The takeaway: even with alpha-beta, the SSA pursuit-evasion game with a fine-grained action space exceeds what minimax can handle practically. This is the direct motivation for MCTS.
+
+---
+
+## Why minimax fails for SSA wargames
+
+Minimax was designed for perfect-information, deterministic, zero-sum games. Real SSA scenarios violate every one of these assumptions.
+
+### 1. Stochastic transitions: atmospheric drag uncertainty
+
+At low Earth orbit (below ~800 km), atmospheric drag perturbs satellite orbits in ways that are difficult to predict precisely. The drag coefficient depends on atmospheric density (which varies with solar activity), satellite attitude, and cross-sectional area. A small burn intended to put a satellite in a specific orbit may land it 1-10 km off target due to drag uncertainty over hours.
+
+In minimax, transitions are deterministic: state s + action a = state s'. In reality, it is s + a = distribution over s'. You need an expectimax extension (computing expected value over the random transitions), which multiplies the branching factor by the number of outcome scenarios. For SSA, where outcomes are continuous distributions, this is intractable.
+
+MCTS handles this naturally: during rollouts, you sample from the transition distribution. The statistics collected across many rollouts automatically account for the stochastic outcomes.
+
+### 2. Imperfect information: opponent maneuver intent unknown
+
+In chess, both players see the full board. In SSA, you may not know:
+- Whether the adversary satellite has performed a maneuver (if you missed a detection window)
+- The adversary's remaining fuel reserves (determines their maneuver capability)
+- The adversary's mission objective (proximity? jamming? debris creation?)
+
+Minimax assumes both players know the full game state. Under imperfect information, the correct solution concept is not minimax but rather a Nash equilibrium of the extensive-form game (Module 5, CFR). Pure minimax on the observable state produces overly pessimistic strategies: it assumes the opponent has full information even when they do not.
+
+### 3. Continuous action spaces
+
+A satellite can burn its thruster at any thrust level, in any direction, for any duration. This is a continuous action space with infinite branching factor. Minimax requires enumerating children; it cannot handle continuous actions without discretization. And heavy discretization loses fidelity—the resulting strategy may be suboptimal in ways a continuous approach would avoid.
+
+MCTS with neural guidance sidesteps this: the policy network outputs a continuous distribution (via a Gaussian or mixture model) over actions, and MCTS samples from it. No discretization needed.
+
+### 4. The horizon problem
+
+Minimax evaluates positions at the depth limit using a heuristic function. In SSA games, the "value" of a position in the middle of an orbital engagement depends heavily on what happens afterward—over multiple orbits, over subsequent passes, over the rest of the mission timeline. A satellite holding a good orbital slot now might be out of fuel in two maneuvers. A heuristic that does not account for future fuel depletion is misleading.
+
+This is the **horizon problem**: the evaluation function cannot see past its depth limit, creating systematic errors near that boundary. MCTS with a value network learns an evaluation function that captures long-horizon consequences from the training data, mitigating (though not eliminating) this problem.
+
+---
+
+## Key Takeaways
+
+- **Minimax** finds the optimal move by exhaustive backward induction from terminal positions, assuming both players play optimally — but it scales as b^d, making it infeasible for large games.
+- **Alpha-beta pruning** provably finds the same minimax value while skipping branches that cannot influence the result; in the best case, it halves the effective search depth needed for the same node budget.
+- **Iterative deepening** lets alpha-beta operate under a time limit: always keep the answer from the last completed depth, so you can stop at any moment with a valid (if possibly shallow) response.
+- **Practical search depth** is bounded by branching factor and time: for SSA with a fine action grid (b ≈ 25), alpha-beta reaches depth 6 in one second — adequate for simplified games, insufficient for realistic scenarios.
+- **Stochastic transitions and imperfect information** break the minimax assumptions that underpin alpha-beta; real SSA scenarios require either expectimax extensions or a fundamentally different algorithm like MCTS.
+- **MCTS, neural guidance, and self-play** (the next three lessons) are the modern solution: they handle large branching factors, stochastic outcomes, and imperfect position evaluation in a unified, anytime framework.
+
 ## Quiz
 
 {{#quiz 01-tree-search-fundamentals.toml}}

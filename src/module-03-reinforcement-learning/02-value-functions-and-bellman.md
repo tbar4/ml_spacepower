@@ -33,6 +33,20 @@ In a sense, Q is a finer-grained version of V. If you know all the Q values in a
 
 This is just the expectation formula from Module 1, lesson 1. V is the expected Q over the policy's action distribution.
 
+## The value hierarchy
+
+Before going further, here is a reference table for all the value-related concepts you will encounter in this curriculum. They are easy to confuse; keep this table in mind.
+
+| Concept | Symbol | What it means | Used in |
+|---------|--------|---------------|---------|
+| Policy value | \\(V^\pi(s)\\) | Expected return following π from state s | Policy evaluation, Actor-Critic |
+| Optimal value | \\(V^*(s)\\) | Best possible expected return from state s, over all policies | Value iteration |
+| Action-value | \\(Q^\pi(s, a)\\) | Expected return taking action a then following π | Q-learning, DQN |
+| Optimal Q | \\(Q^*(s, a)\\) | Best possible Q value for (s, a) | Q-learning target |
+| Advantage | \\(A^\pi(s, a) = Q^\pi(s, a) - V^\pi(s)\\) | How much better is action a compared to the average action in state s | A3C, PPO |
+
+The advantage function \\(A^\pi(s, a)\\) deserves a note. It answers: "if I take action a instead of whatever my policy normally does, how much better or worse will I do?" A positive advantage means action a is better than average; a negative advantage means it is worse. PPO and A3C use the advantage rather than Q directly because it has lower variance — subtracting the baseline V(s) cancels out the part of the return that has nothing to do with the specific action choice.
+
 ## Building intuition with a tiny example
 
 Let us use a small concrete MDP. Two satellites, S1 and S2. Each turn, you observe one. The state describes the current "alert level" of each satellite: 0 (calm) or 1 (alert).
@@ -200,6 +214,144 @@ This converges quickly (within ~100 iterations) to values that match what the Mo
 
 The advantage of value iteration over Monte Carlo: it is exact (in the limit of convergence), uses no random samples, and is computationally cheap when the state space is small. The disadvantage: it requires you to know the transition probabilities P(s' | s, a) and reward function R(s, a, s'). In real problems (Atari, chess, real SSA), you usually do not have explicit access to these, so you cannot do straight value iteration. That is what Q-learning fixes (next lesson).
 
+## Bellman error as training signal
+
+The iterative value computation above is conceptually clean, but how does it connect to machine learning with neural networks? The connection runs through **Bellman error** (also called **TD error** — temporal difference error).
+
+The Bellman equation tells us exactly what V(s) should equal:
+
+\\[ V^\pi(s) = \mathbb{E}\left[ R(s, a, s') + \gamma V^\pi(s') \right] \\]
+
+If our current estimate of V is not correct, the two sides will not match. The **TD error** \\(\delta\\) measures this mismatch for a single observed transition \\((s, a, r, s')\\):
+
+\\[ \delta = r + \gamma V(s') - V(s) \\]
+
+**Decoding each piece:**
+- \\(r + \gamma V(s')\\): the **TD target** — what V(s) should be, based on the actual reward we received and our current estimate of the next state's value
+- \\(V(s)\\): our current estimate of V(s)
+- \\(\delta = \text{target} - \text{estimate}\\): how wrong we are
+
+The sign of δ tells us which direction to update:
+
+- **Positive δ** (δ > 0): the TD target exceeds our estimate. We underestimated V(s) — the state turned out better than we thought. Increase V(s) toward the target.
+- **Negative δ** (δ < 0): the TD target is below our estimate. We overestimated V(s) — the state was worse than we expected. Decrease V(s) toward the target.
+- **δ = 0**: our estimate is consistent with the observed transition. No update needed.
+
+```python
+import numpy as np
+
+# Use the 4-state satellite MDP from above.
+# Suppose V is our current (imperfect) estimate.
+V_estimate = np.array([20.0, 24.0, 23.0, 28.0])  # initial guess
+gamma = 0.9
+
+# Simulate one step and compute TD error
+state = (1, 0)   # (calm, alert) -- index 2
+s_idx = states.index(state)
+
+action = 0  # observe S1
+np.random.seed(42)
+possible_transitions = transitions(state, action)
+# Sample a next state according to probabilities
+probs = [t[1] for t in possible_transitions]
+chosen_idx = np.random.choice(len(possible_transitions), p=probs)
+next_s_idx, _, reward = possible_transitions[chosen_idx]
+
+# Compute TD error
+td_target = reward + gamma * V_estimate[next_s_idx]
+td_error = td_target - V_estimate[s_idx]
+
+print(f"State: {state} (idx {s_idx}), V estimate: {V_estimate[s_idx]:.2f}")
+print(f"Action: observe S1, Reward: {reward}")
+print(f"Next state idx: {next_s_idx}, V(s') estimate: {V_estimate[next_s_idx]:.2f}")
+print(f"TD target: {td_target:.2f}")
+print(f"TD error δ: {td_error:.2f}")
+
+if td_error > 0:
+    print("We underestimated this state — update V upward.")
+elif td_error < 0:
+    print("We overestimated this state — update V downward.")
+else:
+    print("Our estimate is consistent with this transition.")
+
+# A simple TD update: move V(s) toward the target
+learning_rate = 0.1
+V_estimate[s_idx] += learning_rate * td_error
+print(f"Updated V({state}): {V_estimate[s_idx]:.2f}")
+```
+
+This is the core of Q-learning and DQN: use the Bellman equation to generate training targets, compute the error between our current estimate and those targets, and update our estimate in the direction that reduces the error. In DQN, the "estimate" is a neural network, and the update is a gradient descent step. The machinery is more complex, but the idea is exactly this TD error computation.
+
+## Bootstrapping: using our own estimates to update our estimates
+
+The TD update above uses \\(V(s')\\) — our current estimate of the next state's value — to update \\(V(s)\\). This is called **bootstrapping**: we use our own possibly-incorrect estimates to generate new estimates.
+
+This is philosophically strange. If our estimates are wrong, won't updating with wrong estimates just produce more wrong estimates? Yes — but the key insight is that bootstrapped estimates converge because the Bellman equation is a contraction. Each iteration brings us closer to the true values. The process is self-correcting over many updates.
+
+### The alternative: Monte Carlo
+
+The alternative to bootstrapping is **Monte Carlo estimation**: run an episode to completion, observe the actual total return \\(G_t = R_{t+1} + \gamma R_{t+2} + \ldots\\), and use that as the update target.
+
+\\[ V(s_t) \leftarrow V(s_t) + \alpha \left[ G_t - V(s_t) \right] \\]
+
+Monte Carlo does not use \\(V(s')\\) at all — the target is the actual return, which involves no estimates.
+
+### The bias-variance tradeoff
+
+| Method | Bias | Variance | Data efficiency |
+|--------|------|----------|-----------------|
+| TD (1-step bootstrapping) | Biased (uses V(s'), which may be wrong) | Low (one step of randomness) | High (updates at every step) |
+| Monte Carlo | Unbiased (uses actual return) | High (entire episode of randomness) | Low (waits for episode to end) |
+
+**Bias** here means: is the training target systematically wrong? TD targets can be — if V(s') is wrong, the TD target is wrong. Monte Carlo targets are unbiased because actual returns are the ground truth.
+
+**Variance** means: how much does the training target fluctuate between runs? Monte Carlo returns accumulate randomness over the entire episode (each random transition adds noise). TD targets only accumulate one step of randomness.
+
+In SSA problems, episodes can be long (a telescope tracking problem might run for days with hundreds of timesteps). Monte Carlo would require waiting for a day-long episode to end before making any updates. TD methods update after every observation and are therefore far more practical.
+
+### n-step returns: the middle ground
+
+The \\(n\\)-step return is a principled interpolation between 1-step TD and Monte Carlo:
+
+\\[ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) \\]
+
+**Decoding:** Take the actual rewards for the next \\(n\\) steps, then bootstrap with V at step \\(n\\). Setting \\(n=1\\) gives standard TD. Setting \\(n=T\\) (the episode length) gives Monte Carlo.
+
+Higher n reduces bias (we rely on fewer bootstrapped estimates) but increases variance (more actual random returns are included). The optimal n depends on the problem and is often treated as a hyperparameter. PPO and A3C typically use n between 5 and 20.
+
+```python
+import numpy as np
+
+def n_step_return(rewards, V_final, gamma, n):
+    """
+    Compute the n-step return from a sequence of rewards.
+    rewards: list of actual rewards [r_1, r_2, ..., r_n]
+    V_final: V(s_{t+n}), the bootstrapped value at the end
+    """
+    G = V_final
+    for r in reversed(rewards):
+        G = r + gamma * G
+    return G
+
+# Example: 3-step return for the satellite MDP
+# Rewards observed: 1, 5, 1 (3 steps), then bootstrap with V(s_{t+3})
+rewards_observed = [1.0, 5.0, 1.0]
+V_bootstrap = 25.0  # our estimate of V at the state 3 steps out
+gamma = 0.9
+
+G_3step = n_step_return(rewards_observed, V_bootstrap, gamma, n=3)
+print(f"3-step return: {G_3step:.2f}")
+# = 1 + 0.9*(5 + 0.9*(1 + 0.9*25)) = 1 + 0.9*(5 + 0.9*23.5)
+#                                    = 1 + 0.9*26.15 = 1 + 23.54 = 24.54
+
+# Compare: 1-step TD target (immediate + bootstrap)
+G_1step = rewards_observed[0] + gamma * V_bootstrap
+print(f"1-step TD target: {G_1step:.2f}")
+# = 1 + 0.9 * 25 = 23.5
+
+# The 3-step return uses more actual data and less of our (potentially wrong) estimate.
+```
+
 ## The optimal value function
 
 So far we have talked about the value function for a specific policy: V^π and Q^π. But often we want the value of the **best possible** policy. That is the **optimal value function**, denoted V* and Q*:
@@ -229,6 +381,15 @@ The Bellman equation for V is the foundation of policy evaluation methods, which
 The recursion idea (a state's value depends on the values of its successors) shows up in MCTS (Module 4), where we estimate values by recursively averaging over rollouts. It shows up in CFR (Module 5), where regret values are propagated through the game tree.
 
 If you take one thing from this lesson: **value functions describe what the agent thinks the future is worth from each state, and the Bellman equation lets us compute these values using only local information about transitions and rewards.**
+
+## Key Takeaways
+
+- **V(s) measures the long-term value of being in a state; Q(s, a) measures the long-term value of taking an action in a state.** Q is strictly more informative — you can recover V from Q by averaging over the policy, but not vice versa. When you want to improve a policy, Q values give you direct action comparisons.
+- **The Bellman equation is a self-consistency constraint.** A correct value function satisfies it exactly. An incorrect one violates it; the violation (the TD error δ) is the training signal that drives all TD-based RL algorithms. Positive δ means you underestimated the state; negative δ means you overestimated it.
+- **Bootstrapping is biased but low-variance; Monte Carlo is unbiased but high-variance.** For long-horizon problems like satellite scheduling (where episodes span hundreds of steps), TD methods are almost always preferred because they update continuously rather than waiting for episode completion. The bias shrinks as estimates improve.
+- **n-step returns interpolate between 1-step TD and Monte Carlo.** Using more actual steps before bootstrapping reduces bias at the cost of higher variance. PPO and A3C use n between 5 and 20 in practice; the exact value is a hyperparameter tuned per problem.
+- **The advantage function A(s, a) = Q(s, a) - V(s) measures action quality relative to the baseline.** Subtracting V(s) from Q(s, a) reduces variance in policy gradient estimates without introducing bias, which is why modern algorithms like PPO use advantage rather than raw Q values for their policy update.
+- **Optimal value functions satisfy the Bellman optimality equations with a max instead of an average.** This single change — from averaging over the policy to taking the maximum — converts policy evaluation into policy optimization and is the key step that makes Q-learning work.
 
 ## Quiz
 

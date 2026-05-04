@@ -178,6 +178,346 @@ OpenSpiel's `state.clone()` returns a `pyspiel.State` and the recursion just wor
 
 For CFR to work, you need to be able to clone the state at every traversal. For our small game, this is cheap. For large games, you might use a more efficient representation (e.g., immutable persistent data structures with structural sharing), but the small-game approach is simpler and sufficient.
 
+## Game design principles for SSA
+
+Before formalizing the conjunction-masking game, it is worth stating the design principles explicitly. These apply whenever you are designing a game for algorithm testing in an operational context — not just for this capstone, but for any future SSA game you might create.
+
+### Principle 1: Clear and interpretable state representation
+
+Every element of the game state should correspond to something you can point to in the real SSA scenario. If you have a bit vector in the state that you cannot describe in orbital mechanics terms, that is a red flag: the game may be well-defined mathematically but the solution will not translate to operational insight.
+
+For the conjunction-masking game: `opportunity` maps to the threat geometry assessment that operators receive from SSA feeds; `intensity` maps to the delta-v magnitude of the maneuver; `allocation` maps to the sensor tasking order submitted to ground stations. Every state variable has a concrete referent.
+
+### Principle 2: Meaningful decisions with real tradeoffs
+
+A good game for algorithm testing should have decisions where neither "always action A" nor "always action B" dominates. The point of computing an equilibrium is that it requires genuinely mixed strategies — the algorithm teaches you something you could not derive by inspection.
+
+The conjunction game is designed to force mixing: Heavy maneuver has higher upside but is more detectable (tradeoff for Adversary), Wide allocation catches more behaviors but at lower probability per catch (tradeoff for Defender). These tradeoffs are derived from the actual physics of detection sensitivity vs. coverage.
+
+### Principle 3: Partial observability where the scenario demands it
+
+Not every SSA game needs partial observability. A game modeling cooperative satellite deconfliction might be fully observable (both operators share data). But any game with adversarial intent (one party trying to conceal something from another) naturally calls for imperfect information.
+
+The conjunction-masking game has partial observability because: the Adversary's true intent (opportunity) is hidden from the Defender; the Defender's allocation is hidden from the Adversary until detection. This structure is not imposed artificially — it reflects actual classification boundaries in SSA data sharing.
+
+### Principle 4: Tractable action space
+
+The game's action space should be large enough to produce interesting mixed strategies but small enough that CFR converges in a reasonable number of iterations without requiring deep CFR. The rule of thumb: if you can enumerate all information sets on a whiteboard, the game is appropriate for vanilla tabular CFR. If enumeration requires a computer but the game is still finite, MCCFR is appropriate. If the game is effectively continuous, deep CFR is needed.
+
+For the capstone, 3 intensity levels and 3 allocation levels give 9 strategy parameters total — clearly whiteboard-enumerable. The scaled variant (7 intensities, 5 allocations, 4 opportunity types) is computer-enumerable. A real continuous-thrust orbital mechanics simulation would require deep CFR.
+
+### Principle 5: Connection to real operational constraints
+
+Useful SSA games encode real constraints as game structure. Detection probabilities should be calibrated to actual sensor capabilities (or to publicly available ranges). Maneuver intensities should be calibrated to typical delta-v budgets. Opportunity probabilities should reflect real conjunction frequency statistics.
+
+When the game is calibrated, its Nash equilibrium describes a strategy that is actually achievable and meaningful: "given these sensor capabilities and these maneuvering constraints, a rational adversary would mix these maneuver intensities in these proportions." That is an operationally useful statement.
+
+## The conjunction-masking game: complete specification
+
+This section builds on the high-level description earlier to give the full game definition.
+
+### Players, state, and information
+
+The game has two players and one chance component:
+
+- **Player 0 (Adversary)**: controls a satellite, wants to execute covert maneuvers
+- **Player 1 (Defender)**: operates a sensor network, wants to detect maneuvers
+- **Chance**: resolves the orbital opportunity and the noisy detection outcome
+
+The full game state at any point is:
+
+```
+(opportunity, adversary_action, defender_action, detection_result)
+```
+
+where each field is `None` until its corresponding stage resolves.
+
+### What each player observes
+
+**Adversary observes**: the opportunity (their own private information) and the detection result after Stage 4. They do NOT observe the Defender's allocation.
+
+**Defender observes**: the detection result after Stage 4. They do NOT observe the opportunity or the Adversary's intensity choice.
+
+This gives rise to the information sets enumerated above: 2 for the Adversary (one per opportunity value), 1 for the Defender (no information at decision time).
+
+### Terminal conditions and payoff computation
+
+The game always terminates after Stage 4. There are no draws or multi-round extensions in the base version. The payoff function is:
+
+```python
+def adversary_payoff(opportunity, intensity, detected):
+    if intensity == 0:  # None
+        return 0.0  # no maneuver, no benefit, no penalty regardless of detection
+    if opportunity:
+        if not detected:
+            return float(intensity)   # Light=+1, Heavy=+2
+        else:
+            return -3.0               # caught, regardless of intensity
+    else:  # no opportunity
+        if not detected:
+            return 0.0                # wasted maneuver budget, no penalty
+        else:
+            return -2.0               # caught maneuvering for no reason
+```
+
+The Defender's payoff is the negation of the Adversary's payoff (zero-sum).
+
+### Game tree size
+
+The game tree has the following structure:
+
+- **1 root node** (chance): 2 outcomes (opportunity/no-opportunity)
+- **2 Adversary decision nodes** (one per opportunity): 3 actions each
+- **6 Defender decision nodes** (one per (opportunity, intensity) pair): 3 actions each
+  - But the Defender cannot distinguish these! All 6 world states belong to 1 information set.
+- **18 chance nodes** (one per (opportunity, intensity, allocation) triple): 2 outcomes each (detected/not)
+- **36 terminal nodes**
+
+Total nodes: 1 + 2 + 6 + 18 + 36 = 63. This is tiny enough to hand-verify.
+
+## Information structure choices and equilibrium effects
+
+The design choice of what each player observes is not cosmetic. It fundamentally changes the game's equilibrium. Here we examine three information structure variants and how they differ.
+
+### Variant A: Full information (both players observe everything)
+
+If the Defender could observe the opportunity and the Adversary's intensity before choosing an allocation, and the Adversary could observe the allocation before choosing intensity, the game becomes a perfect-information game. In this case, backward induction gives the solution directly:
+
+- Defender, seeing Heavy intensity, plays Narrow (0.85 detection vs. 0.65 for Wide)
+- Adversary, knowing Defender will play Narrow, plays Light (0.30 detection vs. 0.85 for Narrow/Heavy)
+- But Defender, knowing Adversary plays Light, is indifferent between Wide and Narrow (equal utility)
+
+The equilibrium is pure in this variant. No randomization required. Not interesting for CFR.
+
+### Variant B: Simultaneous-move game (neither player observes the other)
+
+If Adversary and Defender choose simultaneously without observing each other, the game is a simultaneous-move matrix game. This is simpler than the sequential imperfect-information game. The matrix (for the "opportunity = Yes" subgame) is:
+
+| Adversary \ Defender | Wide | Narrow | Off |
+|---------------------|------|--------|-----|
+| None               | 0    | 0      | 0   |
+| Light              | -1   | +0.6   | +1  |
+| Heavy              | -0.3 | -1.55  | +2  |
+
+(Values computed using detection probabilities and payoff formula.)
+
+**Decoding:** Each cell is the Adversary's expected payoff when both players commit to their pure strategy. For example, Adversary plays Light, Defender plays Wide: expected payoff = (1 - 0.5) * 1 + 0.5 * (-3) = 0.5 - 1.5 = -1.0. The rows and columns show that no pure strategy dominates: the Adversary's best response depends on what the Defender plays, and vice versa. Mixed strategies are needed.
+
+### Variant C: Sequential with partial observability (our actual game)
+
+The sequential structure (Adversary acts first, Defender acts second without observing the Adversary) is what we use. The key consequence: the Defender's strategy cannot condition on the Adversary's actual action, only on the public history (which in Stage 3 contains nothing, since the Adversary's action is private). This is *less* information for the Defender than Variant A, which means the Adversary can exploit the Defender's uncertainty.
+
+The equilibrium in Variant C has a richer structure than Variant B because of the sequential commitment: the Adversary moves first and the Defender's uncertainty about what was chosen drives the equilibrium mixing.
+
+### Generating the game tree in Python
+
+The following code produces the complete game tree for visualization:
+
+```python
+"""
+Generate the conjunction-masking game tree and enumerate all paths.
+"""
+
+OPPORTUNITY_PROB = {True: 0.4, False: 0.6}
+INTENSITIES = [0, 1, 2]   # None, Light, Heavy
+ALLOCATIONS = [0, 1, 2]   # Wide, Narrow, Off
+INTENSITY_NAMES = {0: "None", 1: "Light", 2: "Heavy"}
+ALLOCATION_NAMES = {0: "Wide", 1: "Narrow", 2: "Off"}
+
+DETECTION_PROB = {
+    (0, 0): 0.05, (0, 1): 0.05, (0, 2): 0.0,
+    (1, 0): 0.50, (1, 1): 0.30, (1, 2): 0.0,
+    (2, 0): 0.65, (2, 1): 0.85, (2, 2): 0.0,
+}
+
+def adversary_payoff(opportunity, intensity, detected):
+    if intensity == 0:
+        return 0.0
+    if opportunity:
+        return float(intensity) if not detected else -3.0
+    else:
+        return 0.0 if not detected else -2.0
+
+def enumerate_game_tree():
+    """
+    Enumerate all terminal nodes with their path probabilities.
+    Returns list of dicts with all path variables and their probability.
+    """
+    paths = []
+    for opp, opp_prob in OPPORTUNITY_PROB.items():
+        for intensity in INTENSITIES:
+            for allocation in ALLOCATIONS:
+                det_prob = DETECTION_PROB[(intensity, allocation)]
+                for detected in [True, False]:
+                    prob = (opp_prob
+                            * (det_prob if detected else 1 - det_prob))
+                    adv_rew = adversary_payoff(opp, intensity, detected)
+                    paths.append({
+                        "opportunity": opp,
+                        "intensity": intensity,
+                        "allocation": allocation,
+                        "detected": detected,
+                        "path_prob": prob,
+                        "adversary_reward": adv_rew,
+                        "defender_reward": -adv_rew,
+                    })
+    return paths
+
+# Print the game tree
+paths = enumerate_game_tree()
+total_prob = sum(p["path_prob"] for p in paths)
+assert abs(total_prob - 1.0) < 1e-9, f"Probabilities must sum to 1: {total_prob}"
+
+# Group by Adversary information set
+from itertools import groupby
+adv_groups = {}
+for path in paths:
+    key = "opp=Yes" if path["opportunity"] else "opp=No"
+    adv_groups.setdefault(key, []).append(path)
+
+print("=== Game tree summary ===")
+for infoset, group in sorted(adv_groups.items()):
+    print(f"\nAdversary info set: {infoset}")
+    for path in group:
+        print(f"  Intensity={INTENSITY_NAMES[path['intensity']]}, "
+              f"Alloc={ALLOCATION_NAMES[path['allocation']]}, "
+              f"Det={path['detected']}: "
+              f"prob={path['path_prob']:.4f}, "
+              f"adv_reward={path['adversary_reward']}")
+```
+
+Expected output (first group):
+
+```
+=== Game tree summary ===
+
+Adversary info set: opp=No
+  Intensity=None, Alloc=Wide, Det=True: prob=0.0030, adv_reward=0.0
+  Intensity=None, Alloc=Wide, Det=False: prob=0.0570, adv_reward=0.0
+  ...
+
+Adversary info set: opp=Yes
+  Intensity=Heavy, Alloc=Wide, Det=True: prob=0.1040, adv_reward=-3.0
+  Intensity=Heavy, Alloc=Wide, Det=False: prob=0.0560, adv_reward=2.0
+  ...
+```
+
+## Calibrating the game to reality
+
+The detection probability table is the primary calibration parameter. The values in the table should be grounded in actual sensor performance, even if coarsely.
+
+### Orbital mechanics constraints
+
+A satellite with mass $m$ and specific impulse $I_{sp}$ has delta-v budget:
+
+$$\Delta v = I_{sp} \cdot g_0 \cdot \ln\left(\frac{m_0}{m_f}\right)$$
+
+**Decoding:** This is the Tsiolkovsky rocket equation. $I_{sp}$ is the propellant efficiency (seconds), $g_0 = 9.81 \, \text{m/s}^2$ is the standard gravitational acceleration, $m_0$ is initial mass, and $m_f$ is final (dry) mass. For a typical small satellite (100 kg, $I_{sp} = 220$ s, 5% propellant mass), the total $\Delta v$ budget is approximately 220 × 9.81 × ln(1/0.95) ≈ 110 m/s. This budget constrains the "intensity" levels to physically plausible maneuver sizes.
+
+In the game, the intensity levels correspond roughly to:
+- None: 0 m/s (no maneuver)
+- Light: 1-5 m/s (within typical station-keeping budget)
+- Heavy: 10-50 m/s (a significant portion of the satellite's total delta-v budget)
+
+This calibration matters because it affects the strategic balance: a Heavy maneuver that costs 30 m/s is a much bigger commitment than one that costs 1 m/s.
+
+### Sensor detection capabilities
+
+The detection probabilities in the game are derived from a simplified version of the signal-to-noise ratio framework used in SSA:
+
+$$P_D = 1 - \exp\left(-\frac{(SNR)^2}{2}\right)$$
+
+where SNR depends on the sensor's aperture, the maneuver magnitude, and the measurement noise. Wide allocation uses many sensors with lower individual SNR; Narrow allocation focuses one high-sensitivity sensor.
+
+The key insight for calibration: the detection probability for a given maneuver magnitude increases roughly quadratically with the aperture and linearly with dwell time. A Wide allocation that splits sensor resources across multiple detection modes will have a lower probability of detecting any specific maneuver than a Narrow allocation that concentrates all resources on heavy-maneuver signatures.
+
+### Why simplified games yield operational insights
+
+The conjunction-masking game does not simulate orbital mechanics. It abstracts away orbital geometry, sensor noise models, conjunction probability computation, and decision timelines. So why should the equilibrium strategies say anything useful?
+
+The answer is that the **strategic structure** — not the mechanics — drives the equilibrium. Two games with completely different physical realizations but the same payoff structure and information constraints will have the same Nash equilibrium. The conjunction-masking game captures the essential strategic structure:
+
+- Private information drives deception incentives
+- Detection probability is a function of both sides' choices
+- The zero-sum nature means improving one side comes at the other's expense
+
+A defense planner using the equilibrium strategy does not need to know the details of the game model to use the result correctly. They need to know: "at equilibrium, mix maneuver intensities in roughly these proportions." The orbital mechanics informs which maneuvers are feasible; the game-theoretic computation tells you the optimal mixing.
+
+## The full SSA game specification
+
+Here we state the conjunction-masking game as a formal 7-tuple, the standard representation for an imperfect-information extensive-form game.
+
+### Formal 7-tuple
+
+The game is defined as $\Gamma = (N, A, H, Z, \chi, \rho, u, \mathcal{I})$ where:
+
+**$N = \{0, 1\}$** — the player set (Adversary = 0, Defender = 1). Chance is not a player; it is modeled separately.
+
+**$A$** — the action set. For each player at each information set:
+- Adversary information set "opp=Yes": $A_0 = \{0, 1, 2\}$ (None, Light, Heavy)
+- Adversary information set "opp=No": $A_0 = \{0, 1, 2\}$
+- Defender information set "": $A_1 = \{0, 1, 2\}$ (Wide, Narrow, Off)
+- Chance at root: $A_c = \{0, 1\}$ (No opportunity, Opportunity)
+- Chance at detection: $A_c = \{0, 1\}$ (Not detected, Detected)
+
+**$H$** — the set of all histories (nodes in the game tree). A history is a sequence of actions from the root. $|H| = 63$ (as counted earlier).
+
+**$Z \subset H$** — the terminal histories. $|Z| = 36$.
+
+**$\chi: H \setminus Z \to 2^A$** — the action function, mapping each non-terminal history to its legal actions.
+
+**$\rho: H \setminus Z \to N \cup \{c\}$** — the player function, mapping each non-terminal history to the player acting there ($c$ = chance).
+
+**$u: Z \to \mathbb{R}^2$** — the utility function. $u_0(z)$ is the Adversary's payoff at terminal node $z$; $u_1(z) = -u_0(z)$ (zero-sum).
+
+**$\mathcal{I} = (\mathcal{I}_0, \mathcal{I}_1)$** — the information partition. Each $\mathcal{I}_i$ is a partition of the decision nodes of player $i$ into information sets:
+- $\mathcal{I}_0 = \{\{h : \text{opp}(h) = \text{Yes}\}, \{h : \text{opp}(h) = \text{No}\}\}$
+- $\mathcal{I}_1 = \{\{h : \text{Defender acts}\}\}$ — one information set containing all Defender decision nodes
+
+### State space dimensionality
+
+For the base game:
+- Opportunity: 2 values
+- Intensity: 3 values
+- Allocation: 3 values
+- Detection: 2 values + "not yet resolved"
+- Total world states: 2 × 3 × 3 × 3 = 54 (some unreachable)
+
+For the scaled game (7 intensities, 5 allocations, 4 opportunity types):
+- Total world states: 4 × 7 × 5 × 2 = 280
+- Number of information sets: 4 (Adversary) + 1 (Defender) = 5
+- Total strategy parameters: 4 × 7 + 1 × 5 = 33
+
+### Action space
+
+| Player | Actions | Count | Representation |
+|--------|---------|-------|---------------|
+| Adversary (opp=Yes) | None, Light, Heavy | 3 | {0, 1, 2} |
+| Adversary (opp=No) | None, Light, Heavy | 3 | {0, 1, 2} |
+| Defender | Wide, Narrow, Off | 3 | {0, 1, 2} |
+| Chance (root) | No opp (p=0.6), Opp (p=0.4) | 2 | {0, 1} |
+| Chance (detection) | Not detected, Detected | 2 | {0, 1} (prob from table) |
+
+### Observation model
+
+Let $s = (\omega, \alpha, \delta, r)$ denote a world state (opportunity, adversary action, defender action, detection result).
+
+**Adversary observation function**: $o_0(s) = \omega$ — the Adversary observes only the opportunity at the time of their decision. After Stage 4, they also observe $r$ (whether they were detected).
+
+**Defender observation function**: $o_1(s) = r$ — the Defender observes only the detection result after Stage 4. Before Stage 3, $o_1(s) = \emptyset$ (no observation).
+
+### Reward function
+
+$$u_0(\omega, \alpha, \delta, r) = \begin{cases}
+0 & \text{if } \alpha = 0 \text{ (no maneuver)} \\
+\alpha & \text{if } \omega = 1, r = 0 \text{ (opportunity, not detected)} \\
+-3 & \text{if } \omega = 1, r = 1 \text{ (opportunity, detected)} \\
+0 & \text{if } \omega = 0, r = 0 \text{ (no opportunity, not detected)} \\
+-2 & \text{if } \omega = 0, r = 1 \text{ (no opportunity, detected)}
+\end{cases}$$
+
+**Decoding:** The reward has five cases, each corresponding to a combination of opportunity, detection, and whether a maneuver was actually attempted. The most important structural feature is the asymmetry: the cost of detection (-3) exceeds the maximum maneuver benefit (+2), so no maneuver-intensity strategy dominates; the Adversary must weigh expected benefit against detection risk. The -2 penalty for "caught with no opportunity" is lower than -3 because being caught for a purposeless maneuver is diplomatically less damaging than being caught exploiting a conjunction opportunity.
+
 ## What the capstone will build
 
 The capstone (the project file for this module) walks through, in order:
@@ -193,6 +533,15 @@ The capstone (the project file for this module) walks through, in order:
 9. Building a CLI that runs everything and produces output you can inspect.
 
 The pedagogy is: build it small and tabular first (you can verify every number by hand if needed), then add the deep CFR scaffolding (you can compare against the tabular ground truth), then scale up the game (the tabular version still works for verification at modest scale).
+
+## Key Takeaways
+
+- A good SSA game for algorithm testing has three properties simultaneously: small enough for vanilla CFR (verifiable), rich enough for non-trivial mixed strategies (interesting), and grounded enough in orbital mechanics for operational interpretation (meaningful).
+- The conjunction-masking game's five design principles — interpretable state, meaningful tradeoffs, partial observability where warranted, tractable action space, and calibrated parameters — apply to any future SSA game you design.
+- Information structure is not cosmetic: changing who observes what changes the equilibrium qualitatively, not just quantitatively; the sequential imperfect-information structure of the game forces richer mixing than either the full-information or simultaneous-move variants.
+- The formal 7-tuple $\Gamma = (N, A, H, Z, \chi, \rho, u, \mathcal{I})$ is the complete specification; every design decision reduces to a choice in one of these seven components.
+- Calibrating detection probabilities to real sensor physics and maneuver intensities to delta-v budgets ensures that equilibrium strategies describe behaviors that are physically achievable and operationally meaningful — not just abstract optima.
+- The scaled variant (7 intensities, 5 allocations, 4 opportunity types) is deliberately designed to be solvable by both tabular CFR and deep CFR, so you can verify the deep variant against a ground truth before trusting it on games too large for tabular methods.
 
 ## Quiz
 

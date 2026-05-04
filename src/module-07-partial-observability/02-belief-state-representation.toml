@@ -1,0 +1,35 @@
+[[questions]]
+id = "f6a7b8c9-d0e1-2345-fabc-456789012345"
+type = "MultipleChoice"
+prompt.prompt = "In a particle filter, what does each particle represent?"
+prompt.distractors = [
+  "A gradient of the log-likelihood with respect to the state",
+  "A summary statistic of the belief distribution (mean, covariance)",
+  "A learned feature embedding of the observation history",
+]
+answer.answer = "A hypothesis about the current hidden state, with each particle weighted by how well it explains the observations"
+context = "A particle filter represents the belief as a set of N weighted samples from the state space. Each particle is a specific state hypothesis. After an observation, weights are updated proportional to the observation likelihood under that hypothesis. Resampling concentrates particles near high-likelihood regions."
+
+[[questions]]
+id = "f6a7b8c9-d0e1-2345-fabc-456789012346"
+type = "MultipleChoice"
+prompt.prompt = "What is particle deprivation and how is it detected?"
+prompt.distractors = [
+  "When the particle filter has too many particles, causing memory overflow",
+  "When all particles agree on the same state hypothesis, reducing diversity",
+  "When the observation likelihood is zero for all particles due to a sensor fault",
+]
+answer.answer = "When all particles have near-zero weight after an observation, detected via the effective sample size (ESS = 1 / sum(w_i^2)) falling below a threshold"
+context = "Particle deprivation happens when the true state has drifted far from the particle cloud — none of the hypotheses explain the new observation well. ESS measures diversity: if all weight concentrates on one particle, ESS ≈ 1. Roughening (adding noise to particles) or injection (sampling fresh particles) recovers diversity."
+
+[[questions]]
+id = "f6a7b8c9-d0e1-2345-fabc-456789012347"
+type = "MultipleChoice"
+prompt.prompt = "Why does a DRQN (Deep Recurrent Q-Network) implicitly maintain a belief state?"
+prompt.distractors = [
+  "DRQN uses attention over the full observation history to reconstruct the state",
+  "DRQN learns an explicit particle filter as part of the network architecture",
+  "DRQN copies the Kalman filter equations into the recurrent cell update",
+]
+answer.answer = "The LSTM hidden state is updated with each new observation, effectively compressing the observation history into a fixed-size vector that approximates the belief"
+context = "An LSTM cell's hidden state h_t = f(h_{t-1}, o_t) is a learned sufficient statistic of observations o_1,...,o_t. For POMDP problems, this plays the same role as an explicit belief: it summarizes what the agent has seen. Unlike an explicit particle filter, the representation is learned rather than handcrafted."

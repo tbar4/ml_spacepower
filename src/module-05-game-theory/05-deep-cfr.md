@@ -1,5 +1,7 @@
 # Lesson 5: Deep CFR
 
+**Module/Source:** Brown et al. (2019) "Deep Counterfactual Regret Minimization" (ICML 2019) — the original Deep CFR paper. Heinrich and Silver (2016) "Deep Reinforcement Learning from Self-Play in Imperfect-Information Games" for Neural Fictitious Self-Play, a related approach. Brown and Sandholm (2019) "Superhuman AI for multiplayer poker" (Science) — Pluribus, which used a deep CFR blueprint strategy. Architecture and training details follow the notation in the Deep CFR paper and the OpenSpiel implementation. Game theory foundations: Zinkevich et al. (2007) and Lanctot et al. (2009). PyTorch implementation patterns follow the official PyTorch documentation.
+
 ## Where this fits
 
 Vanilla CFR and MCCFR store regrets in a table indexed by information set. For huge games, the table is too big. Deep CFR replaces the table with a neural network: at each information set, the network predicts the regrets for each action. This is the same idea as DQN (Module 3, lesson 4): replace a tabular representation with a function approximator that can generalize across similar inputs. Deep CFR has produced state-of-the-art results in poker games too large for tabular MCCFR. The pattern (table → network) is a recurring theme: every algorithm in this curriculum has both a tabular and a deep variant.
@@ -216,6 +218,245 @@ Most CFR research today uses deep variants. Pluribus, the superhuman 6-player Ho
 The pattern from CFR is the same as everywhere else in this curriculum: tabular methods are simple and provably correct on small problems; neural network function approximation extends them to large problems at the cost of some theoretical guarantees and a lot of engineering. The same pattern from DQN (replacing Q tables with Q networks) appears in CFR.
 
 For the project, you will implement vanilla CFR. Once you understand it concretely, the variants (MCCFR, deep CFR) are conceptual modifications, not new algorithms.
+
+## The advantage network
+
+### What it predicts: per-action instantaneous regrets
+
+The regret network's prediction target is not cumulative regret but **instantaneous counterfactual regret** — how much better each action would have been than the current strategy at this information set in this traversal:
+
+\\[ \hat{A}_i(I, a) = v_i(I, a) - v_i(I) = v_i(I, a) - \sum_{a'} \sigma_i(I, a') \cdot v_i(I, a') \\]
+
+**Decoding:**
+- \\(v_i(I, a)\\): expected utility if action \\(a\\) were always taken at \\(I\\)
+- \\(v_i(I)\\): expected utility under the current mixed strategy
+- \\(\hat{A}_i(I, a)\\): the "advantage" of \\(a\\) over the average — positive means \\(a\\) is better than the current mix
+
+### Why advantages, not values
+
+Regret matching only cares about relative differences between actions: \\(\sigma^{t+1}(a) \propto \max(0, R^t(a))\\). A constant offset added to all regrets cancels out in the normalization and does not affect the resulting strategy. Predicting advantages (automatically zero-centered across actions at any given information set) removes this irrelevant degree of freedom and stabilizes training.
+
+In the satellite-vs-jammer spectrum game, raw node values span -100 to +1; advantages span roughly -5 to +5 — a much easier regression target.
+
+### PyTorch code for the advantage network architecture
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+
+
+class AdvantageNetwork(nn.Module):
+    """Predicts per-action instantaneous counterfactual advantages for Deep CFR."""
+
+    def __init__(self, info_set_dim: int, num_actions: int, hidden_dim: int = 256):
+        super().__init__()
+        self.input_layer = nn.Sequential(
+            nn.Linear(info_set_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.ReLU()
+        )
+        self.residual = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim), nn.LayerNorm(hidden_dim),
+        )
+        self.output_layer = nn.Linear(hidden_dim, num_actions)
+        # No output activation: advantages can be any real value
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.input_layer(x)
+        x = x + F.relu(self.residual(x))   # residual connection
+        return self.output_layer(x)
+
+    def get_strategy(self, x: torch.Tensor) -> torch.Tensor:
+        """Convert advantages to strategy via regret matching."""
+        with torch.no_grad():
+            adv = self.forward(x)
+            pos = torch.clamp(adv, min=0.0)
+            total = pos.sum(dim=-1, keepdim=True)
+            uniform = torch.ones_like(pos) / pos.shape[-1]
+            return torch.where(total > 0, pos / total, uniform)
+
+
+def train_advantage_network(network, optimizer, buffer, batch_size=256, epochs=5):
+    """Train on (info_set_encoding, instantaneous_regrets) pairs with MSE loss."""
+    if len(buffer) < batch_size:
+        return float('nan')
+    final_loss = 0.0
+    for _ in range(epochs):
+        batch = [buffer[i] for i in np.random.choice(len(buffer), batch_size, replace=False)]
+        states, targets = zip(*batch)
+        s_t = torch.tensor(np.array(states),  dtype=torch.float32)
+        r_t = torch.tensor(np.array(targets), dtype=torch.float32)
+        loss = F.mse_loss(network(s_t), r_t)
+        optimizer.zero_grad(); loss.backward()
+        torch.nn.utils.clip_grad_norm_(network.parameters(), 1.0)
+        optimizer.step()
+        final_loss = loss.item()
+    return final_loss
+
+
+# Spectrum game: info set = [own freq one-hot (8), observed jammer history (8), round (1)]
+NUM_FREQ_BANDS = 8
+INFO_SET_DIM   = NUM_FREQ_BANDS * 2 + 1
+adv_net = AdvantageNetwork(INFO_SET_DIM, NUM_FREQ_BANDS, hidden_dim=128)
+dummy   = torch.randn(32, INFO_SET_DIM)
+print(f"Output shape: {adv_net(dummy).shape}")          # (32, 8)
+print(f"Strategy sums: {adv_net.get_strategy(dummy).sum(-1)[:3]}")  # all 1.0
+```
+
+## The strategy network
+
+### What it predicts: average strategy
+
+While the advantage network predicts instantaneous regrets (used to drive the current strategy), the **strategy network** predicts the **time-averaged strategy** — the Nash approximation returned at the end of CFR training.
+
+In tabular CFR, the average strategy is maintained by accumulating \\(\sigma_\text{sum}(I, a) += \sigma^t(I, a)\\) each iteration. The strategy network fits this accumulated average directly, weighted by the player's reach probability at each information set each iteration.
+
+### Why it is a separate network
+
+The advantage network tracks fast-changing current regrets; the strategy network tracks the slow-converging historical average. Sharing one network would cause the fast advantage updates to destabilize the strategy estimates, just as using the current strategy instead of the average would prevent CFR from converging.
+
+An analogy: the strategy network is the neural equivalent of the `strategy_sum` table in the vanilla CFR code, while the advantage network is the neural equivalent of the `regrets` table.
+
+### Training with behavioral cloning
+
+The strategy network is trained by **behavioral cloning**: at each CFR traversal, when the opponent visits an information set, we record (info_set_encoding, current_strategy) as a training example. The strategy network minimizes cross-entropy loss against these observed strategies.
+
+```python
+import torch, torch.nn as nn, torch.nn.functional as F, numpy as np
+
+
+class StrategyNetwork(nn.Module):
+    """Predicts the time-averaged strategy (probability distribution over actions)."""
+
+    def __init__(self, info_set_dim: int, num_actions: int, hidden_dim: int = 256):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(info_set_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),   nn.LayerNorm(hidden_dim), nn.ReLU(),
+            nn.Linear(hidden_dim, num_actions),  # logits; softmax applied in forward
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Returns log-probabilities (use .exp() for probabilities)."""
+        return F.log_softmax(self.net(x), dim=-1)
+
+    def get_strategy(self, x: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            return self.forward(x).exp()
+
+
+def train_strategy_network_bc(network, optimizer, buffer, batch_size=256, epochs=5):
+    """Behavioral cloning: minimize cross-entropy against observed CFR strategies."""
+    if len(buffer) < batch_size:
+        return float('nan')
+    final_loss = 0.0
+    for _ in range(epochs):
+        batch = [buffer[i] for i in np.random.choice(len(buffer), batch_size, replace=False)]
+        info_sets, targets = zip(*batch)
+        s_t = torch.tensor(np.array(info_sets), dtype=torch.float32)
+        t_t = torch.tensor(np.array(targets),   dtype=torch.float32)
+        loss = -(t_t * network(s_t)).sum(dim=-1).mean()  # cross-entropy
+        optimizer.zero_grad(); loss.backward()
+        torch.nn.utils.clip_grad_norm_(network.parameters(), 1.0)
+        optimizer.step()
+        final_loss = loss.item()
+    return final_loss
+```
+
+## Memory buffer design
+
+### Reservoir sampling for old iterations
+
+Deep CFR needs training examples from **all past CFR iterations**. In standard RL (DQN), old replay buffer data becomes stale as the policy changes, so many RL algorithms discount or discard it. CFR is different: the Nash equilibrium is the **time average** over all past strategies, so old data is not stale — it is an essential part of the average being computed. Discarding it would corrupt the average and slow convergence.
+
+**Reservoir sampling** maintains a uniform random sample of all items seen so far in a fixed-capacity buffer:
+
+```
+For each incoming item x at position t in the stream:
+    If t <= capacity: add x to buffer
+    Else: with probability capacity/t, replace a random buffer entry with x
+```
+
+After processing any number of items, every item has equal probability \\(\text{capacity}/t\\) of being in the buffer — no bias toward recent data.
+
+```python
+import random
+from typing import Any, List, Optional
+
+
+class ReservoirBuffer:
+    """Uniform random sample over all items seen — correct for Deep CFR strategy buffers."""
+
+    def __init__(self, capacity: int, seed: Optional[int] = None):
+        self.capacity  = capacity
+        self.buffer: List[Any] = []
+        self.total_seen = 0
+        self.rng = random.Random(seed)
+
+    def add(self, item: Any) -> None:
+        self.total_seen += 1
+        if len(self.buffer) < self.capacity:
+            self.buffer.append(item)
+        else:
+            j = self.rng.randint(0, self.total_seen - 1)
+            if j < self.capacity:
+                self.buffer[j] = item
+
+    def sample(self, n: int) -> List[Any]:
+        return self.rng.sample(self.buffer, min(n, len(self.buffer)))
+
+    def __len__(self) -> int:
+        return len(self.buffer)
+
+    @property
+    def is_ready(self) -> bool:
+        return len(self.buffer) >= min(self.capacity // 10, 1000)
+```
+
+Use `ReservoirBuffer` for the strategy network (all iterations equal weight). For the advantage network, a weighted variant that gives more weight to recent iterations can improve empirical convergence, since recent regrets better reflect the current strategy.
+
+## Practical considerations
+
+### Batch size and training frequency
+
+Run \\(K \cdot |\mathcal{I}_i|\\) traversals before each network update (\\(K \in [5, 20]\\), \\(|\mathcal{I}_i|\\) = estimated info sets for player \\(i\\)). Too few traversals → overfitting to recent data; too many → network lags behind the true regret function. Mini-batch size 256–1024 is typical; gradient clipping (norm 1.0) prevents variance spikes from high-magnitude importance weights.
+
+### Warm-up period before iterates are useful
+
+The advantage network is randomly initialized, so its early predictions are meaningless. Using them to guide strategy immediately would flood the buffer with misleading regret estimates. The standard fix:
+
+1. Run \\(T_\text{warmup} = 10\\)–100 iterations with **uniform strategy** (ignoring the network).
+2. Collect regret estimates into the buffer under this uniform play.
+3. Train the network once on the initial buffer.
+4. Switch to network-guided play.
+
+By the time the network starts influencing the strategy, it has seen enough diverse game states to make non-trivial predictions.
+
+### How to evaluate: exploitability estimation
+
+The natural metric is **exploitability**: the maximum gain any player could achieve by best-responding to the current average strategy. At a Nash equilibrium, exploitability is zero.
+
+Three practical methods:
+1. **Exact best response** (small games): traverse the full game tree to compute best-response value exactly.
+2. **Local best response (LBR)**: run a greedy best-response search for a limited number of nodes; the gain is a lower bound on exploitability.
+3. **Head-to-head win rate** against a fixed baseline (easy but less theoretically grounded).
+
+Expected exploitability trajectory on the spectrum game:
+- Iteration 0 (uniform): ~0.33 (worst case for 3-action game)
+- Iteration 100: ~0.05–0.10
+- Iteration 1000: ~0.005–0.02
+
+A plateauing exploitability curve signals insufficient network capacity or buffer size. An oscillating curve signals training instability — reduce the learning rate or increase the warm-up period.
+
+## Key Takeaways
+
+- The **advantage network** predicts per-action instantaneous counterfactual regrets (advantages) rather than raw values, because regret matching is invariant to constant offsets — advantages are automatically zero-centered and have uniform scale across information sets, making them easier to learn.
+- The **strategy network** is a separate network trained by behavioral cloning to predict the time-averaged strategy (the Nash approximation); the separation reflects the two-table structure of tabular CFR: fast-changing `regrets` table vs. slow-accumulating `strategy_sum` table.
+- **Reservoir sampling** is the correct buffer design for Deep CFR because the Nash approximation is a time average over all past iterations — old data is equally valuable to new data, unlike RL where old policy data becomes stale.
+- The **warm-up period** (10–100 iterations with uniform strategy) prevents the buffer from being polluted with meaningless regret estimates from the randomly initialized network before it has seen enough game states.
+- **Exploitability** (maximum gain from best-responding) is the principled evaluation metric; local best response (LBR) provides a cheap lower bound; a plateauing curve indicates capacity problems, an oscillating curve indicates training instability.
+- Deep CFR follows the same tabular-to-deep pattern as DQN and deep MCTS: neural function approximation scales CFR to games too large for a regret table, at the cost of weaker convergence guarantees and significantly more engineering complexity.
 
 ## Quiz
 

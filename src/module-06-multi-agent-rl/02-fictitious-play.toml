@@ -1,0 +1,35 @@
+[[questions]]
+id = "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+type = "MultipleChoice"
+prompt.prompt = "In fictitious play, what does each agent do on each round?"
+prompt.distractors = [
+  "Sample a random strategy from its history and play it",
+  "Play the strategy that the opponent played most recently",
+  "Update its strategy using the policy gradient theorem",
+]
+answer.answer = "Play a best response to the empirical distribution (historical frequency) of the opponent's past actions"
+context = "Fictitious play builds a belief about the opponent — the frequency with which they have played each action — and then best-responds to that belief. Over time, the empirical frequency converges to a fixed point, which is a Nash equilibrium in zero-sum games."
+
+[[questions]]
+id = "b2c3d4e5-f6a7-8901-bcde-f12345678902"
+type = "MultipleChoice"
+prompt.prompt = "Fictitious play is guaranteed to converge to Nash equilibrium in which type of game?"
+prompt.distractors = [
+  "Any finite normal-form game",
+  "General-sum games with more than two players",
+  "Cooperative games with a shared reward signal",
+]
+answer.answer = "Two-player zero-sum games (and certain other special classes, like identical-interest games)"
+context = "Convergence of fictitious play is proven for zero-sum games and games with identical interests. For general-sum games, it can cycle, as the Rock-Paper-Scissors example illustrates — best responses cycle indefinitely rather than stabilizing."
+
+[[questions]]
+id = "b2c3d4e5-f6a7-8901-bcde-f12345678903"
+type = "MultipleChoice"
+prompt.prompt = "What is the key difference between fictitious play and CFR in terms of what they track?"
+prompt.distractors = [
+  "Fictitious play tracks Q-values; CFR tracks policy gradients",
+  "Fictitious play applies to normal-form games only; CFR requires extensive-form games",
+  "Fictitious play uses neural networks; CFR uses tabular methods",
+]
+answer.answer = "Fictitious play averages past strategies (empirical frequency of play); CFR averages regret-minimizing strategies weighted by counterfactual values"
+context = "Both algorithms maintain an average strategy that converges to Nash. But CFR's per-information-set regret minimization uses counterfactual reach probabilities, giving it tighter convergence guarantees and better practical performance on imperfect-information games."

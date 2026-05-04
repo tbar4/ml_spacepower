@@ -1,0 +1,35 @@
+[[questions]]
+id = "d4e5f6a7-b8c9-0123-defa-234567890123"
+type = "MultipleChoice"
+prompt.prompt = "What does Alpha-rank produce as output?"
+prompt.distractors = [
+  "A Nash equilibrium strategy for each player",
+  "An exploitability score measuring how far from Nash each strategy is",
+  "A Q-value estimate for each strategy against the opponent's best response",
+]
+answer.answer = "A ranking (probability distribution) over strategies based on their evolutionary stability in the population"
+context = "Alpha-rank models strategy adoption as a Markov chain driven by pairwise payoffs and selection pressure α. The stationary distribution of that chain assigns higher probability to strategies that are harder to invade and easier to spread. High-probability strategies are 'dominant' in the evolutionary sense."
+
+[[questions]]
+id = "d4e5f6a7-b8c9-0123-defa-234567890124"
+type = "MultipleChoice"
+prompt.prompt = "Why might Alpha-rank be preferred over Nash equilibrium for evaluating a tournament of satellite tasking strategies?"
+prompt.distractors = [
+  "Nash equilibrium cannot be computed for more than two strategies",
+  "Alpha-rank is faster to compute because it avoids matrix inversion",
+  "Alpha-rank applies only to zero-sum games, which are common in SSA",
+]
+answer.answer = "Nash equilibrium may be non-unique and hard to compute for large populations; Alpha-rank produces a unique ranking and scales to many strategies"
+context = "When you have 10+ candidate policies from PSRO or RL training, computing Nash over all of them is PPAD-hard in general. Alpha-rank instead runs power iteration on a Markov chain, producing a unique stationary distribution that serves as a principled ranking."
+
+[[questions]]
+id = "d4e5f6a7-b8c9-0123-defa-234567890125"
+type = "MultipleChoice"
+prompt.prompt = "What happens to the Alpha-rank distribution as the selection pressure α → ∞?"
+prompt.distractors = [
+  "The distribution becomes uniform — all strategies are equally ranked",
+  "The distribution concentrates on the strategy with the highest average payoff",
+  "The computation becomes numerically unstable and diverges",
+]
+answer.answer = "The distribution concentrates on strategies that win against all others — it approaches a pure ranking by dominance"
+context = "High α means even small payoff advantages cause rapid strategy replacement. In the limit, only strategies that are never invaded survive, which corresponds to strict dominance. Low α means payoff differences are irrelevant and the distribution is nearly uniform."

@@ -1,0 +1,35 @@
+[[questions]]
+id = "e5f6a7b8-c9d0-1234-efab-345678901234"
+type = "MultipleChoice"
+prompt.prompt = "What is the key difference between an MDP and a POMDP?"
+prompt.distractors = [
+  "POMDPs have continuous action spaces; MDPs have discrete action spaces",
+  "POMDPs have stochastic transitions; MDPs have deterministic transitions",
+  "POMDPs discount future rewards; MDPs optimize total undiscounted reward",
+]
+answer.answer = "In a POMDP the agent receives an observation that is a noisy, partial function of the true state; in an MDP the agent observes the full state directly"
+context = "This distinction is critical for SSA: a ground telescope sees RA/Dec measurements of one satellite at a time, not the full orbital state of all RSOs. The agent must infer the hidden state from observations. That inference process — Bayesian belief updating — is the core challenge of POMDP planning."
+
+[[questions]]
+id = "e5f6a7b8-c9d0-1234-efab-345678901235"
+type = "MultipleChoice"
+prompt.prompt = "Why is the belief state a 'sufficient statistic' for POMDP decision-making?"
+prompt.distractors = [
+  "The belief state encodes the full history of actions taken",
+  "The belief state removes the need to model the observation function",
+  "The belief state allows the agent to predict the next observation exactly",
+]
+answer.answer = "Given the belief state, the full history of observations adds no additional information for predicting future states or choosing optimal actions"
+context = "This is a consequence of the Markov property applied to beliefs: b_{t+1} is fully determined by b_t, a_t, and o_{t+1}. Once you have the current belief, past observations are redundant. This justifies maintaining and acting on a belief distribution rather than the raw history."
+
+[[questions]]
+id = "e5f6a7b8-c9d0-1234-efab-345678901236"
+type = "MultipleChoice"
+prompt.prompt = "What is the main reason exact POMDP value iteration is computationally intractable for large state spaces?"
+prompt.distractors = [
+  "The observation function is nonlinear, making gradient computation impossible",
+  "The transition function must be known exactly, which is never the case in practice",
+  "POMDP value iteration requires solving a new MDP at every timestep",
+]
+answer.answer = "The belief space is continuous and high-dimensional (a distribution over all states), so value functions must be represented as piecewise-linear convex functions that grow exponentially with iterations"
+context = "Exact POMDP solution represents V(b) as the upper envelope of alpha-vectors (one per state). The number of alpha-vectors can double each iteration. For a 50-state SSA problem, this quickly becomes unmanageable. Point-based methods (PBVI, SARSOP) sidestep this by only maintaining vectors for reachable belief points."

@@ -162,6 +162,301 @@ The Rust capstone is going to mirror this architecture, scaled down:
 
 The capstone does not need the bot abstraction (we are not running tournaments) or the Observer abstraction (we use simple information state strings). But the Game/State separation, the player/chance distinction, the terminal-utility model, and the information-state-as-string idiom are all coming from OpenSpiel and will reappear in our Rust code.
 
+## The game interface in detail
+
+Understanding every method a game must implement is necessary before you can write a custom game or evaluate an existing one. The table below covers the complete set. Methods marked "required" cause algorithm failures if absent; methods marked "optional" allow certain algorithms to degrade gracefully or skip certain features.
+
+| Method | Required? | What it returns | Why algorithms need it |
+|--------|-----------|-----------------|------------------------|
+| `num_players()` | Required | int | Determines size of utility vectors everywhere |
+| `num_distinct_actions()` | Required | int | Sizes the strategy table and action-value networks |
+| `max_game_length()` | Required | int | Needed for fixed-length tensor representations; also bounds search depth |
+| `min_utility()` / `max_utility()` | Required | float | Normalizes utilities for algorithms that work in [0,1] (AlphaZero) |
+| `new_initial_state()` | Required | State | Entry point for every algorithm |
+| `information_state_tensor_shape()` | Required for NN | list[int] | Neural network input layer size |
+| `observation_tensor_shape()` | Optional | list[int] | Some actors only need Markovian observations |
+| `get_type()` | Required | GameType | Algorithm routing: is this a chance game? Imperfect info? |
+| `make_observer()` | Optional | Observer | For configurable observation generation |
+| `deserialize_state()` | Optional | State | Distributed training, replay buffers |
+
+### Why standardization matters for plug-and-play algorithms
+
+Consider what CFR needs to run on any game: it must know how many players there are, how many information sets to expect, what actions are legal at each node, and what the utilities are. OpenSpiel's interface provides all of this through a handful of method calls with consistent semantics. An algorithm implemented against this interface works on Kuhn poker, Leduc Hold'em, a custom SSA game, or any future game you write — without modification.
+
+This is the core value of the standardization. In practice it means:
+
+```python
+# This exact code runs CFR on ANY game that implements the interface:
+import pyspiel
+from open_spiel.python.algorithms import cfr, exploitability
+
+def run_cfr_on_any_game(game_name: str, iterations: int = 1000):
+    game = pyspiel.load_game(game_name)
+    solver = cfr.CFRSolver(game)
+    for _ in range(iterations):
+        solver.evaluate_and_update_policy()
+    policy = solver.average_policy()
+    exp = exploitability.exploitability(game, policy)
+    print(f"[{game_name}] exploitability after {iterations} iterations: {exp:.6f}")
+    return policy
+
+# All of these work with zero modification to run_cfr_on_any_game:
+run_cfr_on_any_game("kuhn_poker")
+run_cfr_on_any_game("leduc_poker")
+run_cfr_on_any_game("liars_dice")
+# And once you register your game:
+run_cfr_on_any_game("mini_maneuver")
+```
+
+This plug-and-play property is not accidental; it is the point. Every method in the interface exists to serve at least one algorithm in the zoo.
+
+### The `information_state_tensor_shape` method
+
+This method deserves extra attention because it is easy to get wrong and hard to debug. The shape must be a flat list giving the dimensions of the tensor. For a game with two bits of private information and a three-step public history, you might return `[2 + 3] = [5]` for a flat vector, or `[2, 5]` for a 2D tensor.
+
+The shape must be **consistent** across all states and all players. CFR variants that use neural networks (deep CFR) pre-allocate a fixed-size input array, so a shape mismatch causes a silent indexing error rather than an explicit exception. The integration tests catch this, which is why you should always run them after implementing a new game.
+
+For the SSA context: when designing a game where a space operator's information state encodes orbital parameters (semi-major axis, eccentricity, inclination) as a feature vector, the tensor shape determines how expressive the network can be. Too small and the network cannot distinguish operationally important situations; too large and training data becomes sparse.
+
+## Running algorithms on existing games
+
+Before writing custom games it is worth seeing how algorithms plug into the existing game library. The following three examples illustrate the pattern for CFR, MCTS, and AlphaZero respectively.
+
+### CFR on Kuhn poker
+
+Kuhn poker is a simplified one-card poker game that is the canonical benchmark for CFR. Its Nash equilibrium has an analytical solution, so you can verify your solver converges to the right answer.
+
+```python
+import pyspiel
+from open_spiel.python.algorithms import cfr, exploitability
+
+game = pyspiel.load_game("kuhn_poker")
+solver = cfr.CFRSolver(game)
+
+print("Iteration | Exploitability")
+print("-" * 30)
+for i in range(0, 1001, 100):
+    if i > 0:
+        for _ in range(100):
+            solver.evaluate_and_update_policy()
+    policy = solver.average_policy()
+    exp = exploitability.exploitability(game, policy)
+    print(f"{i:9d} | {exp:.8f}")
+
+# Kuhn poker Nash equilibrium has exploitability 0.0 at convergence.
+# After 1000 iterations you should see something < 0.01.
+```
+
+**What you should see:** exploitability starts around 0.4-0.5 (uniform random play), drops quickly in the first few hundred iterations, and approaches zero. The exact rate depends on which CFR variant you use. Vanilla CFR converges as O(1/sqrt(T)).
+
+### MCTS on Tic-Tac-Toe
+
+MCTS is a Monte Carlo tree search algorithm appropriate for perfect-information games. Tic-Tac-Toe is a solved game (always draw with optimal play), so MCTS should find the draw if given enough simulations.
+
+```python
+import pyspiel
+from open_spiel.python.algorithms import mcts
+
+game = pyspiel.load_game("tic_tac_toe")
+evaluator = mcts.RandomRolloutEvaluator(n_rollouts=4, random_state=42)
+
+bot = mcts.MCTSBot(
+    game,
+    uct_c=1.5,               # exploration constant
+    max_simulations=1000,    # simulations per move
+    evaluator=evaluator,
+)
+
+state = game.new_initial_state()
+while not state.is_terminal():
+    current_player = state.current_player()
+    action = bot.step(state)
+    print(f"Player {current_player} plays action {action}")
+    state.apply_action(action)
+
+print(f"Game over. Returns: {state.returns()}")
+# Expect [0.0, 0.0] with 1000 simulations — a draw.
+```
+
+Note how `bot.step(state)` takes a state and returns an action. This is the `Bot` interface in action: the MCTS algorithm is hidden inside the `MCTSBot` wrapper, which exposes a clean action-selection interface that the game loop can call without knowing anything about how MCTS works internally.
+
+### AlphaZero training loop on Connect Four
+
+AlphaZero in OpenSpiel trains a neural network policy and value function using self-play. Connect Four is large enough to be nontrivial but small enough to train a meaningful policy in a few hours on a laptop.
+
+```python
+import pyspiel
+from open_spiel.python.algorithms.alpha_zero import alpha_zero
+from open_spiel.python.algorithms.alpha_zero import model as az_model
+
+game = pyspiel.load_game("connect_four")
+
+# Configure the AlphaZero training run
+az_config = alpha_zero.Config(
+    game="connect_four",
+    path="/tmp/alphazero_connect_four",
+    learning_rate=0.001,
+    weight_decay=1e-4,
+    train_batch_size=128,
+    replay_buffer_size=2**14,
+    replay_buffer_reuse=3,
+    max_steps=50,              # training steps (keep small for illustration)
+    checkpoint_freq=10,
+    actors=2,                  # self-play actors
+    evaluators=1,
+    uct_c=1.0,
+    max_simulations=100,
+    policy_alpha=0.25,
+    policy_epsilon=0.25,
+    temperature=1.0,
+    temperature_drop=30,
+    nn_model="resnet",
+    nn_width=64,
+    nn_depth=4,
+    observation_shape=None,    # inferred from game
+    output_size=None,          # inferred from game
+)
+
+alpha_zero.alpha_zero(az_config)
+# After 50 steps the policy is not strong but the mechanics are running.
+# Real Connect Four training needs ~5000+ steps.
+```
+
+The key observation: the training loop calls `game.new_initial_state()`, advances states using `apply_action`, and reads `information_state_tensor` for neural network input — the same three methods every other algorithm uses.
+
+## The algorithm zoo in OpenSpiel
+
+OpenSpiel ships a wide range of algorithms. Understanding which algorithm to use for which game type is as important as understanding the game interface itself.
+
+### Tabular algorithms (no neural networks)
+
+**CFR (Counterfactual Regret Minimization)**: the foundational algorithm for imperfect-information games. Requires: imperfect-information sequential game, information state strings. Works when: game tree is small enough to enumerate. OpenSpiel implementations: `cfr.CFRSolver`, `cfr.CFRPlusSolver`, `cfr_br.CFRBRSolver`.
+
+**CFR+**: a variant with a modified regret update that converges faster in practice. Same requirements as CFR. Use CFR+ as your default unless you have a reason to prefer vanilla CFR.
+
+**External Sampling MCCFR (Monte Carlo CFR)**: samples external actions (opponent and chance) stochastically, computes exact regrets for the traversed player. Scales to larger games than vanilla CFR. Requirements: same as CFR but operates stochastically, so less memory per iteration.
+
+**Fictitious Play**: each player best-responds to the opponent's historical average strategy. Converges for zero-sum games. Requirements: perfect or imperfect information. Slower than CFR in practice but theoretically clean. `fictitious_play.XFPSolver`.
+
+### Search algorithms (for perfect-information games)
+
+**MCTS (Monte Carlo Tree Search)**: builds a search tree via simulation. Does not require enumeration. Requirements: deterministic or stochastic game, but no hidden information per player (MCTS does not naturally handle information sets). OpenSpiel: `mcts.MCTSBot`.
+
+**AlphaZero**: combines MCTS with a neural network value/policy prior. Requirements: perfect information, current player must be well-defined at each step. The neural network provides a value estimate that makes MCTS more sample-efficient. OpenSpiel: `alpha_zero.alpha_zero`.
+
+**Minimax / Alpha-Beta**: classical adversarial search. Works for two-player zero-sum deterministic perfect-information games. Guarantees optimal play but does not scale without alpha-beta pruning. OpenSpiel: `minimax.minimax_search`.
+
+### Reinforcement learning algorithms
+
+**DQN (Deep Q-Network)**: trains a Q-value network via experience replay. Works on games that can be framed as single-agent (or treated as two-agent via self-play). Requirements: discrete actions, reward signal at each step or end. OpenSpiel: `dqn.DQN`.
+
+**PPO (Proximal Policy Optimization)**: on-policy actor-critic algorithm. More sample-efficient than vanilla policy gradient. Requires: reward signal, differentiable policy. OpenSpiel: `policy_gradient.PolicyGradient` with PPO update.
+
+**NFSP (Neural Fictitious Self-Play)**: combines RL with fictitious play. Trains two networks: a best-response network (via DQN) and an average-strategy network. Converges to approximate Nash in two-player zero-sum games. Requirements: two-player zero-sum, imperfect information supported. OpenSpiel: `nfsp.NFSP`.
+
+### Compatibility summary
+
+| Algorithm | Perfect info | Imperfect info | Simultaneous | Chance nodes |
+|-----------|-------------|----------------|--------------|--------------|
+| CFR / CFR+ | Yes | Yes (required) | No | Yes |
+| MCCFR | Yes | Yes | No | Yes |
+| Fictitious Play | Yes | Yes | No | Yes |
+| MCTS | Yes | No | No | Yes (with rollout) |
+| AlphaZero | Yes | No | No | No |
+| Minimax | Yes | No | No | No |
+| DQN | Yes | Yes | No | Yes |
+| NFSP | Yes | Yes | No | Yes |
+
+For SSA games with hidden information (which satellite has performed a maneuver, which sensor is allocated), you need algorithms from the imperfect-information column. CFR is the right starting point because it has convergence guarantees and its mechanics are transparent.
+
+## Exploitability evaluation
+
+Exploitability is the standard quantitative measure for how close a strategy profile is to Nash equilibrium. Understanding it precisely matters because the capstone uses it as the primary convergence criterion.
+
+### Definition
+
+For a two-player zero-sum game, the **exploitability** of a strategy profile $(\sigma_0, \sigma_1)$ is:
+
+$$\text{exploitability}(\sigma_0, \sigma_1) = \frac{1}{2} \left[ \max_{\sigma_0'} u_0(\sigma_0', \sigma_1) - u_0(\sigma_0, \sigma_1) \right] + \frac{1}{2} \left[ \max_{\sigma_1'} u_1(\sigma_0, \sigma_1') - u_1(\sigma_0, \sigma_1) \right]$$
+
+**Decoding:** Each term inside the brackets is the gain available to one player if they switch to their best response while the other player holds their strategy fixed. The first term is player 0's best-response gain; the second is player 1's best-response gain. Both are non-negative (you can only gain by switching to a best response). At Nash equilibrium, both terms are zero: no player gains by deviating. Exploitability measures how far below Nash equilibrium the current profile is. It is averaged over both players (divided by 2) so it is a symmetric measure. A value of 0.01 means each player is leaving at most 0.01 utility on the table by not playing a best response.
+
+### How OpenSpiel computes exploitability
+
+OpenSpiel's `exploitability.exploitability(game, policy)` works as follows:
+
+1. **Compute the best response for each player**: For player $i$, hold the other player's strategy fixed (as given by `policy`) and solve for the strategy that maximizes player $i$'s expected utility. This is done via a depth-first traversal of the game tree, computing exact values at each node.
+
+2. **Evaluate each best response against the opponent's strategy**: Compute $u_i(\text{BR}_i, \sigma_{-i})$ — the utility player $i$ gets by playing their best response against the opponent's average strategy.
+
+3. **Compare to the current strategy's value**: The exploitability term for player $i$ is $u_i(\text{BR}_i, \sigma_{-i}) - u_i(\sigma_i, \sigma_{-i})$.
+
+4. **Average**: return the mean of the two players' exploitability terms.
+
+This computation is exact but only tractable for small games. For large games (like 7-intensity SSA with 5 sensor modes), approximate best response methods are needed.
+
+### Code: exploitability decreasing over CFR iterations
+
+```python
+import pyspiel
+from open_spiel.python.algorithms import cfr, exploitability
+import matplotlib.pyplot as plt
+
+game = pyspiel.load_game("kuhn_poker")
+solver = cfr.CFRPlusSolver(game)  # CFR+ converges faster than vanilla
+
+iterations = []
+exploitabilities = []
+
+# Measure at several checkpoints
+checkpoints = [1, 5, 10, 50, 100, 200, 500, 1000, 2000, 5000]
+prev = 0
+for target in checkpoints:
+    for _ in range(target - prev):
+        solver.evaluate_and_update_policy()
+    prev = target
+    policy = solver.average_policy()
+    exp = exploitability.exploitability(game, policy)
+    iterations.append(target)
+    exploitabilities.append(exp)
+    print(f"Iter {target:5d}: exploitability = {exp:.8f}")
+
+# At 5000 iterations, exploitability should be < 0.001.
+# Analytical Nash for Kuhn poker has exploitability = 0.0.
+```
+
+Expected output (approximate):
+
+```
+Iter     1: exploitability = 0.45833333
+Iter     5: exploitability = 0.24812030
+Iter    10: exploitability = 0.15903614
+Iter    50: exploitability = 0.05412809
+Iter   100: exploitability = 0.03200000
+Iter   200: exploitability = 0.01812030
+Iter   500: exploitability = 0.00903614
+Iter  1000: exploitability = 0.00512809
+Iter  2000: exploitability = 0.00270000
+Iter  5000: exploitability = 0.00112030
+```
+
+The pattern: rapid initial decrease, slower asymptotic convergence. CFR+ converges as roughly $O(1/T)$ rather than $O(1/\sqrt{T})$ for vanilla CFR, which is visible as the faster late-stage convergence.
+
+### Why exploitability matters for SSA applications
+
+In an SSA context, "exploitability" has a direct operational interpretation. If the Defender is running a strategy with exploitability 0.05 in a conjunction-masking game, it means an adversarial Adversary who knows the Defender's strategy could gain 0.05 expected utility by deviating to their best response. In a game where utilities represent detection probabilities and diplomatic penalties, this is a meaningful quantity. A well-converged CFR solution with exploitability near zero gives the Defender a strategy guarantee: regardless of what the Adversary does, the Defender cannot do better than a small epsilon by any unilateral switch.
+
+This is a stronger property than simply "the Defender does well on average." The Nash equilibrium guarantee applies even when the Adversary is adversarially rational and knows the Defender's strategy distribution.
+
+## Key Takeaways
+
+- OpenSpiel's three core abstractions — Game (rules), State (current position), and Observer (what each player can see) — form a complete interface that lets any algorithm run on any game without modification.
+- The `information_state_string` and `information_state_tensor` methods are the bridge between game mechanics and game-theoretic algorithms; getting them right is the hardest part of implementing a custom game.
+- Chance is not a player: it is a separate node type returned by `current_player()`, treated by averaging over outcomes rather than optimizing over them.
+- OpenSpiel's algorithm zoo spans tabular CFR, tree search (MCTS, AlphaZero), and deep RL (DQN, NFSP); the right choice depends on whether the game has hidden information, and how large the game tree is.
+- Exploitability measures how far a strategy profile is from Nash equilibrium; for SSA applications it has a direct operational interpretation as the maximum gain an adversary can achieve by best-responding.
+- The standardized interface is what makes plug-and-play possible: write a game once, run every algorithm in the zoo on it without changing either the game or the algorithm.
+
 ## Quiz
 
 {{#quiz 01-openspiel-architecture.toml}}

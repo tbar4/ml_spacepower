@@ -1,0 +1,35 @@
+[[questions]]
+id = "a1b2c3d4-e5f6-7890-abcd-ef1234567801"
+type = "MultipleChoice"
+prompt.prompt = "Why does independent Q-learning often fail to converge in multi-agent settings?"
+prompt.distractors = [
+  "The replay buffer is too small to store multi-agent transitions",
+  "Q-learning cannot handle discrete action spaces with more than one agent",
+  "The learning rate must be lower when multiple agents are present",
+]
+answer.answer = "The environment appears non-stationary from each agent's perspective, because other agents are simultaneously updating their policies"
+context = "Each agent's Q-function implicitly depends on other agents' behaviors. When those behaviors change during training, the Q-function targets shift — the agent is chasing a moving target, which breaks convergence guarantees that require a stationary MDP."
+
+[[questions]]
+id = "a1b2c3d4-e5f6-7890-abcd-ef1234567802"
+type = "MultipleChoice"
+prompt.prompt = "Which type of multi-agent game has the strongest theoretical guarantees for Nash equilibrium existence and computability?"
+prompt.distractors = [
+  "General-sum games",
+  "Cooperative games with separate rewards",
+  "Partially observable games",
+]
+answer.answer = "Two-player zero-sum games"
+context = "In two-player zero-sum games, von Neumann's minimax theorem guarantees a Nash equilibrium exists (in mixed strategies), it is unique in value, and it can be computed efficiently via linear programming. These guarantees break down in general-sum and multi-player settings."
+
+[[questions]]
+id = "a1b2c3d4-e5f6-7890-abcd-ef1234567803"
+type = "MultipleChoice"
+prompt.prompt = "What is the CTDE paradigm and why is it useful for satellite constellation management?"
+prompt.distractors = [
+  "Centralized Training and Decentralized Evaluation — training agents independently but evaluating them together",
+  "Concurrent Training with Distributed Execution — running multiple training processes in parallel",
+  "Continuous-Time Decentralized Execution — using continuous-time MDPs for real-time satellite control",
+]
+answer.answer = "Centralized Training, Decentralized Execution — agents share information during training but act independently during deployment"
+context = "During training, a centralized controller can share observations and rewards across all satellites. During operations, each satellite must act on its own sensor data without real-time coordination. CTDE bridges this gap: train a coordinated policy, deploy it in a decentralized manner."

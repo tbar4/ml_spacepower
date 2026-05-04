@@ -60,6 +60,180 @@ The set of possible actions is the **action space**. Action spaces can be:
 
 Different algorithms suit different action spaces. Q-learning and DQN work for discrete actions. Policy gradient methods work for both discrete and continuous. Pure tabular methods work only for small discrete action spaces.
 
+## Continuous vs. discrete action spaces in practice
+
+The telescope example has a clean discrete action space: 5 satellites, 5 choices. Real satellite operations are rarely this clean. Maneuvering a satellite involves commanding continuous thrust — a magnitude in Newtons and a direction in 3D space. There is no natural discretization.
+
+Consider a debris avoidance maneuver. The action space might be:
+- Thrust magnitude: any value in [0, 5] N
+- Thrust direction: any unit vector in R³ (parameterized as azimuth and elevation)
+
+This is a **continuous action space** with 3 degrees of freedom. No finite list of discrete actions captures it.
+
+### The discretization approach
+
+One option is to **bin** the continuous action space into a finite set of discrete choices:
+- Thrust magnitudes: {0, 1, 2, 3, 4, 5} N — 6 levels
+- Thrust azimuth: {0°, 45°, 90°, ..., 315°} — 8 directions
+- Thrust elevation: {-45°, 0°, 45°} — 3 levels
+
+This gives 6 × 8 × 3 = 144 discrete actions. DQN or Q-learning can now work on this problem. The cost is **loss of resolution**: the agent can only command one of 144 thrust vectors, not any vector in the continuous space. Fine maneuvers may be impossible.
+
+### The direct continuous approach
+
+Policy gradient methods (REINFORCE, PPO, SAC) work directly on continuous action spaces. Instead of outputting a probability distribution over a discrete set, the policy outputs parameters of a continuous distribution — typically a Gaussian mean and variance for each action dimension. The agent samples from this Gaussian to get an actual thrust command.
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.distributions import Categorical, Normal
+
+# ── Discrete telescope pointing ──────────────────────────────────────────────
+# 5 satellites, 5 discrete actions. DQN-style output.
+
+class TelescopePolicy(nn.Module):
+    """Discrete policy: output one probability per satellite."""
+    def __init__(self, state_dim, n_satellites=5):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(state_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, n_satellites),
+        )
+
+    def forward(self, state):
+        logits = self.net(state)
+        return Categorical(logits=logits)   # discrete distribution over 5 actions
+
+# ── Continuous satellite thrust ───────────────────────────────────────────────
+# Thrust: magnitude [0,5] N and direction in 3D. Policy gradient output.
+
+class ThrustPolicy(nn.Module):
+    """Continuous policy: output mean and log-std for each thrust dimension."""
+    def __init__(self, state_dim, action_dim=3):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(state_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+        )
+        self.mean_head = nn.Linear(64, action_dim)
+        # log-std is a learned parameter (not input-dependent here for simplicity)
+        self.log_std = nn.Parameter(torch.zeros(action_dim))
+
+    def forward(self, state):
+        features = self.net(state)
+        mean = self.mean_head(features)
+        std = torch.exp(self.log_std).clamp(min=1e-4)
+        return Normal(mean, std)   # continuous distribution over thrust vectors
+
+# Example: sample an action from each policy
+state = torch.randn(10)   # 10-dimensional state vector
+
+telescope_policy = TelescopePolicy(state_dim=10)
+dist_discrete = telescope_policy(state)
+action_discrete = dist_discrete.sample()
+print(f"Discrete action (which satellite): {action_discrete.item()}")
+
+thrust_policy = ThrustPolicy(state_dim=10, action_dim=3)
+dist_continuous = thrust_policy(state)
+action_continuous = dist_continuous.sample()
+print(f"Continuous action (thrust vector, N): {action_continuous.tolist()}")
+```
+
+The key insight: discrete action spaces require networks that output a categorical distribution (one logit per action); continuous action spaces require networks that output distribution parameters (mean and variance). This changes both the network architecture and the training algorithm.
+
+For SSA, most telescope scheduling problems are naturally discrete (which satellite to observe). Maneuver planning problems are naturally continuous (what thrust to apply). Recognizing this early shapes your entire algorithm choice.
+
+## Designing state representations
+
+The state you give the agent is one of the most consequential design decisions in an RL problem. Get it wrong and no amount of algorithm sophistication will compensate. The state must satisfy the **Markov property**: the next state must be predictable (statistically) from the current state and action alone, without needing to know the history.
+
+**The Markov property stated precisely**: the state \\(s_t\\) contains enough information about the history that \\(P(s_{t+1} \mid s_0, a_0, s_1, a_1, \ldots, s_t, a_t) = P(s_{t+1} \mid s_t, a_t)\\). The full history adds no predictive value beyond the current state.
+
+Violating the Markov property does not cause the algorithm to crash — it causes the agent to learn a suboptimal policy because it cannot distinguish situations that look the same but have different futures.
+
+### Three state representations for the telescope problem
+
+Here are three candidate state representations for our 5-satellite telescope problem, with analysis of each.
+
+**Representation A: Which satellite I observed last**
+
+```python
+# Bad Markovian design
+state_A = {
+    "last_observed_satellite": 3,  # just a single integer, 0-4
+}
+```
+
+This is **not Markovian**. Knowing I observed satellite 3 last step tells me almost nothing about the current risk levels of all five satellites. The agent cannot tell if satellite 2 is about to have a conjunction event because that information is not in the state. The agent would need to remember the last 10 observations to have any useful context.
+
+**Representation B: Observation timestamps**
+
+```python
+# Better: last observation timestamp for each satellite
+state_B = {
+    "last_obs_time_sat1": 2.0,   # hours ago
+    "last_obs_time_sat2": 0.5,
+    "last_obs_time_sat3": 6.0,
+    "last_obs_time_sat4": 3.5,
+    "last_obs_time_sat5": 1.0,
+}
+# 5-dimensional vector
+```
+
+This is **Markovian** — given this state and any action, the next state's observation timestamps are deterministic. But it omits something important: the current conjunction risk estimates. An agent using this state can try to keep all satellites observed recently, but cannot prioritize satellites with active conjunction events because that information is missing.
+
+**Representation C: Full risk-aware state**
+
+```python
+# Best: observation recency + current conjunction risk estimates
+state_C = {
+    "hours_since_last_obs": [2.0, 0.5, 6.0, 3.5, 1.0],      # 5 values
+    "conjunction_risk_score": [0.1, 0.05, 0.8, 0.2, 0.15],   # 5 values
+    "hours_to_peak_risk":     [48.0, 100.0, 3.0, 24.0, 72.0],# 5 values
+}
+# 15-dimensional vector
+```
+
+This is **Markovian and informative**. The agent knows both how stale each observation is and how dangerous each satellite currently is. It can now develop a sensible policy: prioritize satellites with high conjunction risk AND stale observations.
+
+```python
+import numpy as np
+
+# Illustrating the information difference
+def can_agent_prioritize_risky_satellite(state, repr_type):
+    """Can the agent tell that satellite 3 is in immediate danger?"""
+    if repr_type == "A":
+        # Only knows the last satellite observed — no risk information
+        return False
+    elif repr_type == "B":
+        # Knows satellite 3 was observed 6 hours ago — helpful for staleness
+        # but no direct risk score
+        hours_since = state["last_obs_time_sat3"]
+        # A long time since observation is correlated with risk, but indirect
+        return hours_since > 5.0
+    elif repr_type == "C":
+        # Direct risk score available
+        return state["conjunction_risk_score"][2] > 0.5
+
+state_B_example = {"last_obs_time_sat3": 6.0}
+state_C_example = {
+    "hours_since_last_obs": [2.0, 0.5, 6.0, 3.5, 1.0],
+    "conjunction_risk_score": [0.1, 0.05, 0.8, 0.2, 0.15],
+    "hours_to_peak_risk": [48.0, 100.0, 3.0, 24.0, 72.0],
+}
+
+print(f"Repr A can prioritize: {can_agent_prioritize_risky_satellite(None, 'A')}")
+print(f"Repr B can prioritize: {can_agent_prioritize_risky_satellite(state_B_example, 'B')}")
+print(f"Repr C can prioritize: {can_agent_prioritize_risky_satellite(state_C_example, 'C')}")
+# False, True (by proxy), True (directly)
+```
+
+The tradeoff between B and C is also real: C requires computing conjunction risk estimates as an input to the RL policy. This adds complexity and a dependency on an upstream estimator. If that estimator is wrong, the RL agent's decisions will be wrong too. Representation B is simpler and more robust to upstream errors but limits the agent's reasoning. The right choice depends on how reliable your upstream conjunction risk estimates are.
+
 ### 3. Transition function (P)
 
 The **transition function** describes how the state changes when an action is taken. Specifically:
@@ -99,6 +273,107 @@ For our telescope problem:
 The reward function encodes what we want the agent to do. Tweaking the reward function changes the agent's incentives. This is called **reward shaping**, and it is both very useful and very dangerous: getting the rewards subtly wrong can lead the agent to find unexpected and undesired behaviors.
 
 For example, if you penalized "not observing satellite 1 for more than 5 hours" too heavily, the agent might develop a rigid rotation pattern that ignored real-time conjunction priority. Reward design matters.
+
+## Reward shaping pitfalls: when incentives backfire
+
+Reward shaping is the most common source of policy failures in real RL applications. The agent does not care about your intent — it cares about the number it receives. If your reward function is slightly misaligned with your actual goal, the agent will find ways to maximize the number that you did not anticipate.
+
+**Reward hacking** is the term for this failure mode. The agent finds an unexpected behavior that maximizes the reward signal but does not match the intended goal.
+
+### The observation-count trap
+
+Suppose you reward your telescope agent for the number of satellites successfully observed per day:
+
+```python
+def bad_reward(satellite_observed, had_conjunction_event):
+    """Rewards based on observation count — a recipe for reward hacking."""
+    return 1.0  # +1 for every observation, regardless of risk
+```
+
+The agent will quickly learn to spend all its time observing the satellites that are easiest to confirm — calm, low-risk satellites where observations are quick and certain. A satellite on the verge of a high-risk conjunction event might have uncertain, ambiguous observations that the agent has learned to avoid. The agent is maximizing observations, but you wanted it to maximize detection of dangerous events.
+
+### Sparse vs. dense rewards
+
+Another common failure: rewards that are too sparse.
+
+A **sparse reward** only gives feedback at key moments:
+```python
+def sparse_reward(observed_conjunction):
+    """Only +10 if a conjunction is actually caught; 0 otherwise."""
+    return 10.0 if observed_conjunction else 0.0
+```
+
+This is hard to learn from because the agent takes many steps between positive rewards. If the agent is taking random actions and conjunctions are rare, it might go 1,000 steps with zero reward. Gradient descent has no signal about what to improve.
+
+A **dense reward** provides feedback at every step:
+```python
+def dense_reward(satellite_risk, hours_since_last_obs):
+    """Reward is highest for observing high-risk satellites that haven't been seen recently."""
+    recency_bonus = min(hours_since_last_obs / 4.0, 1.0)  # bonus for stale observations
+    risk_bonus = satellite_risk                             # bonus for high-risk satellites
+    return 0.5 * recency_bonus + 0.5 * risk_bonus
+```
+
+Dense rewards guide learning faster, but they introduce the shaping problem: the agent may optimize the proxy signal rather than the true goal.
+
+### A safer design: shaped rewards with a true goal backup
+
+```python
+import numpy as np
+
+def shaped_telescope_reward(
+    satellite_idx,
+    satellite_risk_scores,  # [0,1] for each of 5 satellites
+    hours_since_last_obs,   # hours for each satellite
+    caught_conjunction,     # bool: did we catch a real event?
+):
+    """
+    Dense shaping reward that guides learning, anchored by a true goal signal.
+    
+    The key safety property: the shaping terms can only add bounded signal.
+    The large bonus for catching a real event keeps the agent focused on
+    the true objective even if the shaping terms pull slightly wrong.
+    """
+    # True goal: big reward for catching conjunction events
+    true_goal_reward = 20.0 if caught_conjunction else 0.0
+    
+    # Shaping 1: prefer observing high-risk satellites
+    risk = satellite_risk_scores[satellite_idx]
+    risk_bonus = 2.0 * risk  # max +2 for risk=1.0
+    
+    # Shaping 2: prefer observing satellites we haven't seen recently
+    hours = hours_since_last_obs[satellite_idx]
+    staleness_bonus = min(hours / 6.0, 1.0)  # caps at +1 after 6 hours
+    
+    total = true_goal_reward + risk_bonus + staleness_bonus
+    return total
+
+# Example: observe satellite 2, which is high-risk and hasn't been seen in 8 hours
+risk_scores = [0.05, 0.1, 0.85, 0.2, 0.3]
+hours_stale  = [1.0, 0.5, 8.0, 3.0, 2.0]
+
+reward_good = shaped_telescope_reward(
+    satellite_idx=2,
+    satellite_risk_scores=risk_scores,
+    hours_since_last_obs=hours_stale,
+    caught_conjunction=True,
+)
+print(f"Observing high-risk sat 2 and catching conjunction: {reward_good:.2f}")
+# 20.0 (true goal) + 1.7 (risk) + 1.0 (staleness) = 22.70
+
+reward_safe = shaped_telescope_reward(
+    satellite_idx=0,
+    satellite_risk_scores=risk_scores,
+    hours_since_last_obs=hours_stale,
+    caught_conjunction=False,
+)
+print(f"Observing low-risk sat 0 (routine): {reward_safe:.2f}")
+# 0.0 (no conjunction) + 0.1 (low risk) + 0.17 (not stale) = 0.27
+```
+
+The design principle: the shaping terms (risk bonus, staleness bonus) provide dense guidance, but their magnitude is small compared to the true goal signal (20.0 for a caught conjunction). The agent has strong incentive to pursue the real objective, and the shaping terms steer it toward productive exploration without dominating its behavior.
+
+Reward design is as much art as science. The telescope reward above still has failure modes — for example, an agent that learns to declare every observation a "conjunction event" via some upstream classification manipulation. Good reward design requires thinking adversarially: assume the agent will find every loophole in your specification, and close them before they are found in production.
 
 ### 5. Discount factor (γ)
 
@@ -273,6 +548,15 @@ Every RL algorithm we will see asks one of two questions:
 Both questions are framed in terms of the MDP we just defined. The states, actions, rewards, transitions, and discount factor all show up in the algorithms. Without the MDP framework, we could not even state precisely what the agent is trying to do.
 
 The next lesson introduces value functions, the central mathematical object for the value-based approach.
+
+## Key Takeaways
+
+- **An MDP is a formal description of a sequential decision problem.** Its five components — state, action, transition, reward, discount — must all be specified before any RL algorithm can be applied. Informal problem descriptions do not suffice; the formalization forces you to be precise about what the agent observes, what it can do, and what it is trying to maximize.
+- **The Markov property is a design constraint, not a free assumption.** If your state representation does not capture enough information to predict the next state, you have violated the Markov property and your algorithms will underperform. Good state design means asking: "does this state tell the agent everything relevant about the past?"
+- **Discrete and continuous action spaces require different algorithms.** Q-learning and DQN are for discrete actions. Policy gradient methods handle both. Discretizing a continuous action space loses resolution; use continuous methods when resolution matters (maneuver planning, pointing precision).
+- **Reward hacking is the primary failure mode in practice.** Agents do not pursue your intent — they maximize the number. Every reward function has loopholes; think adversarially about what an agent optimizing that signal might do that you would not want.
+- **Dense rewards guide learning but risk shaping failure; sparse rewards are honest but slow.** The practical compromise: use a dense shaping signal with small magnitude, anchored by a large true-goal reward that prevents the agent from ignoring the actual objective.
+- **State representation engineering is often more valuable than algorithm choice.** A good state representation with a simple algorithm often outperforms a poor state representation with a sophisticated one. Invest time in deciding what information to include before tuning hyperparameters.
 
 ## Quiz
 

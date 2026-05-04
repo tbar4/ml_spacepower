@@ -151,9 +151,73 @@ print(f"Parameters: {total_params}")
 # Total: 4545
 ```
 
-This network has 4,545 parameters versus 49. It can represent much more complex functions of the input. The price is more computation and more training data needed to fit all those parameters without overfitting (more on this in lesson 4).
+This network has 4,545 parameters versus 49. It can represent much more complex functions of the input. The price is more computation and more training data needed to fit all those parameters without overfitting (more on this below).
 
 In RL and game theory, 64-to-256 hidden units per layer is common for modest-scale problems. AlphaGo Zero used 20 residual blocks with 256 filters (a far more complex architecture), but the underlying structure is still "linear layers with nonlinearities."
+
+## Overfitting and capacity: why more parameters can hurt
+
+More parameters means more expressive power — but also more opportunity for the network to **overfit**. Overfitting happens when the network memorizes the training examples rather than learning the underlying pattern. The result is near-perfect performance on training data and poor performance on any data it has not seen before.
+
+Here is the core tension: the 4,545-parameter network above could theoretically memorize 4,545 training examples perfectly just by storing them. If you only have 100 labeled conjunction alerts to train on, a 4,545-parameter network will almost certainly overfit.
+
+The failure mode looks like this:
+
+```
+Training loss:    0.003 (near-perfect)
+Validation loss:  0.48  (much worse)
+```
+
+The network learned the noise in your 100 training examples, not the signal.
+
+For the conjunction risk network, realistic training datasets might be:
+- 100–500 labeled alerts (a small dataset): keep the network small (4 → 32 → 1)
+- 10,000+ labeled alerts: a larger network (4 → 64 → 64 → 1) is appropriate
+- 100,000+: you have latitude to go deeper
+
+### Dropout: regularization by randomness
+
+**Dropout** is a technique for combating overfitting. During training, each call to a dropout layer randomly sets a fraction p of the activations to zero. The fraction p is called the **dropout rate** and is typically 0.1 to 0.5.
+
+The intuition: by randomly disabling neurons during training, the network cannot rely on any single neuron always being present. It is forced to learn redundant representations and cannot simply memorize training examples through a fixed chain of activations.
+
+```python
+import torch
+import torch.nn as nn
+
+# Add dropout after each ReLU in the conjunction value network
+model_with_dropout = nn.Sequential(
+    nn.Linear(4, 64),
+    nn.ReLU(),
+    nn.Dropout(p=0.3),     # 30% of neurons zeroed during training
+    nn.Linear(64, 64),
+    nn.ReLU(),
+    nn.Dropout(p=0.3),
+    nn.Linear(64, 1),
+)
+
+x = torch.randn(4)
+
+# Training mode: dropout is active (random zeros appear)
+model_with_dropout.train()
+out1 = model_with_dropout(x)
+out2 = model_with_dropout(x)
+print(f"Train mode (run 1): {out1.item():.4f}")
+print(f"Train mode (run 2): {out2.item():.4f}")
+# These will differ because different neurons are dropped each time.
+
+# Eval mode: dropout is disabled (full network is used)
+model_with_dropout.eval()
+out3 = model_with_dropout(x)
+out4 = model_with_dropout(x)
+print(f"Eval mode (run 1): {out3.item():.4f}")
+print(f"Eval mode (run 2): {out4.item():.4f}")
+# These will be identical — no randomness in eval mode.
+```
+
+**Critical rule**: always call `model.train()` before a training loop and `model.eval()` before inference or evaluation. Forgetting to switch modes is a silent bug — evaluation under dropout underestimates the network's true performance because random neurons are disabled.
+
+Dropout should not be applied to the final output layer. It is a training regularizer for hidden layers only.
 
 ## The forward pass as an SSA pipeline
 
@@ -205,7 +269,22 @@ Note: `nn.Softmax(dim=0)` applies softmax along dimension 0. For a single vector
 
 ## Defining networks as classes (the preferred pattern)
 
-`nn.Sequential` is convenient for simple linear stacks. For anything more complex (networks with branches, skip connections, or custom behavior), you define the network as a Python class inheriting from `nn.Module`. This is the standard pattern in research code:
+`nn.Sequential` is convenient for simple linear stacks. For anything more complex (networks with branches, skip connections, or custom behavior), you define the network as a Python class inheriting from `nn.Module`. This is the standard pattern in research code.
+
+### Why `__init__` and `forward` are separate
+
+`__init__` declares the architecture: which layers exist, how many parameters they have, what their shapes are. This runs once when you create the model.
+
+`forward` declares the computation: how data flows through those layers. This runs every time you call the model on an input.
+
+This separation matters because:
+- Parameters defined in `__init__` are automatically tracked by PyTorch's optimizer
+- The same `forward` method handles both single inputs and batches
+- You can add arbitrary Python logic in `forward` (conditionals, loops, etc.) without affecting the parameter structure
+
+### How `super().__init__()` works
+
+`nn.Module` is PyTorch's base class for all neural networks. When you write `class ConjunctionValueNet(nn.Module)`, you are saying "this class IS an nn.Module." Calling `super().__init__()` runs `nn.Module`'s initialization code, which sets up the internal machinery for parameter tracking. If you forget it, assigning `self.fc1 = nn.Linear(...)` will raise an error because the parameter registry does not exist yet.
 
 ```python
 import torch
@@ -215,29 +294,46 @@ import torch.nn.functional as F
 class ConjunctionValueNet(nn.Module):
     """Estimates the conjunction risk value from an orbital feature vector."""
     
-    def __init__(self, input_dim, hidden_dim=64):
-        super().__init__()
+    def __init__(self, input_dim, hidden_dim=64, dropout_rate=0.2):
+        super().__init__()          # REQUIRED: sets up nn.Module internals
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, hidden_dim)
         self.fc3 = nn.Linear(hidden_dim, 1)
+        self.dropout = nn.Dropout(p=dropout_rate)
     
     def forward(self, x):
-        x = F.relu(self.fc1(x))  # input -> hidden
-        x = F.relu(self.fc2(x))  # hidden -> hidden
-        x = self.fc3(x)          # hidden -> output (no activation: regression)
+        x = F.relu(self.fc1(x))    # input -> hidden
+        x = self.dropout(x)        # regularization (active in train mode only)
+        x = F.relu(self.fc2(x))    # hidden -> hidden
+        x = self.dropout(x)
+        x = self.fc3(x)            # hidden -> output (no activation: regression)
         return x
 
 # Instantiate
-net = ConjunctionValueNet(input_dim=4, hidden_dim=64)
+net = ConjunctionValueNet(input_dim=4, hidden_dim=64, dropout_rate=0.2)
 print(net)
+# ConjunctionValueNet(
+#   (fc1): Linear(in_features=4, out_features=64, bias=True)
+#   (fc2): Linear(in_features=64, out_features=64, bias=True)
+#   (fc3): Linear(in_features=64, out_features=1, bias=True)
+#   (dropout): Dropout(p=0.2, inplace=False)
+# )
 
-# Use it
+# Training: dropout is active
+net.train()
 x = torch.tensor([0.85, 7.2, 0.4, 1.5])
-output = net(x)
-print(f"Value estimate: {output.item():.4f}")
+train_output = net(x)
+print(f"Train pass output: {train_output.item():.4f}")
+
+# Inference: dropout disabled, deterministic
+net.eval()
+with torch.no_grad():             # also disable gradient computation for speed
+    eval_output = net(x)
+print(f"Eval pass output:  {eval_output.item():.4f}")
+# These may differ because dropout was active in train mode.
 ```
 
-When you call `net(x)`, PyTorch internally calls `net.forward(x)`. The `__init__` method defines the layers; the `forward` method defines how data flows through them. All the layers you define in `__init__` as attributes (like `self.fc1`) are automatically tracked by PyTorch as parameters.
+The pattern `net.eval()` + `torch.no_grad()` before inference is standard — `eval()` disables dropout and batch normalization's running stat updates; `no_grad()` disables gradient tracking, saving memory and computation.
 
 ## Inspecting what the network knows
 
@@ -251,6 +347,61 @@ for name, param in net.named_parameters():
 ```
 
 After training (lesson 4), the weights will have changed to reduce the loss on training data. The architecture (shapes) stays the same; the values inside change.
+
+## Weight initialization: why random is not enough
+
+When you create a network, PyTorch initializes the weights randomly. The scale of this initial randomness matters more than most beginners realize. Two failure modes:
+
+**Too small (vanishing gradients)**: If weights are initialized very close to zero, the activations after each layer are tiny. The gradient signal shrinks as it propagates back through layers. Early layers learn almost nothing.
+
+**Too large (exploding gradients)**: If weights are large, activations grow exponentially through the layers. Gradients also explode. Training becomes numerically unstable, often producing NaN losses.
+
+The goal is initialization that keeps activations at a reasonable scale throughout the network — neither shrinking to zero nor blowing up.
+
+### Xavier initialization (for tanh)
+
+\\[ w \sim \mathcal{U}\left(-\frac{1}{\sqrt{\text{fan\_in}}}, \frac{1}{\sqrt{\text{fan\_in}}}\right) \\]
+
+**Decoding:** fan\_in is the number of inputs to a layer (the "in" dimension of the weight matrix). Xavier initialization scales the initial weights by \\(1/\sqrt{\text{fan\_in}}\\), which keeps the variance of activations approximately constant across layers when using tanh.
+
+### He initialization (for ReLU)
+
+\\[ w \sim \mathcal{N}\left(0, \sqrt{\frac{2}{\text{fan\_in}}}\right) \\]
+
+**Decoding:** He initialization uses a larger scale factor — \\(\sqrt{2/\text{fan\_in}}\\) instead of \\(1/\sqrt{\text{fan\_in}}\\) — because ReLU zeros out half its inputs (all negative values), which would otherwise cause activations to shrink. The factor of 2 compensates for this halving. He initialization is the PyTorch default for `nn.Linear`.
+
+```python
+import torch
+import torch.nn as nn
+
+torch.manual_seed(0)
+
+def check_activation_scale(init_scale, n_layers=5, layer_size=64, input_size=64):
+    """Show how activation std changes through layers under different initializations."""
+    x = torch.randn(1, input_size)
+    
+    stds = [x.std().item()]
+    for _ in range(n_layers):
+        W = torch.randn(layer_size, x.shape[1]) * init_scale
+        x = torch.relu(W @ x.T).T
+        stds.append(x.std().item())
+    return stds
+
+# Naive small init
+naive_stds = check_activation_scale(init_scale=0.01)
+print("Naive (0.01 scale):", [f"{s:.4f}" for s in naive_stds])
+# Vanishes quickly: ['1.0000', '0.0058', '0.0003', '0.0000', '0.0000', '0.0000']
+
+# He initialization: sqrt(2 / fan_in) for fan_in=64 -> sqrt(2/64) ≈ 0.177
+he_scale = (2 / 64) ** 0.5
+he_stds = check_activation_scale(init_scale=he_scale)
+print("He init:           ", [f"{s:.4f}" for s in he_stds])
+# Stays relatively stable: ['1.0000', '0.5623', '0.5441', '0.5390', '0.5371', '0.5364']
+```
+
+With naive small initialization, the activation standard deviation shrinks to essentially zero after 4 layers — the network's early layers receive no meaningful gradient signal. He initialization keeps the scale stable, enabling reliable training.
+
+PyTorch's `nn.Linear` uses Kaiming uniform initialization by default (a variant of He), so you usually do not need to do this manually. But understanding why it works helps when debugging training instability.
 
 ## Batched inputs: processing many examples at once
 
@@ -273,6 +424,15 @@ print(f"Batch output shape: {out_batch.shape}")   # (32, 1)
 All 32 examples are processed simultaneously using matrix operations, which is much faster than a loop. Modern GPUs are optimized for exactly this kind of batch processing. Training typically works with batches of 32 to 512 examples at a time for efficiency.
 
 Note: when using softmax on batched data, you want `F.softmax(x, dim=1)`, not `dim=0`, because dimension 0 is the batch dimension and dimension 1 is the feature/action dimension.
+
+## Key Takeaways
+
+- **An MLP is just linear layers alternating with activation functions.** The activation functions are what make it capable of learning nonlinear relationships — without them, the whole network collapses to a single linear transformation regardless of depth.
+- **More parameters means more capacity, but also more risk of overfitting.** A network with 10,000 parameters trained on 100 examples will memorize the training data. Match network size to dataset size, or use regularization.
+- **Dropout is a simple and effective regularizer.** It randomly zeros out activations during training, preventing the network from memorizing specific pathways. Always call `model.train()` before training and `model.eval()` before inference — forgetting this is a silent bug.
+- **Weight initialization scale matters.** Too small causes vanishing gradients (early layers learn nothing). Too large causes exploding gradients (training becomes numerically unstable). He initialization (`sqrt(2 / fan_in)`) is the right default for ReLU networks and is what PyTorch uses by default.
+- **The `nn.Module` class pattern (`__init__` + `forward`) is the standard for anything beyond simple sequential stacks.** Architecture is declared in `__init__`; computation is defined in `forward`. The separation allows arbitrary Python logic in the computation path without affecting parameter tracking.
+- **Always pair `model.eval()` with `torch.no_grad()` during inference.** `eval()` disables dropout and running-stat updates; `no_grad()` disables gradient computation. Using either without the other is incomplete.
 
 ## Quiz
 

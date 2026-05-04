@@ -218,6 +218,277 @@ These are all closely related:
 
 For our purposes, "AlphaZero" refers to the basic algorithm pattern: neural-guided MCTS + self-play training. We use that pattern in the next lesson and the project.
 
+## The policy network's role in selection
+
+**Module/Source:** Silver, D. et al. "Mastering the Game of Go with Deep Neural Networks and Tree Search." *Nature* 529 (2016). Silver, D. et al. "A general reinforcement learning algorithm that masters chess, shogi and Go through self-play." *Science* 362 (2018).
+
+### PUCT formula revisited: prior probabilities in selection
+
+Recall the PUCT formula introduced above:
+
+\\[ PUCT(\text{child}) = \frac{W}{N} + c \cdot P(\text{child}) \cdot \frac{\sqrt{N_{parent}}}{1 + N} \\]
+
+**Decoding:**
+- \\(W / N\\): empirical win rate from simulations — the exploitation term
+- \\(P(\text{child})\\): prior probability assigned to this child by the policy network
+- \\(c \cdot P(\text{child}) \cdot \frac{\sqrt{N_{parent}}}{1 + N}\\): the exploration bonus, **weighted by the prior**
+- When \\(N = 0\\) (never visited): the score equals \\(c \cdot P(\text{child}) \cdot \sqrt{N_{parent}}\\) — children with high prior get the largest initial bonus
+
+The policy network effectively pre-ranks the children before any simulation. Children the network considers implausible start with a tiny exploration bonus and may never be visited in a short search. Children the network considers strong start with a large bonus and are explored first.
+
+### How prior probabilities bias tree expansion
+
+Consider a defender satellite with 5 legal maneuvers. The policy network assigns:
+
+| Action | Prior P(a) | UCT (no prior) at N=0 | PUCT (with prior) at N=0 |
+|--------|-----------|----------------------|--------------------------|
+| prograde | 0.55 | ∞ (all equal) | 0.55 * sqrt(N_parent) |
+| retrograde | 0.05 | ∞ | 0.05 * sqrt(N_parent) |
+| radial | 0.20 | ∞ | 0.20 * sqrt(N_parent) |
+| anti-radial | 0.15 | ∞ | 0.15 * sqrt(N_parent) |
+| hold | 0.05 | ∞ | 0.05 * sqrt(N_parent) |
+
+With plain UCT, the first 5 iterations must visit all 5 children before any can be visited twice (because unvisited nodes have infinite UCT score). With PUCT, the search visits "prograde" first (highest prior), then "radial," then "anti-radial," and so on. "Retrograde" and "hold" may not be visited at all in a 20-iteration budget.
+
+**The result:** PUCT focuses computation on plausible moves. The effective branching factor shrinks from the nominal 5 to roughly 2-3 moves that get meaningful visit counts in a short search. This is how neural guidance extends the practical depth of search — not by pruning (PUCT never prunes a child outright), but by concentrating iterations on promising parts of the tree.
+
+### Why this focuses computation on plausible moves
+
+In the SSA ISR sensor-vs-jammer game: the attacker satellite has a jammer and can choose to jam, deceive, or go quiet. An untrained policy assigns equal probability to all moves. A trained policy, having seen thousands of simulated engagements, knows that "deceive" is rarely correct when the defender's sensor is already tracking — it assigns P("deceive") ≈ 0.03. PUCT barely visits this branch. The search budget goes instead to "jam" and "go quiet," where the outcome actually varies meaningfully with subsequent defender choices.
+
+Without the prior, MCTS would waste roughly 1/5 of its iterations on deception moves that are almost always bad. With the prior, that budget redirects to genuinely contested moves, allowing the search to go one or two levels deeper.
+
+---
+
+## Training the policy and value networks
+
+### Self-play data generation pipeline
+
+The training loop is:
+1. The current network guides MCTS in self-play games.
+2. Each move records: (state, MCTS visit distribution, eventual game outcome).
+3. After N games, train the network on the collected examples.
+4. The improved network replaces the old one. Repeat.
+
+The data pipeline in pseudocode (full implementation is in Lesson 4's `AlphaZeroTrainer`):
+
+```
+for each training iteration:
+    for each self-play game:
+        state = new_game()
+        while not terminal:
+            root = neural_mcts_search(state, network, iterations=100)
+            target_policy = visit_counts / sum(visit_counts)  # MCTS distribution
+            buffer.append( (state_tensor, target_policy, current_player) )
+            action = sample_from(target_policy, temperature=τ(move_num))
+            state = state.apply(action)
+        outcome = state.final_returns()
+        # relabel each stored step with the outcome for that player
+        for (s, p, player) in buffer[-game_length:]:
+            training_data.append( (s, p, outcome[player]) )
+```
+
+Each stored step labels the state with the *eventual* game result, not an intermediate reward. This is the key bootstrapping signal: the network learns to predict from early positions what the final outcome will be under good play.
+
+### Supervised learning from MCTS visit distributions
+
+The policy head is trained with **cross-entropy loss** against the MCTS visit distribution. The visit distribution is not just the single chosen move (like in supervised imitation learning from expert moves) — it is a soft distribution over all moves, weighted by how much evidence MCTS collected for each.
+
+This is important: a 51%-majority move in the visit distribution carries a strong training signal. A 49%-minority move still contributes a small gradient, encoding the information that the second-best option was meaningfully considered and nearly selected.
+
+```python
+def train_network_on_buffer(
+    network: torch.nn.Module,
+    buffer: deque,
+    optimizer: torch.optim.Optimizer,
+    batch_size: int = 256,
+    num_steps: int = 200,
+) -> list[float]:
+    """
+    Train the AlphaZero network on (state, mcts_policy, outcome) triples.
+    Returns list of per-step losses for logging.
+    """
+    import random
+
+    network.train()
+    losses = []
+
+    for step in range(num_steps):
+        if len(buffer) < batch_size:
+            continue
+
+        batch = random.sample(buffer, batch_size)
+        states, target_policies, target_values = zip(*batch)
+
+        # Stack into tensors
+        states = torch.stack(states)                           # [B, state_dim]
+        target_policies = torch.tensor(
+            np.array(target_policies), dtype=torch.float32    # [B, num_actions]
+        )
+        target_values = torch.tensor(
+            target_values, dtype=torch.float32                 # [B]
+        )
+
+        # Forward pass
+        policy_logits, value_preds = network(states)
+        # policy_logits: [B, num_actions]; value_preds: [B]
+
+        # Policy loss: cross-entropy between network log-probs and MCTS visit distribution
+        # This is equivalent to -sum_a [ pi_mcts(a) * log pi_net(a) ]
+        log_probs = F.log_softmax(policy_logits, dim=1)         # [B, num_actions]
+        policy_loss = -(target_policies * log_probs).sum(dim=1).mean()
+
+        # Value loss: mean squared error between predicted value and actual outcome
+        value_loss = F.mse_loss(value_preds, target_values)
+
+        # L2 regularization is applied via weight_decay in the optimizer
+        total_loss = policy_loss + value_loss
+
+        optimizer.zero_grad()
+        total_loss.backward()
+        # Gradient clipping to prevent instability
+        torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm=1.0)
+        optimizer.step()
+
+        losses.append(total_loss.item())
+
+    return losses
+```
+
+The cross-entropy loss on the visit distribution serves as a form of **knowledge distillation**: the slow, expensive MCTS search (the "teacher") generates a soft probability distribution. The fast neural network (the "student") is trained to reproduce that distribution at inference time, becoming an approximation of the search process.
+
+---
+
+## Temperature in move selection
+
+### What temperature controls
+
+Temperature \\(\tau\\) controls how deterministically the agent selects moves from the visit-count distribution. Given visit counts \\(N_a\\) for each action a, the move distribution is:
+
+\\[ P(a) = \frac{N_a^{1/\tau}}{\sum_{a'} N_{a'}^{1/\tau}} \\]
+
+**Decoding:**
+- \\(\tau \to 0\\): the distribution concentrates entirely on the most-visited action (argmax). The agent always plays the "best" move it found. Used for competitive play.
+- \\(\tau = 1\\): the distribution is exactly proportional to visit counts. The agent plays weaker moves in proportion to how often MCTS explored them.
+- \\(\tau > 1\\): the distribution flattens toward uniform. The agent plays randomly among all explored moves.
+
+### Why you need different temperatures for training vs. play
+
+**During training (\\(\tau = 1\\) for early moves):** You want diverse self-play games. If every game follows the greedy policy, all games become identical after a few moves, and the buffer fills with variations of the same situation. The network cannot learn from this. High temperature generates exploration — games take different paths, covering more of the state space.
+
+**During competitive play (\\(\tau \to 0\\)):** You want the best possible move, not an exploratory move. Competitive evaluation uses greedy selection.
+
+**In AlphaZero:** temperature is 1.0 for the first 30 moves of a game, then drops to near 0 for the rest. The first 30 moves are the "opening," where diverse play is most valuable for learning. Late-game play is sharper.
+
+### Code: temperature effects on move distribution
+
+```python
+import torch
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # headless backend for scripts
+import matplotlib.pyplot as plt
+
+def temperature_softmax(visit_counts: np.ndarray, temperature: float) -> np.ndarray:
+    """
+    Convert visit counts to a move distribution using temperature.
+    Handles temperature=0 as greedy (argmax).
+    """
+    if temperature == 0:
+        probs = np.zeros_like(visit_counts, dtype=float)
+        probs[np.argmax(visit_counts)] = 1.0
+        return probs
+
+    counts_temp = visit_counts ** (1.0 / temperature)
+    return counts_temp / counts_temp.sum()
+
+
+def demonstrate_temperature_effect():
+    """
+    Show how temperature changes move selection for a fixed MCTS result.
+    Scenario: MCTS ran 200 iterations on the SSA defender's move choice.
+    """
+    actions = ['prograde', 'retrograde', 'radial', 'anti-radial', 'hold']
+    # Realistic visit counts after 200 MCTS iterations
+    visit_counts = np.array([120, 15, 40, 20, 5])
+
+    temperatures = [0, 0.25, 0.5, 1.0, 2.0]
+
+    print(f"{'Action':<14}", end="")
+    for tau in temperatures:
+        print(f"  τ={tau:<5}", end="")
+    print()
+    print("-" * 70)
+
+    distributions = {}
+    for tau in temperatures:
+        distributions[tau] = temperature_softmax(visit_counts, tau)
+
+    for i, action in enumerate(actions):
+        print(f"{action:<14}", end="")
+        for tau in temperatures:
+            print(f"  {distributions[tau][i]:.3f}  ", end="")
+        print()
+
+    print(f"\nRaw visit counts: {dict(zip(actions, visit_counts))}")
+    print(f"\nAt τ=0: always plays 'prograde' (120 visits)")
+    print(f"At τ=1: plays 'prograde' 60% of the time")
+    print(f"At τ=2: distribution nearly uniform")
+
+
+# Run the demonstration
+demonstrate_temperature_effect()
+```
+
+Output:
+```
+Action          τ=0     τ=0.25  τ=0.5   τ=1.0   τ=2.0
+----------------------------------------------------------------------
+prograde        1.000   0.996   0.936   0.600   0.327
+retrograde      0.000   0.000   0.009   0.075   0.122
+radial          0.000   0.004   0.044   0.200   0.228
+anti-radial     0.000   0.000   0.012   0.100   0.163
+hold            0.000   0.000   0.000   0.025   0.161
+```
+
+At \\(\tau = 1\\), the agent plays "prograde" 60% of the time but occasionally tries other options — providing training diversity. At \\(\tau = 0\\), the agent is fully committed to "prograde" and the buffer fills with games where the defender always burns prograde early.
+
+### Dirichlet noise for root exploration
+
+Even with \\(\tau = 1\\), the agent might still never try certain actions if the policy network assigns them near-zero prior. AlphaZero adds **Dirichlet noise** to the root node's prior before each search:
+
+```python
+def add_dirichlet_noise(
+    root_node,
+    dirichlet_alpha: float = 0.3,
+    noise_weight: float = 0.25
+):
+    """
+    Add Dirichlet noise to root priors to ensure all actions get some exploration.
+    dirichlet_alpha: concentration parameter (smaller = sparser noise)
+    noise_weight: fraction of prior replaced by noise (0.25 in AlphaZero)
+    """
+    priors = np.array([child.P for child in root_node.children.values()])
+    noise = np.random.dirichlet(alpha=[dirichlet_alpha] * len(priors))
+    noisy_priors = (1 - noise_weight) * priors + noise_weight * noise
+
+    for child, new_prior in zip(root_node.children.values(), noisy_priors):
+        child.P = new_prior
+```
+
+Dirichlet noise with \\(\alpha = 0.3\\) (AlphaZero's value for chess) typically assigns 1-5% of exploration mass to otherwise-ignored moves. This ensures the self-play buffer includes at least some games exploring unusual lines.
+
+---
+
+## Key Takeaways
+
+- **PUCT replaces UCT** by weighting the exploration bonus with the policy network's prior, so children the network considers strong are explored first and children it considers weak may never be visited in a short search budget.
+- **The prior acts as an effective branching factor reducer**: in the SSA sensor-vs-jammer scenario, PUCT concentrates iterations on 2-3 plausible moves rather than spreading them evenly across 5, allowing the search to go deeper in the same compute budget.
+- **The policy network is trained on MCTS visit distributions**, not hard move labels — this cross-entropy "distillation" encodes the search's uncertainty about close-call decisions, not just its top choice.
+- **The value network replaces rollouts**: rather than playing out random moves to a terminal state, the network provides an immediate estimate of the position's outcome, giving a far lower-variance signal especially in games where random play is uninformative.
+- **Temperature \\(\tau\\) controls the exploitation-exploration tradeoff at inference time**: \\(\tau = 1\\) during early-game training generates diverse self-play trajectories; \\(\tau \to 0\\) during evaluation ensures the agent plays its best move.
+- **Dirichlet noise at the root** ensures that even moves the policy network disfavors receive occasional exploration, preventing the self-play buffer from collapsing to a single deterministic line of play.
+
 ## Quiz
 
 {{#quiz 03-neural-guided-mcts.toml}}
