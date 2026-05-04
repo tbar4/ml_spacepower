@@ -4,6 +4,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 
 ## The arc in one sentence per module
 
+0. **Orbital mechanics and SDA domain**: TLEs, SGP4, reference frames, CDMs, conjunction probability, and the commercial SDA data ecosystem — the domain foundation every later ML model is built on top of.
 1. **Foundations**: probability, linear algebra, calculus, SVD, the multivariate Gaussian, and constrained optimization — every tool every later algorithm uses.
 2. **Neural networks**: MLPs as function approximators, PyTorch mechanics, loss functions with MLE/MAP foundations.
 3. **Reinforcement learning**: MDPs, DQN, policy gradients, actor-critic, hierarchical RL, and IMPALA distributed training.
@@ -11,7 +12,23 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 5. **Game theory**: extensive-form games, Nash equilibria, CFR, MCCFR, and Deep CFR.
 6. **Multi-agent RL**: PSRO, fictitious play, alpha-rank, and cooperative CTDE with MAPPO and QMIX.
 7. **Partial observability**: POMDPs, particle filters, imperfect-information games, and opponent modeling.
-8. **OpenSpiel and capstone**: the full OpenSpiel → PettingZoo → Ray RLlib pipeline, then a Rust CFR solver.
+8. **OpenSpiel and capstone**: the full OpenSpiel → PettingZoo → Ray RLlib pipeline, a Rust CFR solver, SBIR contracting, and LLM wargame adjudication.
+9. **Applied SDA ML**: sequence models and LSTM maneuver detection from TLE history — the first commercially viable product.
+
+---
+
+## Module 0: Orbital Mechanics and the SDA Data Ecosystem
+**Builds toward**: a Space-Track conjunction screening pipeline; the domain knowledge that grounds every ML model in Modules 1–9.
+
+| # | Lesson | Key concepts |
+|---|--------|--------------|
+| 1 | TLEs and Keplerian elements | TLE format, 6 Keplerian elements, mean vs. osculating elements, J2 RAAN drift, ndot/ndotdot |
+| 2 | Reference frames: ECI, ECEF, TEME, RTN | J2000 ECI, ECEF, TEME (SGP4 output), RTN for CDM covariances |
+| 3 | SGP4 propagation | J2–J6 harmonics, BSTAR drag, SDP4 for deep-space, accuracy characterization, python-sgp4 |
+| 4 | Conjunction analysis and the CDM format | Pizza-box screening volume, Pc methods, CCSDS CDM format, OBJECT1/OBJECT2 blocks, RTN covariance |
+| 5 | The commercial SDA data ecosystem | SSA vs. SDA distinction, Space-Track, CelesTrak, LeoLabs, commercial providers, data pipeline architecture |
+
+**Project**: Space-Track conjunction screening pipeline in Python.
 
 ---
 
@@ -127,7 +144,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 ---
 
 ## Module 8: OpenSpiel and the Rust Capstone
-**Builds toward**: the full production pipeline — OpenSpiel game → PettingZoo → Ray RLlib distributed training — plus a Rust CFR solver as the deployable artifact.
+**Builds toward**: the full production pipeline — OpenSpiel game → PettingZoo → Ray RLlib distributed training — plus a Rust CFR solver, a business on-ramp via SBIR, and LLM wargame adjudication.
 
 | # | Lesson | Key concepts |
 |---|--------|--------------|
@@ -136,6 +153,8 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 3 | Rust and burn: the production gap | What exists, what does not, how to bridge |
 | 4 | Designing the SSA game | State representation, action space, reward structure for the capstone |
 | 5 | PettingZoo, shimmy, and Ray RLlib | OpenSpiel → shimmy → PettingZoo AEC → RLlib MultiAgentEnv → MARLlib MAPPO; self-play config; parallelism math |
+| 6 | From research to revenue: SBIR and government contracting | SBIR eligibility, SpaceWERX, Phase I/II mechanics, commercial-first vs. SBIR-first, ITAR |
+| 7 | LLM-in-the-loop wargame adjudication | FedRAMP constraints, local models, matrix game format, auditability, prompt injection mitigations |
 
 **Project (capstone)**: a Rust crate implementing:
 - A two-player extensive-form SSA game (attacker tries to mask a maneuver; defender allocates sensors to detect it)
@@ -143,4 +162,15 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 - A `burn` neural network trained to approximate regret values (replacing tabular CFR for larger state spaces)
 - A simple CLI that runs self-play and prints the Nash equilibrium strategy profile
 
-This is the artifact you could drop into a thesis simulation. It references every concept built in modules 1 through 7 and fills the gap left by the absence of a Rust-native OpenSpiel.
+This is the artifact you could drop into a thesis simulation. It references every concept built in modules 0 through 7 and fills the gap left by the absence of a Rust-native OpenSpiel.
+
+---
+
+## Module 9: Applied SDA ML
+**Builds toward**: a production maneuver detection pipeline — the first commercially viable SDA AI product built entirely from public data.
+
+| # | Lesson | Key concepts |
+|---|--------|--------------|
+| 1 | Sequence models for maneuver detection | LSTM on TLE history, synthetic label generation, time-normalized delta features, operational evaluation metrics |
+
+**Project**: production LSTM maneuver detection pipeline on Space-Track TLE history with ISS reboost test evaluation.

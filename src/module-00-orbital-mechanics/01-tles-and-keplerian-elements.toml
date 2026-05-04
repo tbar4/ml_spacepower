@@ -1,0 +1,35 @@
+[[questions]]
+id = "b3f72a1d-4e89-4c21-a8f5-d6c093e1b847"
+type = "MultipleChoice"
+prompt.prompt = "TLE Line 1 contains two fields called ndot (first derivative of mean motion) and ndotdot (second derivative). Why are these fields almost always zeroed in modern TLEs distributed by Space-Track?"
+prompt.distractors = [
+  "Because mean motion never changes for stable orbital objects",
+  "Because Space-Track classifies these values and strips them from public releases",
+  "Because eccentricity is always zero in LEO, making derivatives undefined",
+]
+answer.answer = "SGP4 models atmospheric drag using BSTAR and mean motion directly; ndot and ndotdot are legacy fields inherited from earlier analytical models and are not used by the SGP4 propagator"
+context = "The ndot and ndotdot fields were used in the original SDP4 formulation and remain in the TLE format for backward compatibility. Modern SGP4 implementations derive drag effects entirely from BSTAR combined with a simplified atmospheric density model. Using ndot as a drag signal is a common mistake; always use BSTAR for drag characterization."
+
+[[questions]]
+id = "e8541fc2-7b3d-4a9e-b2d1-3a8c06f4e290"
+type = "MultipleChoice"
+prompt.prompt = "An analyst downloads TLE histories for a GEO satellite and computes the difference in RAAN between consecutive TLEs, hoping to flag large jumps as maneuver candidates. What is the fundamental problem with this approach?"
+prompt.distractors = [
+  "RAAN is not stored in TLE Line 2 and must be derived from other fields",
+  "GEO satellites have zero inclination, so RAAN is always 0° and the difference is meaningless",
+  "The Space-Track API returns RAAN in radians, not degrees, so differencing without conversion produces garbage",
+]
+answer.answer = "TLE mean elements are defined only within the SGP4 framework; differencing raw RAAN values conflates predictable J2 secular drift and periodic perturbation artifacts with actual maneuver signals. The correct approach is to propagate both TLEs to a common epoch using SGP4 and compare the resulting Cartesian position vectors."
+context = "For a 51.6° inclination orbit at 400 km altitude, J2 causes RAAN to precess at approximately -6.75°/day — a completely predictable, non-maneuver drift. Differencing consecutive TLE RAAN values without subtracting the J2 prediction will produce large apparent 'jumps' for every healthy non-maneuvering LEO object. Even after correcting for J2, the mean element values embed SGP4's averaging conventions in ways that are not cleanly separable from observation noise and batch update artifacts. Propagating to Cartesian state in a common frame is the only reliable approach."
+
+[[questions]]
+id = "a17c3e58-9d24-4f67-b6a3-f20d15c84a19"
+type = "MultipleChoice"
+prompt.prompt = "What physical phenomenon does J2 cause for a satellite in a 51.6° inclination, 400 km altitude orbit, and why must this be accounted for before using RAAN as a maneuver-detection feature?"
+prompt.distractors = [
+  "J2 causes the orbital period to decrease by 1.5 seconds per day, which accumulates as a phase error in mean anomaly",
+  "J2 causes eccentricity to grow toward 1.0 over several months, making the orbit increasingly elliptical",
+  "J2 causes atmospheric drag to increase by a factor of 2 during geomagnetic storms, inflating the BSTAR estimate",
+]
+answer.answer = "J2 (Earth's equatorial bulge) causes RAAN to precess westward at approximately -6.75°/day for an ISS-altitude orbit. This secular drift is entirely predictable and has nothing to do with maneuvers. A maneuver-detection model must subtract the J2-predicted RAAN drift before computing a residual, otherwise it will flag every non-maneuvering LEO satellite as anomalous."
+context = "The J2 RAAN precession rate is: dΩ/dt = -(3/2) * n * J2 * (R_earth/a)^2 * cos(i) / (1 - e^2)^2. For the ISS orbit (i=51.6°, a≈6785 km), this evaluates to roughly -6.75°/day. Sun-synchronous orbits deliberately exploit this effect — they are designed with retrograde inclinations (~97-98°) so that the J2 precession rate equals +0.986°/day, keeping the orbital plane aligned with the Sun. Understanding J2 precession is a prerequisite for any RAAN-based feature engineering."

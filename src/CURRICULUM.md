@@ -1,6 +1,12 @@
 # Curriculum Layout
 
-This curriculum builds from mathematical foundations to a production-grade AI system for space domain awareness (SDA) wargaming. Each module introduces a new layer of the recommended architecture and connects it to SSA applications throughout.
+This curriculum builds from orbital domain knowledge through mathematical foundations to a production-grade AI system for space domain awareness (SDA) wargaming. Each module introduces a new layer of the recommended architecture and connects it to SSA/SDA applications throughout.
+
+## Module 0: Orbital Mechanics and the SDA Data Ecosystem
+
+The domain foundation required before any SDA ML work. Covers the TLE format and Keplerian orbital elements, coordinate reference frames (ECI/ECEF/TEME/RTN), SGP4 propagation, conjunction analysis and the CCSDS CDM format, and the commercial SDA data ecosystem (Space-Track, CelesTrak, LeoLabs, and commercial providers). Every concept is tied to practical data engineering: parsing TLEs, batch propagation with python-sgp4, reading CDM covariance matrices, and building a conjunction screening pipeline.
+
+**Key outcomes:** Parse and ingest TLE and OMM data from Space-Track and CelesTrak; propagate orbital states with python-sgp4; understand the TEME → ECI frame conversion; interpret CDM fields including covariance matrices in the RTN frame; build a 7-day conjunction screening pipeline; understand the SSA vs. SDA distinction and the commercial provider landscape.
 
 ## Module 1: Foundations
 
@@ -46,6 +52,12 @@ Hidden state inference combined with decision-making. POMDPs as the formal frame
 
 ## Module 8: OpenSpiel and the Rust Capstone
 
-Production engineering of the full stack. OpenSpiel's C++ game architecture and Python bindings, implementing custom games, the PettingZoo/shimmy/Ray RLlib integration pipeline (OpenSpiel → PettingZoo → MARLlib → distributed training), and the Rust/burn production gap. The capstone implements a Rust CFR solver for an SSA conjunction-masking game — demonstrating the full arc from mathematical foundations through production deployment.
+Production engineering of the full stack. OpenSpiel's C++ game architecture and Python bindings, implementing custom games, the PettingZoo/shimmy/Ray RLlib integration pipeline (OpenSpiel → PettingZoo → MARLlib → distributed training), and the Rust/burn production gap. The module also covers the business on-ramp: SBIR/SpaceWERX contracting for uncleared solo founders, and LLM-in-the-loop wargame adjudication using locally-deployed models. The capstone implements a Rust CFR solver for an SSA conjunction-masking game.
 
-**Key outcomes:** Implement a custom game in OpenSpiel's C++ API, wire it to PettingZoo via the shimmy compatibility wrapper, configure Ray RLlib for multi-agent training with thousands of parallel environments, understand when to use Rust vs. Python for game logic, and complete the capstone CFR solver.
+**Key outcomes:** Implement a custom game in OpenSpiel's C++ API, wire it to PettingZoo via the shimmy compatibility wrapper, configure Ray RLlib for multi-agent training with thousands of parallel environments, understand SBIR eligibility requirements and the commercial-first vs. SBIR-first trade-off, build an LLM-adjudicated wargame with local models meeting FedRAMP constraints, and complete the capstone CFR solver.
+
+## Module 9: Applied SDA ML
+
+The curriculum's commercial product module. Takes the ML foundations from Modules 1–8 and applies them to the highest-value SDA AI product a solo uncleared founder can build from public data: maneuver detection from TLE history. Covers the label scarcity problem and synthetic data generation, feature engineering for orbital sequences (time-normalized delta features, J2 drift removal, BSTAR caveats), LSTM architecture and training, and operational evaluation metrics (detection latency, false alarm rate) that matter for deployment.
+
+**Key outcomes:** Build a full maneuver detection pipeline on Space-Track TLE history; engineer physically meaningful orbital sequence features; train an LSTM classifier using synthetic label injection; evaluate against real ISS reboost test events with detection latency and false alarm rate metrics; understand the competitive landscape for TLE-based SDA AI products.

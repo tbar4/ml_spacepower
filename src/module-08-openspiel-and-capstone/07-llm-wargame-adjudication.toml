@@ -1,0 +1,35 @@
+[[questions]]
+id = "b3e7f241-9c14-4a82-bf56-d08f1e3c7a90"
+type = "MultipleChoice"
+prompt.prompt = "Why is the commercial Anthropic API inappropriate for production DoD wargame adjudication?"
+prompt.distractors = [
+  "The API is too slow to adjudicate moves in real time during a live exercise",
+  "Anthropic models are not capable of understanding military doctrine",
+  "The API requires an internet connection, which is unavailable in classified facilities",
+]
+answer.answer = "The commercial Anthropic API is not FedRAMP authorized, wargame scenarios frequently contain CUI requiring IL-4/5 processing, and Anthropic's Terms of Service restrict military command and control applications — locally-hosted open-source models (Llama-3, Mistral via Ollama) are the correct architecture for any real DoD engagement"
+context = "FedRAMP authorization is the compliance gate for cloud services processing government information. CUI (Controlled Unclassified Information) in wargame scenarios — force posture, order of battle, operational concepts — must be processed at IL-4/5. The correct production path is a local model on government-compliant infrastructure: no data leaves the environment, no AUP issue, no FedRAMP concern."
+
+[[questions]]
+id = "f94a2e58-1b7d-4f61-a03c-8e62d5047b14"
+type = "MultipleChoice"
+prompt.prompt = "What is the distinguishing structural feature of a matrix wargame that makes LLM adjudication particularly well-suited to it?"
+prompt.distractors = [
+  "Matrix games use formal numerical attrition tables that map directly to LLM arithmetic",
+  "Matrix games are always played on a map, giving the LLM structured spatial data to reason about",
+  "Matrix games have no human players, so the LLM can run all sides autonomously",
+]
+answer.answer = "In matrix games, players state an Action plus Arguments for why it should succeed, other players offer Counter-Arguments, and the umpire assigns a probability based on argument quality — this argument-counterargument-probability structure maps directly to what LLMs do well: evaluating the logical quality and consistency of natural language reasoning"
+context = "Matrix games (developed by Chris Engle, widely adopted in defense wargaming via PAXsims) do not use formal resolution tables. Instead, adjudication rests on the persuasiveness and logical soundness of arguments. An LLM can assess whether an argument is internally consistent, responsive to counterarguments, and compatible with the established game state — exactly the kind of reasoning LLMs are trained to perform."
+
+[[questions]]
+id = "a1d8c376-5e2f-4b89-9071-3f4c6e8d2a55"
+type = "MultipleChoice"
+prompt.prompt = "Why should all adjudication calls in a multi-session DoD exercise use temperature=0?"
+prompt.distractors = [
+  "Temperature=0 makes the LLM refuse to generate any output, which forces human review of every decision",
+  "Temperature=0 prevents the model from accessing its training data, ensuring it relies only on the injected rule set",
+  "Temperature=0 reduces the model's reasoning depth, making adjudications faster",
+]
+answer.answer = "LLM outputs are non-deterministic at temperature > 0; the same game situation adjudicated in separate sessions can receive different outcomes, undermining exercise validity and player confidence — temperature=0 produces deterministic output for a given prompt, ensuring identical situations receive consistent rulings across all sessions of a multi-day exercise"
+context = "Multi-session consistency is a fundamental requirement for exercise integrity. If Blue's Day 2 attempt to task a sensor succeeds under conditions identical to a Day 1 attempt that failed, players lose confidence in the system and the exercise loses analytical validity. Temperature=0, combined with a ruling precedent log injected into every system prompt, is the baseline consistency control."

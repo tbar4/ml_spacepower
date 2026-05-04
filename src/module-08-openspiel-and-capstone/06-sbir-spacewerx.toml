@@ -1,0 +1,23 @@
+[[questions]]
+id = "a3e9d172-84c1-4f7a-b301-5c2e8f0d6b49"
+type = "MultipleChoice"
+prompt.prompt = "A graduate student wants to be the Principal Investigator on a DoD SBIR Phase I award while remaining primarily enrolled full-time at their university. What is the problem?"
+prompt.distractors = [
+  "Graduate students are not allowed to own equity in SBIR-eligible small businesses",
+  "The PI must have a PhD; graduate students without a completed degree are ineligible",
+  "The small business must have at least five employees before the PI can be a graduate student",
+]
+answer.answer = "The PI must be primarily employed by the small business (>51% effort) at time of award; a full-time graduate student's primary employment is the university, not the company — this is an eligibility disqualifier"
+context = "This is the most common gate that catches first-time SBIR applicants with a university connection. The fix is to formally structure the company so the PI's primary employment (by time) is the small business before the award is made, or to name a different PI who already meets the employment requirement."
+
+[[questions]]
+id = "c7f4a210-3b9e-4d5c-9e81-6a0b2c8d1f73"
+type = "MultipleChoice"
+prompt.prompt = "Which of the following is the most accurate description of the commercial-first vs. SBIR-first trade-off for a solo SDA AI founder?"
+prompt.distractors = [
+  "SBIR-first is always better because it provides non-dilutive funding with no customer acquisition cost",
+  "Commercial-first is always better because SBIR takes too long to be a viable first revenue source",
+  "SBIR-first works well for founders with prior DoD relationships; commercial-first is for founders without any aerospace background",
+]
+answer.answer = "Both are viable primary strategies with different risk profiles: SBIR-first provides non-dilutive funding but has 15–25% Phase I acceptance rates and 6–12 month cycles; commercial-first (satellite operators, insurers) has no eligibility gates but requires direct sales capability — many successful SDA AI companies ran both in parallel"
+context = "Slingshot Aerospace, Kayhan Space, and LeoLabs all established commercial satellite operator relationships early rather than depending solely on SBIR. The hybrid path — build a commercial proof-of-concept first, then use that as prior work in a Phase I proposal — de-risks both channels."

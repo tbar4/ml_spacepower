@@ -1,0 +1,35 @@
+[[questions]]
+id = "7e3b4c2f-a951-4d86-b8e3-9c1a05f72d38"
+type = "MultipleChoice"
+prompt.prompt = "Your pipeline needs to propagate the full Space-Track catalog (50,000+ objects) over a 7-day window at 5-minute intervals — approximately 100 million state vector evaluations. Why should you use python-sgp4 directly rather than Astropy's EarthSatellite wrapper for this task?"
+prompt.distractors = [
+  "Astropy's EarthSatellite uses a different propagator (not SGP4) that would produce inconsistent results with Space-Track's catalog",
+  "python-sgp4 outputs TEME coordinates natively; Astropy automatically converts to GCRS which is incorrect for this application",
+  "Astropy does not support batch propagation and can only process one object at a time",
+]
+answer.answer = "Astropy's EarthSatellite wrapper adds substantial per-call overhead from the coordinate machinery — on the order of 100–1000× slower per evaluation than python-sgp4's vectorized sgp4_array(). For catalog-scale propagation, this difference makes Astropy impractical. Use python-sgp4 directly for bulk propagation and Astropy only for the subsequent frame conversion step on results of interest."
+context = "Both Astropy and python-sgp4 use the same underlying SGP4 algorithm (Vallado et al. 2006 reference implementation). The performance difference is entirely in the surrounding Python machinery. For a single object's state vector, Astropy is convenient and correct. For 50,000 objects × 2,016 time steps, python-sgp4's sgp4_array() function can complete the entire computation in seconds; Astropy would take hours. The correct architecture is: bulk propagate with python-sgp4 → identify objects of interest → convert those specific states to GCRS using Astropy."
+
+[[questions]]
+id = "2d9f5e71-c836-4b8a-a1f4-6b3e07a2c951"
+type = "MultipleChoice"
+prompt.prompt = "A GEO communications satellite has an orbital period of ~1436 minutes (approximately 24 hours). When you propagate its TLE using python-sgp4, which perturbations are included that would NOT be included for a typical 400 km LEO object?"
+prompt.distractors = [
+  "Atmospheric drag via an extended density model for higher altitudes",
+  "J2 zonal harmonic, which is negligible at LEO but dominant at GEO altitudes",
+  "Solar radiation pressure, which the sgp4 library computes from the object's estimated area-to-mass ratio",
+]
+answer.answer = "Lunar and solar third-body gravitational perturbations, included via SDP4 (the deep-space extension). The python-sgp4 library automatically activates SDP4 for objects with orbital periods greater than approximately 225 minutes. For the ~24-hour GEO period, the Moon and Sun's gravity produce measurable perturbations that SDP4 accounts for but standard SGP4 does not."
+context = "The threshold for SDP4 activation is approximately mean motion < 0.0104 revolutions per minute, which corresponds to a period of about 225 minutes and a semi-major axis of roughly 40,000 km. GEO (42,164 km), most GTO objects, and Molniya-type HEO objects all use SDP4 automatically. Note that even SDP4 does not include solar radiation pressure (SRP), which is often the dominant error source for GEO debris with unknown area-to-mass ratios."
+
+[[questions]]
+id = "91a7d3c8-5f4e-4b29-8e71-3c2d06b15a74"
+type = "MultipleChoice"
+prompt.prompt = "Your maneuver detection model flags a 600 km altitude debris object because its mean motion decreased by 0.008 rev/day between two TLEs 72 hours apart. Before alerting an operator, what corroborating evidence should you check, and why?"
+prompt.distractors = [
+  "Check whether the object's inclination changed by more than 0.1° — inclination changes are only possible through propulsive maneuvers and would confirm the flag",
+  "Check whether the object's BSTAR term increased — a higher BSTAR after the event would indicate intentional drag augmentation",
+  "Check the object's launch year — objects launched before 2010 are non-maneuverable by design and can be automatically cleared",
+]
+answer.answer = "Check the geomagnetic indices (Kp index and F10.7 solar flux) around the time of the change, and check whether other passive debris objects at similar altitudes show correlated mean motion decreases. During geomagnetic storms, thermospheric density increases cause drag-driven mean motion decreases in all LEO objects simultaneously — these are environmental, not propulsive. Correlated changes across multiple objects strongly suggest a solar event rather than a maneuver."
+context = "A mean motion decrease in a LEO object can be caused by: (1) atmospheric drag increase from a geomagnetic storm — affects all nearby objects simultaneously, (2) an OD batch update artifact — an apparent element jump from the fitting algorithm, or (3) an actual orbit-lowering maneuver. The discriminating evidence is correlation: a maneuver affects one specific object; a storm affects many objects at similar altitudes simultaneously. Additional signals include: the NORAD catalog's MANEUVERABLE flag (passive debris cannot maneuver), whether there is a tracking gap in the TLE history (re-acquisition after maneuver), and whether the object's altitude changed in the direction consistent with intentional station-keeping."

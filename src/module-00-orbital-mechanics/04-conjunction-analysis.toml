@@ -1,0 +1,35 @@
+[[questions]]
+id = "5c8d2f7a-b341-4e92-9f15-2a7e3c06b481"
+type = "MultipleChoice"
+prompt.prompt = "The 18th Space Defense Squadron uses a 1 km × 25 km × 1 km (R × T × N) pizza-box screening volume rather than a sphere of fixed radius. What is the physical justification for this asymmetric shape?"
+prompt.distractors = [
+  "The along-track dimension is larger because along-track conjunctions are physically more damaging due to higher relative velocity",
+  "The radial and cross-track dimensions are smaller to reduce storage costs — Space-Track's database is optimized for narrow windows",
+  "The asymmetric volume matches the shape of most satellite bodies, which are longer along the velocity direction than in other axes",
+]
+answer.answer = "Along-track position uncertainty is typically 10–100× larger than radial or cross-track uncertainty due to J2 perturbations and drag accumulating along the velocity direction. A spherical screen would either miss many true conjunctions (small sphere) or generate excessive false positives (large sphere). The asymmetric pizza-box matches the actual error geometry, providing tight screening in the well-constrained directions and generous screening in the poorly-constrained along-track direction."
+context = "This is a direct consequence of the RTN uncertainty structure from Lesson 2. The screening volume is not arbitrary — it is designed to capture all pairs where the actual physical closest approach (accounting for position uncertainty) could result in a collision, while minimizing the number of pairs that require full Pc computation. Different commercial providers (LeoLabs, COMSPOC) use different screening volumes based on their own OD quality and computational resources."
+
+[[questions]]
+id = "9e4a17c3-6d52-4f83-b2a8-8c3b05e7d194"
+type = "MultipleChoice"
+prompt.prompt = "Your ML pipeline ingests CDMs from two sources: Space-Track (which reports COLLISION_PROBABILITY_METHOD = FOSTER-1992) and a commercial provider (which reports COLLISION_PROBABILITY_METHOD = MONTE_CARLO). For the same conjunction event, Space-Track reports Pc = 2.3e-5 and the commercial provider reports Pc = 4.1e-5. Can you directly compare these values? What should you do instead?"
+prompt.distractors = [
+  "Yes — the two methods should give identical results for the same covariance geometry; the difference indicates that one provider is using a different TLE epoch for one of the objects",
+  "Yes — Monte Carlo always produces higher Pc than analytical methods because it samples the tails of the distribution more accurately; the ratio (4.1/2.3 ≈ 1.8) is within expected limits",
+  "No — but you can average the two values to get a more robust estimate, which is standard practice in multi-source conjunction assessment",
+]
+answer.answer = "No — the two Pc values are not directly comparable because they reflect different mathematical approximations of the same integral. Foster-1992 uses an analytical linear-encounter approximation; Monte Carlo samples from the full covariance and counts simulated collisions. For the same covariance input, these methods can differ by factors of 2–5 or more in edge cases. The correct approach is to hold the method constant within your pipeline (or treat method as a categorical feature) and never mix Pc values across methods without normalization."
+context = "The COLLISION_PROBABILITY_METHOD field in CDMs exists precisely because different methods give different results. The underlying physics (probability of hard-body overlap given Gaussian position uncertainty) is the same, but the approximations differ. Foster-1992 assumes linear relative motion and projects the covariance onto the conjunction plane. Monte Carlo Pc is the reference standard but is computationally expensive. Alfano-2005 provides a numerical series expansion that handles short-duration encounters. For ML model training, always filter to a single method or encode method as a feature to avoid label noise."
+
+[[questions]]
+id = "3f6b8e21-d4a7-4c95-b8f3-7a2c1e5d4038"
+type = "MultipleChoice"
+prompt.prompt = "A CDM shows OBJECT1 (active satellite) has MANEUVERABLE = YES, and the computed Pc = 3.5e-4, which exceeds the operator's maneuver decision threshold of 1e-4. An analyst argues that the raw Pc alone is sufficient justification to order a maneuver. What is the correct interpretation of Pc relative to the MANEUVERABLE flag?"
+prompt.distractors = [
+  "The analyst is correct — Pc is a pure physical quantity that is independent of whether an object can maneuver; the MANEUVERABLE flag is only relevant after a maneuver has been executed",
+  "Pc above the threshold is automatically sufficient — maneuver decisions are deterministic: if Pc > threshold, always maneuver",
+  "A maneuverable object has a lower Pc threshold applied — the system automatically multiplies Pc by 0.1 if MANEUVERABLE = YES to account for avoidance capability",
+]
+answer.answer = "The raw Pc quantifies the collision risk assuming no action is taken. For a maneuverable OBJECT1, the effective risk is lower because the operator can execute a collision avoidance maneuver if the Pc remains high as TCA approaches. Pc above the threshold is a trigger for decision analysis, not an automatic maneuver order — the operator must weigh Pc trend (is it increasing or decreasing as new CDMs arrive?), maneuver cost and operational impact, and the reliability of the covariance estimate. Pc overstates risk for maneuverable satellites compared to debris that cannot respond."
+context = "In practice, satellite operators follow a multi-step process: (1) track the Pc trend across multiple CDMs as TCA approaches — a high Pc that is decreasing may not require action; (2) assess covariance realism — if the covariance is known to be underestimated, the true Pc may be higher; (3) weigh the maneuver cost against risk. The MANEUVERABLE flag affects the decision calculus but not the raw Pc calculation. For ML-assisted risk scoring, the most useful model output is not the raw Pc but a risk score that accounts for Pc trend, covariance realism, and maneuverability together."

@@ -1,0 +1,35 @@
+[[questions]]
+id = "c4e91b3f-82d7-4a15-9e63-7f5a2d081c4e"
+type = "MultipleChoice"
+prompt.prompt = "You call python-sgp4's sgp4() function and get back position vector (−2338.5, 5481.2, 3834.7) km. A colleague gives you a telescope observation of the same satellite at the same epoch: (−2339.1, 5482.0, 3835.4) km. You subtract them and find a 1 km residual. What is the most likely explanation?"
+prompt.distractors = [
+  "The TLE is 3 days old and has drifted 1 km from the true position",
+  "The satellite maneuvered between the TLE epoch and the observation time",
+  "The python-sgp4 library rounds position outputs to the nearest kilometer",
+]
+answer.answer = "The SGP4 output is in TEME (True Equator Mean Equinox) while the telescope observation is in J2000/GCRS. Subtracting them directly is physically meaningless — converting TEME to GCRS using Astropy would likely resolve most or all of the apparent discrepancy."
+context = "TEME and J2000/GCRS differ because TEME applies the true equator of date (including nutation) but uses the mean equinox of date (excluding the equation of the equinoxes). At LEO altitudes, the resulting positional difference is hundreds of meters to ~1 km depending on epoch. This is the single most common reference frame bug in SSA software. Always convert SGP4 TEME output to GCRS using astropy.coordinates.TEME before comparing with external observation sources."
+
+[[questions]]
+id = "f7b3a29e-1d54-4e8c-b3f6-8a17c405d6e2"
+type = "MultipleChoice"
+prompt.prompt = "A CDM reports the following position covariance diagonal elements for OBJECT1 in RTN: CR_R = 0.04 km², CT_T = 12.5 km², CN_N = 0.18 km². What does this tell you about the uncertainty structure, and what is the [1,1] element of the covariance matrix?"
+prompt.distractors = [
+  "The [1,1] element is CR_R = 0.04 km² (radial variance); the large CT_T indicates a recent maneuver has inflated the along-track uncertainty abnormally",
+  "The [1,1] element is CN_N = 0.18 km² (cross-track variance); along-track and cross-track are typically similar for well-tracked objects",
+  "The [1,1] element is the determinant of the covariance matrix; CT_T being largest indicates the OD solution failed to converge",
+]
+answer.answer = "The [1,1] element (zero-indexed) is CT_T = 12.5 km² — the along-track (Transverse) position variance. Along-track uncertainty is typically 10–100× larger than radial uncertainty because J2, drag, and OD timing errors accumulate along the velocity direction. This is normal, not a data quality problem."
+context = "CDM covariances are ordered [R, T, N, Rdot, Tdot, Ndot] in the 6×6 matrix. The along-track (T) variance is almost always the dominant term for LEO objects. The physical reason is that J2 perturbations and atmospheric drag produce errors that grow primarily along the orbital velocity direction. A good mental model: radial position is constrained by radar ranging (good), angular position accumulates timing errors (poor). For Pc calculation, the along-track uncertainty projects into the relative velocity direction of the encounter — and because objects pass through this direction quickly in a head-on conjunction, large along-track uncertainty does not necessarily produce high Pc."
+
+[[questions]]
+id = "d2a58c71-6e43-4b97-a8f4-1c3e7b906d45"
+type = "MultipleChoice"
+prompt.prompt = "A data engineer builds a pass prediction tool that checks which ground stations can see a satellite at each epoch. They use the satellite's GCRS (J2000 ECI) position vector directly, comparing it with hardcoded GCRS coordinates for each ground station. Why is this approach wrong?"
+prompt.distractors = [
+  "GCRS coordinates use kilometers while ground station coordinates are given in meters, causing a unit mismatch",
+  "Ground station elevations must be added to the Earth radius before computing visibility, and the engineer forgot this correction",
+  "The J2000 reference epoch is 25 years in the past; accumulated precession makes J2000 unsuitable for current-epoch calculations",
+]
+answer.answer = "Ground stations are fixed to Earth's surface, so their positions in ECEF (Earth-Centered Earth-Fixed) are constant. But in ECI/GCRS, a fixed ground station traces a circle as Earth rotates — its ECI coordinates change continuously. Hardcoding ECI coordinates for a ground station is physically wrong. The correct approach is to express the ground station in ECEF (or ITRS in Astropy), convert the satellite position from GCRS to ITRS, then compute visibility in the common ECEF frame."
+context = "ECI frames are inertial (non-rotating), so Earth's surface rotates beneath them. A ground station at 38°N, 105°W has constant ECEF XYZ coordinates but constantly changing ECI XYZ coordinates. Visibility calculations require knowing the geometric relationship between the satellite and the local horizon, which is defined in the ground station's local frame — easiest to compute in ECEF. The Astropy chain is: SGP4 TEME → GCRS → ITRS (ECEF), then compute elevation using the dot product of the range vector with the local up vector."

@@ -3,6 +3,14 @@
 [Introduction](README.md)
 [Curriculum layout](CURRICULUM.md)
 
+- [Module 0: Orbital Mechanics and the SDA Data Ecosystem](module-00-orbital-mechanics/00-overview.md)
+  - [TLEs and Keplerian elements](module-00-orbital-mechanics/01-tles-and-keplerian-elements.md)
+  - [Reference frames: ECI, ECEF, TEME, and RTN](module-00-orbital-mechanics/02-reference-frames.md)
+  - [SGP4 propagation](module-00-orbital-mechanics/03-sgp4-propagation.md)
+  - [Conjunction analysis and the CDM format](module-00-orbital-mechanics/04-conjunction-analysis.md)
+  - [The commercial SDA data ecosystem](module-00-orbital-mechanics/05-sda-data-ecosystem.md)
+  - [Project: Space-Track conjunction screening pipeline](module-00-orbital-mechanics/project.md)
+
 - [Module 1: Foundations](module-01-foundations/00-overview.md)
   - [Probability, distributions, and expectation](module-01-foundations/01-probability-distributions-expectation.md)
   - [Conditional probability and Bayes' rule](module-01-foundations/02-conditional-probability-bayes.md)
@@ -71,4 +79,10 @@
   - [Rust and burn: the production gap](module-08-openspiel-and-capstone/03-rust-and-burn.md)
   - [Designing the SSA game](module-08-openspiel-and-capstone/04-designing-the-ssa-game.md)
   - [PettingZoo, shimmy, and Ray RLlib](module-08-openspiel-and-capstone/05-pettingzoo-rllib.md)
+  - [From research to revenue: SBIR and government contracting](module-08-openspiel-and-capstone/06-sbir-spacewerx.md)
+  - [LLM-in-the-loop wargame adjudication](module-08-openspiel-and-capstone/07-llm-wargame-adjudication.md)
   - [Capstone: a Rust CFR solver for an SSA conjunction-masking game](module-08-openspiel-and-capstone/project.md)
+
+- [Module 9: Applied SDA ML](module-09-applied-sda-ml/00-overview.md)
+  - [Sequence models for maneuver detection](module-09-applied-sda-ml/01-sequence-models-maneuver-detection.md)
+  - [Project: production maneuver detection pipeline](module-09-applied-sda-ml/project.md)
