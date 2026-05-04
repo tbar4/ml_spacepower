@@ -23,6 +23,30 @@ answer.answer = "Attribution does not equal political will to respond — if the
 context = "This limitation is essential to state clearly in thesis work. The deterrence-by-detection argument is a necessary condition argument: attribution is required for response, and ML can provide attribution faster and at larger scale. But attribution is not sufficient for deterrence — it requires that the detecting state has both the capability and the political will to respond. The thesis contribution is to the attribution problem, not the political will problem."
 
 [[questions]]
+id = "a8c0e2f4-1d3b-4a8c-e195-8f0a2c4e6b8d"
+type = "MultipleChoice"
+prompt.prompt = "The nuclear-space entanglement problem means that a conventional counterspace attack on AEHF or SBIRS could trigger nuclear-level escalation even if the attacker intended only a conventional military effect. Why does James Acton identify this as a structural stability problem rather than simply a communication failure?"
+prompt.distractors = [
+  "Because AEHF and SBIRS are classified systems, so the attacker cannot verify whether their attack degraded nuclear C2 specifically, creating uncertainty that encourages additional attacks",
+  "Because the Outer Space Treaty does not distinguish between attacks on nuclear and conventional satellite assets, making legal deterrence impossible",
+  "Because the U.S. nuclear command chain has no redundant backup systems, so any AEHF degradation immediately disables nuclear C2",
+]
+answer.answer = "Because when nuclear and conventional C2 share the same satellite architecture, the adversary receiving the attack cannot determine in the available decision time whether it is being targeted for conventional operations disruption or nuclear first-strike preparation — and the 'use it or lose it' logic of nuclear deterrence makes early nuclear use more attractive as C2 satellites degrade, regardless of intent"
+context = "This is the highest-stakes application of the ML deterrence thesis. Detection of proximity operations near nuclear C2 assets (AEHF at GEO, SBIRS at GEO/HEO) provides decision time for diplomatic escalation before a conventional-looking co-orbital approach becomes a nuclear crisis. The same LSTM maneuver detection pipeline that identifies gray zone orbital maneuvering near commercial satellites is — at maximum stakes — detecting potential Rung 4 approaches to assets whose degradation compresses the escalation ladder to nuclear levels."
+
+[[questions]]
+id = "c2e4f6a8-3b5d-4c2e-f317-0e2f4a6c8e0f"
+type = "MultipleChoice"
+prompt.prompt = "The United States rejects the Russia-China PPWT (Prevention of the Placement of Weapons in Outer Space) proposal primarily because:"
+prompt.distractors = [
+  "PPWT would prohibit U.S. military reconnaissance satellites, which the U.S. considers essential for arms control verification and is unwilling to give up",
+  "PPWT's definition of 'weapons' is broad enough to include GPS and satellite communications systems that support conventional military operations",
+  "PPWT requires an international inspection regime that would expose classified U.S. satellite capabilities to adversary verification",
+]
+answer.answer = "PPWT prohibits weapons placed in space but explicitly does not prohibit ground-based ASAT systems — which are the primary counterspace capabilities Russia (Nudol) and China (DN-3) have already demonstrated. PPWT would constrain potential U.S. space-based defensive capabilities while leaving intact the ground-based arsenal that constitutes the actual threat, with no verification mechanism to confirm compliance anyway"
+context = "This is legal warfare in practice: China and Russia advocate an arms control framework that constrains U.S. options while preserving their own most important counterspace advantages. The Artemis Accords are the U.S. counter-move: establishing a norm framework that 50+ nations endorse, excluding China and Russia, and building the coalition architecture that makes Chinese and Russian orbital behavior appear as norm violations. Neither framework will produce verified arms control — both are bids for diplomatic positioning in the normative competition over space."
+
+[[questions]]
 id = "e3f5a7c9-6b8d-4f1e-a472-3b5d7f9a1c3e"
 type = "MultipleChoice"
 prompt.prompt = "The Outer Space Treaty (1967) prohibits which of the following?"

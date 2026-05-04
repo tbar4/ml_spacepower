@@ -153,6 +153,30 @@ The OST has been ratified by the spacefaring nations. Its limits are equally imp
 
 The SCP instructs U.S. Space Force to "make every effort to promote responsible norms of behavior that perpetuate space as a safe and open environment in accordance with the Laws of Armed Conflict, the Outer Space Treaty, and international law." The tension: the OST and current international law permit most of what China is doing in the gray zone. Promoting "responsible norms" requires creating new norms that go beyond the existing legal framework — which requires international agreement that the adversaries have little incentive to reach.
 
+**Competing frameworks: Artemis Accords vs. PPWT**
+
+Two competing international frameworks are now contending to define the next layer of space governance — and the competition between them is itself an instance of legal warfare (Lesson 4's Three Warfares concept applies here directly).
+
+The **Artemis Accords** (2020) are bilateral agreements initiated by the United States alongside the Artemis lunar program. They are not a multilateral treaty ratified through the UN — they are bilateral commitments that each country makes with the United States. More than 50 nations have signed as of 2025, including the UK, Japan, Australia, Canada, France, Germany, South Korea, UAE, and Ukraine. China and Russia have not signed and have publicly criticized the framework.
+
+The Accords cover: transparency in space activities, interoperability of space systems, registration of space objects, release of scientific data, preservation of outer space heritage, deconfliction of space activities through "safety zones," and responsible orbital debris management. None of these provisions address counterspace weapons directly — the Accords are explicitly about civil and commercial space activity, not military competition.
+
+The *strategic function* of the Accords is not primarily legal. It is coalition-building. By getting 50+ nations to endorse a U.S.-drafted norm framework, the U.S. establishes a "responsible spacefaring" standard that China and Russia are excluded from — making their orbital behavior appear as norm violations even where it doesn't technically violate the OST. The Artemis Accords are the legal warfare analog of the Artemis program itself: both build U.S.-led coalition architecture while systematically excluding China and Russia from the emerging governance framework.
+
+The Chinese and Russian objection focuses on the "safety zones" provision, which they argue creates de facto territorial claims on lunar surface resources, violating the OST's non-appropriation principle. The U.S. position: safety zones are temporary operational areas, not territorial claims. This dispute mirrors the South China Sea dispute almost exactly — both sides are using legal language to assert positions whose real content is strategic.
+
+The **Prevention of the Placement of Weapons in Outer Space (PPWT)** is a treaty proposal introduced by Russia and China at the UN Conference on Disarmament in 2008 and updated in 2014. It would prohibit placing weapons in space, using force against space objects, and threatening space objects.
+
+The United States has consistently rejected PPWT on three grounds:
+
+*Unverifiable*: The PPWT has no inspection or verification regime. Without on-site inspection or agreed monitoring protocols, compliance cannot be confirmed — which means the treaty constrains parties who comply and is irrelevant to those who don't.
+
+*Preserves ground-based ASAT advantage*: PPWT prohibits weapons in space but explicitly does not prohibit ground-based ASAT systems. Russia (Nudol) and China (DN-3) have demonstrated their most capable counterspace weapons as ground-based interceptors. PPWT would constrain any future U.S. space-based interceptor capability while leaving the ground-based capabilities that have already been tested intact.
+
+*Legal warfare by other means*: Carlson's assessment is direct: "their charade of good will is nothing more than a brazen act of lawfare; an attempt to trick the West into agreeing to forego defending our space systems upon which our militaries, economic centers, and information driven societies depend." PPWT positions Russia and China as advocates for arms control while preserving the asymmetric counterspace advantages they have already built.
+
+**The normative competition as strategic contest**: Neither the Artemis Accords nor PPWT will create binding, verified arms control for space. The strategic value of each framework is reputational and coalitional — whichever norm regime achieves broader international acceptance makes the other side's behavior appear irresponsible, constraining it through diplomatic and economic costs rather than legal enforcement. This is the Three Warfares applied to the governance layer: the battle for the normative framework of space is itself a domain of competition.
+
 ---
 
 ## Kessler Syndrome as structural deterrent — and its limits
@@ -170,6 +194,34 @@ This deterrent is real but incomplete:
 **Irreversibility is not symmetric**: Developed space powers with large commercial constellations have more to lose from orbital degradation than states with smaller commercial space sectors. China and Russia's space dependence is real but their calculation about acceptable Kessler risk may differ from the U.S. calculation.
 
 The Kessler constraint is why Chinese counterspace strategy emphasizes non-kinetic reversible effects (jamming, spoofing, cyber, dazzling) and co-orbital positioning over kinetic ASAT employment. The gray zone strategy is Kessler-aware: you can threaten without destroying, and threatening is more useful anyway because it keeps your options open.
+
+---
+
+## The nuclear-space nexus
+
+The escalation ladder's most dangerous compression — from conventional counterspace at Rung 6 to nuclear-relevant effects at Rung 8 — is not a hypothetical worst case. It is a structural feature of the current space architecture. Understanding it is essential to understanding why the ML deterrence thesis matters at the highest strategic level.
+
+**Nuclear C2 satellites**: The United States' nuclear command-and-control depends on three satellite systems:
+
+- **AEHF (Advanced Extremely High Frequency)**: The protected, jam-resistant, nuclear-hardened communications link that carries presidential nuclear command authority to strategic forces. AEHF is EMP-hardened, low-probability-of-intercept, and specifically designed to function in a nuclear environment. It is the survivable nuclear C2 link. If AEHF is attacked or disrupted in a crisis, the U.S. cannot reliably transmit launch or stand-down orders to nuclear forces.
+
+- **SBIRS (Space Based Infrared System)**: The nuclear early warning constellation — four satellites in GEO and two in highly elliptical Molniya orbits — that detects ballistic missile launches within seconds of ignition. The entire U.S. concept of "launch on warning" or "launch under attack" depends on SBIRS providing accurate, rapid, and continuous coverage. Degrading SBIRS degrades confidence in the nuclear deterrent itself.
+
+- **GPS Block III**: Used in nuclear delivery systems including Trident II D5 submarine-launched ballistic missiles for terminal guidance. GPS degradation affects conventional precision strike and nuclear delivery accuracy.
+
+**The entanglement problem**: James Acton's analysis of "entanglement" — where nuclear and conventional forces share the same C2 architecture — identifies a specific failure mode for strategic stability. When the same satellite that relays conventional military orders also carries nuclear command authority, a conventional counterspace attack on that satellite becomes ambiguous: is the attacker trying to degrade conventional operations, or is this the first move in a nuclear first strike?
+
+The adversary receiving the attack cannot answer this question in real time. The decision window is minutes, not hours. And the "use it or lose it" logic of nuclear deterrence — strike before you lose the ability to retaliate — becomes more acute as nuclear C2 satellites are degraded. An adversary that has lost confidence in its ability to command and control nuclear forces has stronger incentives toward early nuclear use.
+
+**Able Archer 83 as structural analogy**: In November 1983, a NATO exercise (Able Archer 83) simulating the transition from conventional to nuclear warfare was nearly interpreted by Soviet leadership as preparation for an actual NATO first strike. Soviet nuclear forces were placed on elevated alert. The exercise almost triggered a nuclear response. The structural parallel to current space operations: actions that are militarily legitimate from the attacker's perspective (degrading adversary C2 before conventional operations) look like first-strike preparation from the defender's perspective.
+
+Space operations make this dynamic faster and less reversible. NATO had weeks to signal that Able Archer was an exercise. An adversary watching its nuclear early warning satellites degrade has minutes to decide.
+
+**The geographic proximity problem**: SBIRS GEO satellites operate at the same altitude band where Russia's Luch co-orbital platform has been documented conducting proximity operations near commercial communication satellites. The distinction between "proximity operation near Intelsat" (Rung 1) and "proximity operation near SBIRS" (Rung 4) requires knowing which satellite the co-orbital vehicle is approaching — which requires the precise orbital element analysis that the maneuver detection pipeline is designed to provide. Human analysts reviewing orbital data with multi-day latency will not detect the distinction before the co-orbital vehicle is in position.
+
+**The ML deterrence thesis at maximum stakes**: The deterrence-by-detection argument is not only about deterring gray zone operations against commercial or conventional military satellites. Its highest-value application is providing early detection of proximity operations near nuclear C2 assets — creating decision time for diplomatic escalation before a Rung 1 activity becomes a Rung 4 crisis. This is the case where detection latency has the most direct bearing on nuclear stability.
+
+The NEXT-GEN OPIR (Next Generation Overhead Persistent Infrared) program — the Space Force replacement for SBIRS — will introduce a transition period of partial coverage. During that transition, SDA coverage of the legacy SBIRS constellation's neighborhood becomes more important for exactly this reason.
 
 ---
 
@@ -234,6 +286,10 @@ After this lesson, you should be able to:
 - Explain the Harrison argument: why ISR blinding is an escalation accelerant rather than an escalation suppressor
 - Explain the crisis communication problem (Campbell) and why China's deliberate opacity is a strategic choice
 - State the five core provisions of the Outer Space Treaty and identify what the treaty does not prohibit
+- Name the three nuclear C2 satellite systems (AEHF, SBIRS, GPS) and explain the entanglement problem: why conventional counterspace attacks on these systems may be perceived as nuclear first-strike preparation
+- Explain the Able Archer 83 structural analogy and why space operations make the timing problem more acute
+- Describe the Artemis Accords — who signed, who didn't, what they cover — and explain their strategic function as coalition-building rather than arms control
+- Explain why the United States rejects PPWT on three grounds and why Carlson characterizes it as lawfare
 - Articulate the ML deterrence thesis (deterrence by detection) in one paragraph, including both the core argument and its honest limitations
 - Trace how each module in this curriculum contributes a specific capability to the ML deterrence framework
 

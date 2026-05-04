@@ -116,6 +116,30 @@ For wargame design: gray zone activities are more common than kinetic attacks an
 
 ---
 
+## Russian space doctrine: asymmetric degradation
+
+China's space doctrine is about building parity from behind — constructing the capabilities that allow China to contest U.S. space superiority over decades. Russia's space doctrine is about something different: an aging space power with a deteriorated industrial base that cannot match U.S. capabilities quantity-for-quantity, pursuing asymmetric strategies to degrade U.S. advantage without requiring symmetric investment.
+
+Russia has been a space power since Sputnik (1957). The Soviet space program was a peer competitor to NASA for two decades. Post-Soviet Russia has seen that industrial base atrophy — Russian launch vehicles are competitive, but the satellite manufacturing sector has not kept pace with U.S. or increasingly Chinese capabilities. The strategic implication: Russia cannot win a symmetric space competition. Russian space doctrine therefore emphasizes targeted, reversible, high-leverage capabilities that impose disproportionate costs on U.S. space-dependent military operations.
+
+**The Russian counterspace toolkit**:
+
+*Peresvet*: Revealed by Putin in 2018 as one of six advanced weapons systems, Peresvet is a mobile ground-based laser system. The U.S. assessment: designed to dazzle or permanently damage optical sensors on reconnaissance satellites. Not confirmed operationally deployed but repeatedly tested. Ground-based directed energy allows Russia to threaten LEO reconnaissance satellites without generating debris and without providing an attributable kinetic act.
+
+*Nudol (PL-19)*: Russia's direct-ascent ASAT. Tested multiple times since 2014, culminating in the November 2021 live-fire test that destroyed the defunct Cosmos 1408 satellite at approximately 480 km altitude, generating 1,500+ tracked debris fragments and endangering the ISS. Unlike the 2007 Chinese test, the 2021 Russian test occurred after the U.S. had proposed a moratorium on such testing — a deliberate signal of Russian indifference to the emerging norm.
+
+*Tirada-2*: A GEO-based electronic attack satellite designed to suppress enemy satellite communications over a theater. The concept: a jammer positioned at GEO can deny broadband satellite communications across a large geographic area without generating debris, without kinetic action, and with reversibility when the mission ends.
+
+*Krasukha-4*: Ground-based electronic warfare system that jams space-based radar ISR and drone control links. Extensively deployed in Syria and Ukraine. Demonstrates that effective counterspace does not require reaching orbit — jamming from the ground can deny the operational value of a satellite without touching it.
+
+**Russia's operational record**: Russia has not merely tested these capabilities — it has used them. GPS jamming in the Baltic region is documented since at least 2016, affecting civilian aviation in Norway, Finland, and Estonia. Jamming in Syria has been extensive. In Ukraine, Russia has conducted GNSS spoofing in Kyiv (causing navigation errors for civilian aircraft), jamming of Ukrainian drone control links (significantly limiting Ukrainian UAV effectiveness in certain theaters), and the KA-SAT cyber attack. Russia is the only country to have used its counterspace capabilities at operational scale in a peer-adjacent conflict.
+
+**The doctrinal framework**: Russian Military Doctrine 2014 explicitly identifies degradation of adversary space-based C2 and ISR as a priority task within the "non-nuclear deterrence" posture — alongside precision conventional strikes. Space operations are not a separate domain in Russian military thinking; they are integrated into the combined-arms campaign to establish information dominance before kinetic operations begin. This parallels the Chinese PLA informationized warfare concept (Lesson 4) but with a narrower, more operationally immediate focus.
+
+**The key distinction from Chinese doctrine**: China is building toward parity; Russia is exploiting current U.S. vulnerabilities with what it has. A wargame that treats "Russian adversary" and "Chinese adversary" as equivalent is wrong on the strategy, wrong on the capabilities, and will produce wrong equilibria. The Russian player in an adversarial space game has a different action space (more ground-based, more reversible, more immediately available) and a different objective function (degrading specific operational capabilities rather than establishing long-term positional advantage) than the Chinese player.
+
+---
+
 ## Commercial space as military infrastructure
 
 The 2022 Russian invasion of Ukraine changed how the U.S. defense community thinks about commercial space. Before February 24, 2022, commercial satellite operators were understood as dual-use in potential — they could support military operations. After that date, commercial satellite operators became dual-use in practice, in ways that exposed vulnerabilities no existing doctrine had addressed.
@@ -191,6 +215,8 @@ After this lesson, you should be able to:
 - Explain the PWSA/SDA Tranche architecture and the logic of deterrence by resilience through proliferation
 - Describe the CASR framework and its market implications for commercial SDA products
 - Name at least three allied/partner SSA frameworks and explain why the coalition dimension matters for SDA product positioning
+- Describe Russia's four primary counterspace capabilities (Peresvet, Nudol, Tirada-2, Krasukha-4) and explain how Russia's strategic approach differs from China's
+- Explain why Russian counterspace doctrine focuses on asymmetric degradation rather than parity-building, and what that implies for wargame action space design
 
 ---
 

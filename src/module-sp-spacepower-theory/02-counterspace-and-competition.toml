@@ -57,3 +57,15 @@ prompt.distractors = [
 ]
 answer.answer = "Deploying hundreds of small satellites so that attacking one satellite provides negligible capability degradation, while attacking the system meaningfully would require simultaneous kinetic attacks against many satellites — creating Kessler Syndrome consequences the attacker shares and making the cost-benefit calculation for attack strongly negative"
 context = "Deterrence by resilience through proliferation is the U.S. alternative to deterrence by punishment (threatening retaliation). The logic is that if the target is hard enough to destroy meaningfully, rational adversaries don't try. This creates the market for SDA ML products: managing a 200+ satellite constellation requires automated anomaly detection and behavioral monitoring that human operators cannot provide at the required scale."
+
+[[questions]]
+id = "f3a5c7e9-9b1d-4f3a-d084-7c9e1b3d5f7a"
+type = "MultipleChoice"
+prompt.prompt = "Russia's Peresvet ground-based laser, Nudol direct-ascent ASAT, Tirada-2 GEO jammer, and Krasukha-4 ground-based EW system collectively represent a counterspace doctrine that is best described as:"
+prompt.distractors = [
+  "Parity-building — Russia is investing in these capabilities to match U.S. space capabilities satellite-for-satellite over the next decade",
+  "Deterrence by punishment — Russia will retaliate against U.S. space assets if the U.S. conducts any counterspace operation against Russian assets",
+  "Domain control — Russia aims to establish sovereignty over specific orbital regimes through a combination of physical presence and legal claims",
+]
+answer.answer = "Asymmetric degradation — Russia cannot match U.S. space capabilities quantity-for-quantity, so it invests in targeted capabilities (ground-based lasers, direct-ascent interceptors, electronic warfare) that degrade specific high-value U.S. space-enabled operational functions at lower cost than building comparable space architecture"
+context = "This is the key distinction between Russian and Chinese space doctrine. China is building toward parity from behind (Guowang, DN-series ASAT, Shijian co-orbital platforms). Russia is exploiting current U.S. vulnerabilities with its existing asymmetric toolkit. A wargame that treats both adversaries as equivalent in strategy and action space will produce wrong equilibria — the Russian player has different available actions and a different objective function than the Chinese player."
