@@ -36,15 +36,23 @@ The U.S. Space Force's 2020 Space Capstone Publication effectively ends the sanc
 
 **Lesson 1: Foundations of Spacepower Theory**
 
-The theoretical vocabulary you need before any strategic conversation. Covers the spacepower definition (Lutes), the sanctuary vs. high ground debate (Dolman), the USSF Space Capstone Publication's seven spacepower disciplines, Ziarnick's General Theory of Space Power, and Chinese spacepower theory (Carlson's geography/legitimacy/economy framework). Ends with the direct implication for wargame design: the strategic goal of the actor determines the appropriate game structure.
+The theoretical vocabulary you need before any strategic conversation. Covers the spacepower definition (Lutes), the sanctuary vs. high ground debate (Dolman), the USSF Space Capstone Publication's seven spacepower disciplines, Ziarnick's General Theory of Space Power, Chinese spacepower theory (Carlson's geography/legitimacy/economy framework), and the Outer Space Treaty — what it prohibits and what it does not.
 
 **Lesson 2: Counterspace Operations and the New RMA**
 
-The operational level of space competition. Covers the counterspace taxonomy (kinetic/non-kinetic, reversible/irreversible, attributable/non-attributable), deterrence stability in space (the stability-instability paradox applied to orbital warfare), Krepinevich's domain expansion theory and why the next great-power conflict will likely begin in space, PLA doctrine (Science of Military Strategy 2013), and the current counterspace landscape from the Secure World Foundation's annual assessment. The specific operational actions in this taxonomy are the ones that should populate your wargame action spaces.
+The operational level of space competition. Covers the counterspace taxonomy (kinetic/non-kinetic, reversible/irreversible, attributable/non-attributable), deterrence stability and the stability-instability paradox, Krepinevich's domain expansion and MTR/RMA distinction, PLA doctrine (Science of Military Strategy 2013), the current counterspace landscape, and commercial space as military infrastructure — what the Viasat hack and Starlink in Ukraine revealed about the strategic role of commercial satellites.
 
-**Lesson 3: From Strategic Theory to Wargame Design**
+**Lesson 3: Chinese Spacepower Theory and Gray Zone Competition**
 
-The bridge from theory to implementation. Covers how strategic questions map to specific game structures, why information asymmetry in orbital operations implies imperfect-information game theory (IS-MCTS and CFR rather than minimax), why multi-actor deterrence dynamics require population-level solution concepts (PSRO and alpha-rank rather than Nash equilibrium for two players), and why behavioral inference in orbital operations maps to opponent modeling and particle filters. Uses the exploratory wargaming literature (including results from AlphaZero-style solvers on military games) to show what computational approaches reveal that human wargames miss.
+Chinese doctrine in depth. Covers PLA informationized warfare doctrine (information dominance before kinetics), Qiao Liang's Unrestricted Warfare framework (all means, all domains, boundary dissolution), the Three Warfares (legal, psychological, public opinion) with space-specific examples including near-space legal warfare, the civilian-military blur in Chinese space operations, gray zone wargame findings (China's civilian spacecraft positioning strategy that produced no actionable U.S. response), and Hal Brands on coalition dynamics and the structure of the New Cold War in space.
+
+**Lesson 4: Escalation Dynamics, Crisis Stability, and the ML Deterrence Framework**
+
+The thesis core. Covers why space escalation is structurally different from terrestrial escalation (compressed rungs, attribution delay, absence of norms), the Russian concept of calibrated escalation as cost imposition, Brands and Cooper's six deterrence dilemmas, Todd Harrison's counterintuitive finding that ISR blinding increases escalation risk, the crisis communication problem (Campbell), and Kessler Syndrome as a partial structural deterrent. Culminates in the ML deterrence-by-detection thesis: how SDA ML capabilities contribute to strategic stability by reducing the orbital ambiguity on which gray zone operations depend, and the honest limitations of that argument.
+
+**Lesson 5: From Strategic Theory to Wargame Design**
+
+The bridge from theory to implementation. Covers how strategic questions map to specific game structures, why information asymmetry in orbital operations implies imperfect-information game theory (IS-MCTS and CFR), why multi-actor deterrence dynamics require population-level solution concepts (PSRO and alpha-rank), and why behavioral inference maps to opponent modeling and particle filters. Uses the exploratory wargaming literature to show what computational approaches reveal that human wargames miss. Provides explicit design rationale for every choice in the Module 8 capstone game.
 
 ---
 
@@ -52,15 +60,17 @@ The bridge from theory to implementation. Covers how strategic questions map to 
 
 These connections are the point of the module.
 
-**Module 4 (Search and Planning) — IS-MCTS for fog-of-war SSA games**: The reason you use Information Set MCTS rather than standard minimax is that orbital operations involve fundamental epistemic asymmetry — you rarely know whether an adversary's maneuver is station-keeping or repositioning for an approach. Lesson 3 here provides the strategic motivation for that choice.
+**Module 4 (Search and Planning) — IS-MCTS for fog-of-war SSA games**: The reason you use Information Set MCTS rather than standard minimax is that orbital operations involve fundamental epistemic asymmetry — you rarely know whether an adversary's maneuver is station-keeping or repositioning for an approach. Lesson 5 here provides the strategic motivation for that choice.
 
-**Module 5 (Game Theory) — CFR for the conjunction maneuver game**: CFR finds Nash equilibria in extensive-form games. Lesson 1 establishes why Nash equilibrium is the right solution concept for two-player zero-sum adversarial space interactions, and Lesson 3 shows when it is not (multi-actor scenarios requiring PSRO).
+**Module 5 (Game Theory) — CFR for the conjunction maneuver game**: CFR finds Nash equilibria in extensive-form games. Lesson 1 establishes why Nash equilibrium is the right solution concept for two-player zero-sum adversarial space interactions, and Lesson 5 shows when it is not (multi-actor scenarios requiring PSRO). Lesson 4 poses the deeper question: does the attacker's equilibrium strategy change when the defender has ML-based detection? CFR is the tool that answers it formally.
 
-**Module 6 (MARL) — PSRO for adversarial constellation games**: The strategic rationale for population-based training is that space competition involves multiple actors with heterogeneous capabilities and doctrines (U.S., allied, Russian, Chinese, commercial). PSRO builds a population of strategies and finds meta-game equilibria — the right tool for a multi-actor strategic landscape, not just two-player competition.
+**Module 6 (MARL) — PSRO for adversarial constellation games**: The strategic rationale for population-based training is that space competition involves multiple actors with heterogeneous capabilities and doctrines (U.S., allied, Russian, Chinese, commercial). Lesson 3 (Chinese gray zone) establishes why coalition dynamics are part of the game. PSRO builds a population of strategies and finds meta-game equilibria — the right tool for a multi-actor strategic landscape.
 
-**Module 7 (Partial Observability) — Particle filters and opponent modeling**: The fundamental epistemic problem in orbital operations is behavioral attribution — you observe a maneuver but cannot directly observe intent. The opponent modeling lesson in Module 7 is the computational formalization of the attribution problem that spacepower theorists treat qualitatively.
+**Module 7 (Partial Observability) — Particle filters and opponent modeling**: The fundamental epistemic problem in orbital operations is behavioral attribution. Lesson 4 frames this as the binding constraint on deterrence-by-detection: attribution is necessary for response. The opponent modeling lesson in Module 7 is the computational formalization of the attribution problem.
 
-**Module 8 (Capstone) — The SSA conjunction-masking game design**: Every design choice in the capstone game — the attacker's action space, the defender's sensor allocation options, the reward structure — traces back to a strategic assumption that this module makes explicit.
+**Module 8 (Capstone) — The SSA conjunction-masking game design**: Every design choice in the capstone game — the attacker's action space, the defender's sensor allocation options, the reward structure — traces back to a strategic assumption that this module makes explicit. Lesson 4's deterrence-by-detection thesis is what the capstone is computationally testing.
+
+**Module 9 (Applied SDA ML) — Maneuver detection as deterrence infrastructure**: The LSTM maneuver detection pipeline is the empirical foundation of the Lesson 4 deterrence argument. It is not just a commercially valuable product — it is the kind of behavioral transparency capability that the deterrence-by-detection framework requires to function.
 
 ---
 
@@ -72,14 +82,23 @@ The highlights and sources underlying this module include:
 - Charles Lutes et al., *Toward a Theory of Spacepower* (2011)
 - U.S. Space Force, *Spacepower: Doctrine for Space Forces* (Space Capstone Publication, 2020)
 - Brent Ziarnick, *Developing National Power in Space* (2015)
-- Ian Easton and Randall Schriver, *Carlson's Spacepower Ascendant* (Chinese spacepower analysis)
+- Joshua Carlson, *Spacepower Ascendant* (Chinese spacepower analysis)
 - Andrew Krepinevich, *The Origins of Victory* (2023)
 - Thomas Mahnken and Barry Watts (eds.), *Net Assessment and Military Strategy* (2018)
 - Qiao Liang and Wang Xiangsui, *Unrestricted Warfare* (1999, translated)
+- Hal Brands, *Lessons From the New Cold War* (2024); *The Eurasian Century* (2023)
+- Hal Brands and Zack Cooper, "Dilemmas of Deterrence" (CSIS, 2024)
+- Anya Fink, "Russian Strategy for Escalation Management: Evolution of Key Concepts"
+- Todd Harrison, "Battle Networks and the Future Force" (CSIS)
+- Kurt M. Campbell, "The U.S.-China Crisis Waiting to Happen"
+- Alan T. Dugger, "Space as a Gray Zone: The Future of Orbital Warfare" (2024)
+- John Jordan Klein, *Fight for the Final Frontier* (2019)
+- Todd Pennington and Emmy Kanarowski, "China's 'Near Space' Legal Warfare"
 - Christian Brose, *The Kill Chain* (2020)
 - Secure World Foundation, *Global Counterspace Capabilities: An Open Source Assessment* (annual)
 - PLA Academy of Military Science, *Science of Military Strategy* (2013, translated)
 - Clayton Swope, "The Future of Military Power Is Space Power"
 - Sandra Erwin, various SPACENEWS articles on USSF doctrine and commercial SDA
+- "The Ghost in the Orbit: How Hybrid Surveillance Reshapes Risks"
 
 These sources span U.S., allied, and Chinese perspectives. Where sources conflict, the conflict is noted — a contested strategic landscape is a more accurate picture than a tidy synthesis.

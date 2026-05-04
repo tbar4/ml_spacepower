@@ -1,0 +1,35 @@
+[[questions]]
+id = "a5c7e9f1-2d4b-4f8a-c163-9e1f3b5d7a9c"
+type = "MultipleChoice"
+prompt.prompt = "Todd Harrison's research on battle networks argues that blinding an adversary's ISR at the start of conflict has which counterintuitive effect?"
+prompt.distractors = [
+  "It reduces escalation risk by denying the adversary the ability to target further strikes against friendly assets",
+  "It triggers automatic retaliation protocols in adversary command-and-control systems, accelerating rather than managing escalation",
+  "It forces the adversary to rely on nuclear weapons since conventional precision strike is no longer possible without ISR",
+]
+answer.answer = "It increases the odds of miscalculation and escalation because adversary forces acting without accurate ISR may interpret defensive or de-escalatory actions as offensive, and may not be able to detect signals that the attacking side is trying to reduce tensions — creating escalation from confusion rather than intent"
+context = "This is the theoretical foundation for the thesis claim that SDA ML contributes to strategic stability: if both sides maintain orbital behavioral visibility, they can detect de-escalatory signals and avoid the confusion-driven escalation Harrison describes. Mutual ISR capability is stabilizing. The first-strike incentive to degrade adversary ISR trades short-term tactical advantage for increased escalation risk."
+
+[[questions]]
+id = "c9e1f3b5-4d6a-4e9c-d285-1f3b5d7e9a1c"
+type = "MultipleChoice"
+prompt.prompt = "The 'deterrence by detection' thesis argues that ML-enabled SDA capabilities contribute to strategic stability. What is the most important honest limitation of this argument?"
+prompt.distractors = [
+  "ML systems cannot currently process TLE data at the speed required for real-time detection, making the detection latency too high to be operationally useful",
+  "Detection of adversary maneuvers is already possible with current SSA capabilities, so ML adds nothing new to the deterrence picture",
+  "The OST prohibits using ML systems for military surveillance of other nations' satellites, making the capability legally unusable",
+]
+answer.answer = "Attribution does not equal political will to respond — if the detecting party cannot or will not act on detected gray zone behavior (e.g., because the asset is civilian-designated or because political constraints prevent response), detection alone does not deter; additionally, adversaries can adapt maneuver patterns to evade detection, making this an adversarial ML problem that evolves over time"
+context = "This limitation is essential to state clearly in thesis work. The deterrence-by-detection argument is a necessary condition argument: attribution is required for response, and ML can provide attribution faster and at larger scale. But attribution is not sufficient for deterrence — it requires that the detecting state has both the capability and the political will to respond. The thesis contribution is to the attribution problem, not the political will problem."
+
+[[questions]]
+id = "e3f5a7c9-6b8d-4f1e-a472-3b5d7f9a1c3e"
+type = "MultipleChoice"
+prompt.prompt = "The Outer Space Treaty (1967) prohibits which of the following?"
+prompt.distractors = [
+  "Anti-satellite weapons of any kind, including ground-based lasers, co-orbital vehicles, and direct-ascent missiles",
+  "Military activities in space, including reconnaissance satellites and military communications constellations",
+  "National appropriation of orbital slots, including commercial registration of geostationary orbital positions",
+]
+answer.answer = "Placement of nuclear weapons or other weapons of mass destruction in orbit, on celestial bodies, or in outer space — the OST does not prohibit conventional counterspace weapons, military reconnaissance, military communications, or co-orbital inspection vehicles, which is why the entire modern counterspace capability spectrum is technically legal under existing treaty law"
+context = "This is the most important thing to understand about the existing legal framework: it is far narrower than its 'province of all mankind' language implies. The peaceful purposes requirement has been interpreted by the United States to mean non-aggressive, not non-military — which is why military reconnaissance satellites are legal. The gap between the treaty's idealistic framing and its actual legal prohibitions is where all of contemporary space competition takes place."

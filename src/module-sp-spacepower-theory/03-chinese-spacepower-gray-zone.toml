@@ -1,0 +1,35 @@
+[[questions]]
+id = "b3d5f7a9-1c2e-4f6d-b817-3e5f7a9b1c3e"
+type = "MultipleChoice"
+prompt.prompt = "In the gray zone wargame described by Dugger (2024), China's role-players created a strategic problem with no actionable U.S. solution by:"
+prompt.distractors = [
+  "Deploying kinetic ASAT weapons against U.S. GPS satellites and denying attribution, forcing the U.S. to respond without proof",
+  "Jamming U.S. military communications and simultaneously launching a diplomatic offensive at the UN, creating a two-front crisis",
+  "Conducting a debris-generating ASAT test that threatened the ISS, exploiting U.S. reluctance to escalate over civil space assets",
+]
+answer.answer = "Quietly positioning civilian spacecraft onto orbital trajectories that could threaten U.S. PNT and communications satellites, then reinforcing those positions with low-cost disposable 'bodyguard' satellites — creating a threat that the U.S. could not respond to without attacking nominally civilian assets and generating debris, triggering legal warfare and public opinion warfare simultaneously"
+context = "This is the core gray zone problem: the threat is real, the intent is plausibly deniable, and the response options all have costs that the adversary can exploit. The ML behavioral detection thesis is directly relevant here — if you can characterize the trajectory as threatening before the positioning is complete, you create response options before the fait accompli closes."
+
+[[questions]]
+id = "d7f9b1c3-2e4f-4a8b-c926-5f7a9b1d3f5a"
+type = "MultipleChoice"
+prompt.prompt = "The PLA's 'Three Warfares' doctrine includes legal warfare. China's claim that near-space (20-100 km altitude) is a 'legal blank that needs to be filled urgently' is an example of legal warfare because:"
+prompt.distractors = [
+  "It violates the Outer Space Treaty's prohibition on national appropriation of space, so China is using the legal vacuum strategically",
+  "It is a domestic Chinese law claim with no international legal standing, making it purely psychological rather than legal",
+  "China needs the altitude band for hypersonic glide vehicle operations and is using legal framing to pre-justify military use",
+]
+answer.answer = "By asserting that no binding international legal framework governs near space before the framework exists, China positions itself to define what norms apply there — constraining U.S. high-altitude operations that could be labeled as violations of Chinese-proposed norms, while preserving China's own freedom of maneuver in the same altitude band"
+context = "The South China Sea precedent is instructive: China built islands and declared them territorial before the international community established norms against it. Near space legal warfare applies the same template: establish presence and legal claims before the normative framework solidifies. The 20-100 km altitude band matters because it encompasses hypersonic glide vehicles, high-altitude balloons, and eventually persistent surveillance platforms."
+
+[[questions]]
+id = "f1a3c5e7-3d5b-4e7f-a148-7b9c1e3f5a7d"
+type = "MultipleChoice"
+prompt.prompt = "Hal Brands argues that the U.S.-China rivalry is fundamentally about coalition-making and coalition-breaking. What does this imply for how to structure a wargame of orbital competition?"
+prompt.distractors = [
+  "The game should model two players (U.S. and China) with a coalition stability sub-game that runs in parallel but does not affect the orbital competition directly",
+  "Coalition dynamics are primarily diplomatic and should be modeled as a separate political game rather than integrated into the orbital mechanics wargame",
+  "The game should focus on the bilateral U.S.-China competition since allied behavior is too unpredictable to model usefully",
+]
+answer.answer = "A realistic orbital competition wargame requires multi-player structure (U.S., China, allies, neutral commercial operators) because coalition formation and defection are competitive levers — Chinese gray zone behavior that drives allies toward the U.S. coalition, or U.S. overreach that drives neutral states toward the Chinese position, changes the orbital competition outcome. PSRO (Module 6) handles heterogeneous multi-actor populations better than two-player Nash equilibrium."
+context = "This is why the 'bilateral competition' framing common in wargame design understates the complexity of space competition. The Five Eyes SSA sharing agreements, NATO Space COE, EU SST — these are coalition products that change what the U.S. can see in space. Chinese behavior that alienates potential partners (imagery for Wagner Group, debris-generating ASAT tests) has coalition costs that a two-player game doesn't capture."

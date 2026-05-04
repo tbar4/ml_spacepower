@@ -14,7 +14,9 @@
 - [Module SP: Spacepower Theory and Strategic Context](module-sp-spacepower-theory/00-overview.md)
   - [Foundations of spacepower theory](module-sp-spacepower-theory/01-spacepower-theory-foundations.md)
   - [Counterspace operations and the new RMA](module-sp-spacepower-theory/02-counterspace-and-competition.md)
-  - [From strategic theory to wargame design](module-sp-spacepower-theory/03-strategy-to-wargame-design.md)
+  - [Chinese spacepower theory and gray zone competition](module-sp-spacepower-theory/03-chinese-spacepower-gray-zone.md)
+  - [Escalation dynamics, crisis stability, and the ML deterrence framework](module-sp-spacepower-theory/04-escalation-and-ml-deterrence.md)
+  - [From strategic theory to wargame design](module-sp-spacepower-theory/05-strategy-to-wargame-design.md)
 
 - [Module 1: Foundations](module-01-foundations/00-overview.md)
   - [Probability, distributions, and expectation](module-01-foundations/01-probability-distributions-expectation.md)

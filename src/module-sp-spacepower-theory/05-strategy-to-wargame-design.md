@@ -147,4 +147,4 @@ After this lesson, you should be able to:
 
 ---
 
-{{#quiz 03-strategy-to-wargame-design.toml}}
+{{#quiz 05-strategy-to-wargame-design.toml}}
