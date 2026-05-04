@@ -5,6 +5,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 ## The arc in one sentence per module
 
 0. **Orbital mechanics and SDA domain**: TLEs, SGP4, reference frames, CDMs, conjunction probability, and the commercial SDA data ecosystem — the domain foundation every later ML model is built on top of.
+SP. **Spacepower theory and strategic context**: Dolman, Lutes, USSF doctrine, counterspace taxonomy, deterrence stability, Krepinevich's RMA/MTR, Chinese theory, and the mapping from strategic frameworks to game-theoretic tools — why your wargame design choices are the ones they are.
 1. **Foundations**: probability, linear algebra, calculus, SVD, the multivariate Gaussian, and constrained optimization — every tool every later algorithm uses.
 2. **Neural networks**: MLPs as function approximators, PyTorch mechanics, loss functions with MLE/MAP foundations.
 3. **Reinforcement learning**: MDPs, DQN, policy gradients, actor-critic, hierarchical RL, and IMPALA distributed training.
@@ -29,6 +30,19 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 5 | The commercial SDA data ecosystem | SSA vs. SDA distinction, Space-Track, CelesTrak, LeoLabs, commercial providers, data pipeline architecture |
 
 **Project**: Space-Track conjunction screening pipeline in Python.
+
+---
+
+## Module SP: Spacepower Theory and Strategic Context
+**Builds toward**: the wargame design choices in Modules 4–8; the strategic vocabulary for government customer conversations.
+
+| # | Lesson | Key concepts |
+|---|--------|--------------|
+| 1 | Foundations of spacepower theory | Dolman/Mackinder, Lutes definition, sanctuary vs. high ground debate, USSF SCP seven disciplines, Ziarnick's general theory, Carlson's Chinese framework (Go not Chess) |
+| 2 | Counterspace operations and the new RMA | Kinetic/non-kinetic, reversible/irreversible taxonomy, stability-instability paradox, Krepinevich domain expansion and MTR/RMA, PLA Science of Military Strategy 2013, gray zone operations |
+| 3 | From strategic theory to wargame design | Strategic questions → game structures, why IS-MCTS/CFR for orbital gray zone, why PSRO for multi-actor deterrence, why particle filters for behavioral attribution, AlphaZero Nash equilibrium findings |
+
+**No project** — strategic theory module; connections to later projects are explicit in each lesson.
 
 ---
 

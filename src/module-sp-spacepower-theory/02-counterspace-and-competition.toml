@@ -1,0 +1,35 @@
+[[questions]]
+id = "f1c3e7a9-2b4d-4f8c-d394-7a9b1c3e5f7a"
+type = "MultipleChoice"
+prompt.prompt = "A state uses a ground-based high-power laser to permanently damage the optical sensor on an adversary's reconnaissance satellite. No debris is created. How does this classify in the counterspace taxonomy?"
+prompt.distractors = [
+  "Kinetic reversible — lasers are an energy weapon and the satellite continues to orbit",
+  "Non-kinetic reversible — the satellite is otherwise functional and might be repaired with a future on-orbit servicing mission",
+  "Kinetic irreversible — the laser physically interacts with the satellite's hardware",
+]
+answer.answer = "Non-kinetic irreversible — the attack does not involve physical collision or debris generation (non-kinetic), but the sensor damage is permanent without hardware replacement (irreversible). HPL attacks are particularly dangerous precisely because they fall in this quadrant: they produce no debris, may look like a hardware failure, and cause permanent capability loss"
+context = "The taxonomy matters for wargame design because each quadrant carries different escalation implications. Non-kinetic irreversible attacks are attractive to adversaries because they are hard to attribute, create no debris that would anger third parties, and produce permanent effects. A wargame that only models kinetic ASAT misses the most operationally useful counterspace tools."
+
+[[questions]]
+id = "d5e7f9b1-3c5a-4e7d-b496-9c1d3e5f7b9c"
+type = "MultipleChoice"
+prompt.prompt = "The stability-instability paradox, applied to space, predicts which of the following outcomes?"
+prompt.distractors = [
+  "Strategic stability in space increases overall military stability because neither side can eliminate the other's retaliatory capability",
+  "States with robust space architectures are less likely to initiate conflict because they have more to lose",
+  "The presence of kinetic ASAT capabilities deters space attacks by raising the cost of escalation",
+]
+answer.answer = "Robust strategic deterrence (neither side can eliminate the other's space architecture) may increase instability at lower levels by convincing leaders that limited counterspace operations will not trigger strategic retaliation — making limited attacks more likely, not less"
+context = "This is the core tension in space deterrence theory. The paradox was first identified in the nuclear domain by Snyder (1965) and applies to space because space attacks exist on a spectrum from jamming (low escalation) to debris-generating ASAT (high escalation). A state confident in its overall deterrence posture may be more willing to conduct limited jamming or spoofing, believing escalation will be contained."
+
+[[questions]]
+id = "a9c1e3f5-4d6b-4f9a-c598-1d3e5f7a9b1d"
+type = "MultipleChoice"
+prompt.prompt = "Krepinevich's distinction between a Military Technical Revolution (MTR) and a Revolution in Military Affairs (RMA) is that:"
+prompt.distractors = [
+  "An MTR is a change in weapons technology; an RMA is a change in strategic doctrine — an RMA can happen without new technology",
+  "An RMA is a larger-scale change than an MTR — an RMA transforms entire armed forces while an MTR affects only specific weapons systems",
+  "An MTR originates with commercial technology; an RMA originates with military research and development programs",
+]
+answer.answer = "An MTR is a new technology that changes what is militarily possible; an RMA is the successful integration of that technology with new doctrine, organization, training, and leadership to create a qualitatively superior fighting force — an MTR is a necessary but not sufficient condition for an RMA"
+context = "Brose's argument in The Kill Chain is that the U.S. has had the MTR (precision guidance, space-based ISR, GPS) since the 1991 Gulf War but has failed to execute the RMA — continuing to buy expensive platforms rather than investing in the sensor-shooter networks that convert technological advantage into operational superiority. The SDA ML products in this curriculum are small pieces of the SDA RMA: they convert the MTR (raw orbital data feeds) into decision-relevant intelligence."

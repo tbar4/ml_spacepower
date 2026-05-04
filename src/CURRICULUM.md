@@ -8,6 +8,12 @@ The domain foundation required before any SDA ML work. Covers the TLE format and
 
 **Key outcomes:** Parse and ingest TLE and OMM data from Space-Track and CelesTrak; propagate orbital states with python-sgp4; understand the TEME → ECI frame conversion; interpret CDM fields including covariance matrices in the RTN frame; build a 7-day conjunction screening pipeline; understand the SSA vs. SDA distinction and the commercial provider landscape.
 
+## Module SP: Spacepower Theory and Strategic Context
+
+The strategic theory foundation for wargame design. Covers foundational spacepower theory (Dolman, Lutes, the USSF Space Capstone Publication, Ziarnick, Chinese theory from Carlson), the counterspace operations taxonomy (kinetic/non-kinetic, reversible/irreversible, attributable/non-attributable), deterrence stability in space, Krepinevich's domain expansion theory and RMA/MTR distinction, and the mapping from strategic frameworks to game structures. Connects Dolman's sanctuary debate, PLA space doctrine, and gray zone operations to the specific game-theoretic tools (CFR, PSRO, IS-MCTS, particle filters) built in subsequent modules. No code.
+
+**Key outcomes:** State the Lutes definition of spacepower; explain Dolman's Mackinder analogy and the strongest counterargument; name the seven USSF spacepower disciplines; classify counterspace capabilities by kinetic/non-kinetic and reversible/irreversible; explain the stability-instability paradox in space; describe the MTR vs. RMA distinction and apply it to U.S. SDA ML products; explain why CFR is the correct solver for the conjunction-masking game (private information about intent); describe when PSRO is required instead of two-player Nash equilibrium (multi-actor heterogeneous actors).
+
 ## Module 1: Foundations
 
 Mathematical foundations required for all subsequent modules. Covers probability, Bayesian reasoning, linear algebra (including SVD and Cholesky decomposition), multivariate calculus, the multivariate Gaussian distribution, and constrained optimization. Every concept is introduced in the context of SSA problems: orbital state estimation, conjunction probability, radar measurement uncertainty, and sensor scheduling.

@@ -1,0 +1,35 @@
+[[questions]]
+id = "c8e2a4f6-5d7b-4f1a-e693-2d4f6a8c0e2f"
+type = "MultipleChoice"
+prompt.prompt = "A wargame analyst wants to model the scenario where Russia, China, and the United States are each choosing counterspace postures, and each state's best response depends on what the other two are doing — not just one adversary. Which game-theoretic tool from this curriculum is best suited for this problem?"
+prompt.distractors = [
+  "CFR (Counterfactual Regret Minimization), because it finds Nash equilibria in extensive-form games with multiple players",
+  "IS-MCTS (Information Set Monte Carlo Tree Search), because multi-actor scenarios involve hidden information about adversary intentions",
+  "DQN (Deep Q-Networks), because reinforcement learning is the most general approach to multi-actor optimization problems",
+]
+answer.answer = "PSRO (Policy Space Response Oracles), because it builds a meta-game over a population of strategies and finds Nash equilibria of the meta-game — this is more tractable than solving the full three-player game directly and captures the key dynamics of heterogeneous multi-actor competition"
+context = "Standard two-player CFR does not directly generalize to three players in a stable way. PSRO addresses this by modeling the multi-actor environment as a meta-game over strategy populations and using Alpha-rank or Nash solvers on the meta-game matrix. This is why Module 6's PSRO lesson uses satellite constellation coverage as its motivating example — it is inherently multi-actor."
+
+[[questions]]
+id = "e4f8b2d6-7a9c-4b3e-f817-4c6e8a0b2d4f"
+type = "MultipleChoice"
+prompt.prompt = "Why is the intent-attribution problem in orbital conflict (is that maneuver station-keeping or an approach-to-target?) fundamentally different from ordinary 'fog of war' imperfect information?"
+prompt.distractors = [
+  "Because space is farther away and harder to surveil, making the information gap practically harder to close than ground-based fog of war",
+  "Because adversary satellite operators are better at operational security than ground forces, reducing information leakage",
+  "Because orbital mechanics is too complex for current sensor systems to predict satellite trajectories accurately enough to infer intent",
+]
+answer.answer = "Because intent is not observable from kinematics alone even in principle — orbital position and velocity do not distinguish between a satellite maneuvering toward a target and one doing routine station-keeping. This is not a failure of ISR that better sensors could fix; it is a structural feature of the orbital environment that makes the game fundamentally imperfect-information"
+context = "This structural difference is what justifies using CFR and IS-MCTS rather than minimax with noise. In a fog-of-war game, perfect information is approximated by better ISR. In a game where intent is unobservable from kinematics, no amount of observation resolves the information asymmetry — the attacker always has private information about intent. The correct information structure is an information set containing all states with the same observable kinematics."
+
+[[questions]]
+id = "a2c6e0f4-9b1d-4c5e-a938-6e0a2c4f6b8d"
+type = "MultipleChoice"
+prompt.prompt = "The Exploratory Wargaming study (AlphaZero applied to a military game) found that the computational agent discovered strategies that human players missed. What type of strategy was this, and why did human players fail to find it?"
+prompt.distractors = [
+  "Cooperative strategies that required coordinating with ostensible adversaries — human players' competitive mindset prevented them from seeing the value of coordination",
+  "Long-horizon strategies requiring sacrifices early in the game for gains 20+ moves later — human players' cognitive time horizon was too short",
+  "Strategies exploiting specific terrain features that human players had learned to ignore through training exercises",
+]
+answer.answer = "Mixed strategies (deliberate probabilistic randomization over actions) that prevented the adversary from exploiting predictable patterns — human players systematically prefer pure strategies because they feel more decisive, even in zero-sum games where Nash equilibrium requires mixing"
+context = "This is a fundamental finding with strategic implications. In genuine zero-sum adversarial scenarios, Nash equilibrium often requires mixed strategies — playing rock, paper, scissors probabilistically rather than committing to one action. Humans resist mixing because it feels like indecision. CFR and MCTS naturally find mixed equilibria because they are not subject to this cognitive bias. When training human wargamers with AI opponents, this is one of the most valuable corrections the AI can provide."

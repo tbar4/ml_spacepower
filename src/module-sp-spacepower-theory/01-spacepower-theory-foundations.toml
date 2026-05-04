@@ -1,0 +1,35 @@
+[[questions]]
+id = "e2a9f4b1-7c3d-4e8a-b152-9d0f1c2e3a4b"
+type = "MultipleChoice"
+prompt.prompt = "Dolman's 'Who controls low-Earth orbit controls near-Earth space' argument is explicitly modeled on which earlier geopolitical theorist?"
+prompt.distractors = [
+  "Alfred Thayer Mahan, whose sea power theory held that naval dominance enabled global power projection",
+  "Nicholas Spykman, whose rimland theory argued that control of the Eurasian coastline mattered more than the interior",
+  "Colin Gray, whose continental vs. maritime powers framework emphasized the trade-off between land and sea dominance",
+]
+answer.answer = "Halford Mackinder, whose 1904 heartland theory argued that control of the Eurasian interior ('the heartland') translated to control of the 'World Island' (Europe-Asia-Africa) and ultimately the world — Dolman substitutes LEO for Mackinder's heartland"
+context = "Understanding the intellectual lineage matters for two reasons: (1) it helps you explain Dolman's argument at the right level of abstraction — he is not making a physics claim but a geopolitical analogy; (2) DoD customers familiar with strategic theory will recognize the Mackinder reference and engage with the argument more seriously."
+
+[[questions]]
+id = "a7c3e5f9-1b2d-4f6a-c891-3e4d5f6a7b8c"
+type = "MultipleChoice"
+prompt.prompt = "The USSF Space Capstone Publication identifies seven spacepower disciplines. Which of the following correctly identifies the discipline that the maneuver detection and conjunction analysis ML products in this curriculum most directly support?"
+prompt.distractors = [
+  "Space Security, because maneuver detection is primarily about preventing adversary use of space",
+  "Information Mobility, because SDA data products are a form of information moving through the space domain",
+  "Combat Power Projection, because detection enables targeting decisions",
+]
+answer.answer = "Space Domain Awareness, defined in the SCP as 'the identification, characterization, and understanding of factors associated with the space domain that could affect space operations' — maneuver detection, conjunction analysis, and behavioral attribution are all SDA functions"
+context = "Knowing which SCP discipline your products support is important for DoD customer conversations. Space Security (preventing adversary use of space) is the offensive counterpart — the two are complementary and your SDA products enable both. But the primary discipline is SDA."
+
+[[questions]]
+id = "b4d6f8a2-3c5e-4d7b-a293-5f7a9c1d3e5f"
+type = "MultipleChoice"
+prompt.prompt = "Carlson's analysis of Chinese spacepower theory identifies three organizing axes. Which description most accurately captures the 'legitimacy' axis?"
+prompt.distractors = [
+  "China's belief that state-controlled space programs are more legitimate than commercial ones, which drives its opposition to SpaceX and other commercial launch providers",
+  "The argument that military space capabilities require UN Security Council authorization to be legitimate under international law",
+  "China's internal political legitimacy derived from demonstrating technological achievement in space to its domestic population",
+]
+answer.answer = "China's investment in international norms, UN frameworks, and the Outer Space Treaty as a strategy to constrain adversary action and expand its own freedom of maneuver — not from genuine multilateral commitment but as a tool for shaping the strategic environment in its favor"
+context = "The Go vs. Chess analogy illuminates why: China uses legitimacy as a form of encirclement — establishing norms that limit what the U.S. can do in space (deploy weapons, conduct certain types of testing) while preserving Chinese freedom of maneuver. This explains seemingly contradictory behaviors: China advocates for space arms control while developing ASAT capabilities."
