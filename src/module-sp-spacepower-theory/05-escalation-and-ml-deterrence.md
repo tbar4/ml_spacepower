@@ -225,6 +225,46 @@ The NEXT-GEN OPIR (Next Generation Overhead Persistent Infrared) program — the
 
 ---
 
+## The Taiwan contingency: the escalation framework applied
+
+The Taiwan contingency is the scenario that DoD planning most explicitly centers on, and it provides the clearest worked example of how the abstract escalation framework would actually sequence in a real crisis. Government customers evaluating any deterrence or SDA capability will be thinking about Taiwan. Understanding the scenario concretely is essential for those conversations.
+
+**Phase 0 — Pre-conflict preparation (weeks to months before kinetic operations)**:
+
+China conducts systematic behavioral characterization of U.S. and allied space assets in the Indo-Pacific theater. TLE monitoring, electronic signature collection, and pattern-of-life analysis to identify which satellites are essential for Taiwan operations and what their operational rhythms are. This is Chinese SDA applied offensively — the same behavioral detection problem the thesis addresses, run by the adversary against U.S. assets. During this phase, China also pre-positions dual-use commercial and civilian satellites on trajectories that could be rapidly redirected, updates ITU filings for constellations with Taiwan-theater relevance, and exercises ground-based jamming systems in training scenarios that look identical to the operational deployment they are preparing for.
+
+This phase is detectable in behavioral data — anomalous surveillance passes over U.S. Pacific Command assets, irregular maneuver sequences for dual-use satellites, constellation repositioning inconsistent with stated commercial missions. ML-based anomaly detection that flags this preparation provides strategic warning weeks before kinetic operations begin. This is Phase 0's most important implication for the thesis: early detection here creates response options that don't exist once Phase 1 begins.
+
+**Phase 1 — Space domain preparation (hours to days before the amphibious crossing)**:
+
+GPS jamming over the Taiwan Strait and surrounding airspace (Rung 2 on the escalation ladder). Cyber probes — potentially escalating to attacks — against U.S. reconnaissance satellite ground stations in Japan and Guam (Rung 2-3). Activation of GEO communications suppression capabilities against commercial satellite links used by U.S. Pacific Command and commercial SDA providers. Co-orbital satellites previously positioned near high-value U.S. military communication or early warning satellites maneuver to threatening proximity — coercive positioning at Rung 4 — designed to deter U.S. space-based C2 response without triggering a kinetic counterspace exchange.
+
+The goal is PLA informationized warfare doctrine's first objective: establish information dominance before armed conflict begins. A U.S. military that cannot see, navigate, or communicate effectively across the Taiwan Strait cannot coordinate the response operations that would sustain Taiwan's defense. Phase 1 is the space component of that degradation campaign.
+
+**Phase 2 — Kinetic operations and sustained space conflict**:
+
+As Chinese forces execute the amphibious crossing, space operations continue in support. Commercial satellite imagery providers serving U.S. government customers face cyber attacks on ground infrastructure (the KA-SAT template, targeted at providers with Pacific theater coverage). Starlink-type communications used by Taiwanese military face jamming campaigns with counter-jamming cycles. The Rung 4 co-orbital positions established in Phase 1 provide coercive leverage — any U.S. kinetic response in the space domain risks triggering Rung 5-6 counterspace exchanges that the U.S., with more space-dependent forces, would lose disproportionately.
+
+**The deterrence dilemmas made concrete**:
+
+The Brands/Cooper dilemmas are not abstract in a Taiwan scenario:
+
+- **Symmetric vs. asymmetric deterrence**: The U.S. could threaten Chinese space assets in response (symmetric). But China's Taiwan campaign is designed to succeed quickly — the PLA calculates that if the island can be seized before U.S. reinforcements arrive, degraded space assets are an acceptable cost. China's risk tolerance for space degradation in a short, decisive campaign is higher than U.S. risk tolerance for the same degradation in a long operational dependency.
+
+- **Deterrence vs. de-escalation**: Any U.S. demonstration of space combat capability in the Indo-Pacific (exercises, visible counterspace deployments) may trigger the Phase 0 preparation it is designed to deter — Chinese pre-positioning accelerates as the window before U.S. response capability is established narrows.
+
+- **Coalition vs. unilateral deterrence**: Japan, Australia, and other Indo-Pacific allies have ground stations, satellite operators, and space assets whose disruption would be part of any Chinese Phase 1 campaign. A coalition deterrence posture (Five Eyes SSA, allied counterspace cooperation) is more powerful but requires Chinese confidence that the coalition will hold — which Chinese political warfare actively tries to undermine.
+
+**The ML deterrence thesis in the Taiwan scenario**:
+
+The detection latency problem is most acute here. The LSTM pipeline in Module 9 trains on Space-Track TLE data, with TLE epochs updated 1-4 times per day for most objects. Phase 1 space domain preparation could unfold in hours. A detection system with day-scale latency provides operational warning after the window for response has closed.
+
+This is the honest limitation of the TLE-based thesis applied to Taiwan: the pipeline is useful for Phase 0 strategic warning (weeks-scale behavioral characterization is detectable at TLE cadences), less useful for Phase 1 tactical warning (hours-scale jamming activation and co-orbital maneuvers require higher-cadence commercial optical/radar data from providers like LeoLabs). The research agenda this generates: extending the behavioral detection pipeline to integrate commercial sensor data at sub-orbital-period cadences, not just the public TLE feed.
+
+The capstone wargame (Module 8) explores whether the *threat* of detection — known to the attacker, even if not executed at Taiwan timescales — changes equilibrium strategy in Phase 0. If China knows that U.S. SDA ML can characterize Phase 0 behavioral preparation and provide strategic warning, does that change the preparation strategy or its timing? CFR answers this formally. The Taiwan scenario is the strategic motivation for that computation.
+
+---
+
 ## The ML deterrence framework: thesis argument
 
 This is where the strategic theory connects directly to the work in this curriculum.
@@ -286,6 +326,8 @@ After this lesson, you should be able to:
 - Explain the Harrison argument: why ISR blinding is an escalation accelerant rather than an escalation suppressor
 - Explain the crisis communication problem (Campbell) and why China's deliberate opacity is a strategic choice
 - State the five core provisions of the Outer Space Treaty and identify what the treaty does not prohibit
+- Describe the Taiwan contingency space sequence (Phases 0–2) and explain how each phase maps to specific rungs on the escalation ladder
+- Explain why TLE-based detection latency is insufficient for Phase 1 tactical warning and what data sources would address it
 - Name the three nuclear C2 satellite systems (AEHF, SBIRS, GPS) and explain the entanglement problem: why conventional counterspace attacks on these systems may be perceived as nuclear first-strike preparation
 - Explain the Able Archer 83 structural analogy and why space operations make the timing problem more acute
 - Describe the Artemis Accords — who signed, who didn't, what they cover — and explain their strategic function as coalition-building rather than arms control

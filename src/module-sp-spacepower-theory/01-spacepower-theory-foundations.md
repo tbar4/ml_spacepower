@@ -112,6 +112,26 @@ The high ground school's response: Mutual restraint only holds if all parties sh
 
 ---
 
+## Cislunar space and the extended high ground
+
+Dolman's formulation — "who controls low-Earth orbit controls near-Earth space" — was written when LEO was the operational frontier. That frontier has moved. The Artemis program, China's Chang'e lunar campaign, and commercial lunar ventures have made cislunar space — the volume of space between Earth and the Moon, including the Earth-Moon Lagrange points — a new arena of strategic competition. The same competitive logic that governs LEO gray zone operations applies in cislunar space, at longer timescales and with an underdeveloped legal framework.
+
+**Why cislunar space matters strategically**:
+
+*Earth-Moon Lagrange points as persistent surveillance positions*: The five Earth-Moon Lagrange points (EML1–EML5) are locations where the gravitational forces of Earth and Moon balance, allowing an object to remain in a stable or semi-stable position with minimal station-keeping fuel. EML1 (between Earth and Moon) and EML2 (beyond the Moon) are particularly valuable for surveillance: a platform at EML1 can observe both Earth orbit and lunar approaches. These positions are difficult to reach quickly from Earth — an adversary maneuvering a satellite to a Lagrange point is weeks away from any interceptor response — making them strategic high ground in the Dolman sense. A surveillance platform at EML2 with Earth-facing sensors would have persistent coverage of a large portion of cislunar space.
+
+*Lunar south pole as a resource node*: Water ice at the lunar south pole, confirmed by the LCROSS impact in 2009, can be processed into hydrogen and oxygen — rocket propellant. In-situ resource utilization (ISRU) of lunar water makes cislunar operations sustainable without resupply from Earth. Whoever establishes the first operational propellant production capability at the lunar south pole gains a durable positional advantage in all cislunar operations: lower mission cost, faster turnaround, independent logistics. From Ziarnick's perspective, this is spacepower through commerce and infrastructure at its most fundamental.
+
+*The Artemis vs. ILRS competition*: The U.S. Artemis program and China's International Lunar Research Station (ILRS) — developed with Russia, Pakistan, and other partners — are directly competing for the lunar south pole. Both have explicitly targeted the south pole for water ice access. China aims to establish a permanent ILRS by the 2030s. The Artemis Accords' "safety zones" controversy is directly about this: the U.S. wants operational protection for its lunar south pole infrastructure; China argues this constitutes territorial appropriation violating the OST's non-appropriation principle. The legal dispute replicates the South China Sea dynamic exactly — both sides use legal language to assert positions whose real content is strategic.
+
+**The extended Dolman argument**: Dolman's 2002 argument stopped at LEO. The logical extension: who controls cislunar space controls the Earth-Moon economic zone. The Lagrange points, the propellant resources, and the lunar surface infrastructure collectively determine who can operate sustainably in cislunar space on long timescales. The state that establishes infrastructure there first — propellant depots, communication relays, surveillance platforms at Lagrange points — can make access costs prohibitive for competitors arriving later. This is Dolman's lock-out thesis applied to a domain one order of magnitude farther from Earth.
+
+**The cislunar gray zone**: The Outer Space Treaty's "peaceful purposes" framework was written when the Moon was a destination, not a base. The legal regime for resource extraction, permanent structures, and military activities in cislunar space is underdeveloped in exactly the way orbital space law was underdeveloped in 2007 when China conducted its first ASAT test. An ILRS established at the lunar south pole, with Chinese legal arguments about protecting permanent research infrastructure, follows the South China Sea island-building template to a new domain — establishing presence, encoding legal claims through infrastructure, and then arguing that any interference is destabilizing.
+
+**Connection to the curriculum's ML focus**: Cislunar trajectory mechanics are fundamentally different from LEO orbit dynamics. Cislunar trajectories use weak stability boundary transfers, ballistic lunar transfers, and halo orbits around Lagrange points — none of which produce the quasi-periodic TLE signatures that the Module 9 LSTM pipeline detects. Extending behavioral detection and attribution to cislunar operations is a research agenda that follows from the thesis, not a solved problem. The strategic framework for why it matters is here; the technical framework for how to approach it is in the Module 7 partial observability and Module 9 sequence modeling content.
+
+---
+
 ## What you need to be able to do
 
 After this lesson, you should be able to:
@@ -122,6 +142,8 @@ After this lesson, you should be able to:
 - Describe Ziarnick's descriptive/comprehensive/prescriptive framework and explain why commercial SDA companies are spacepower actors in his sense
 - Describe the Chinese geography/legitimacy/economy framework and the Go vs. Chess strategic analogy
 - State the current U.S. doctrinal position on space as a warfighting domain and explain why this position matters for customer conversations
+- Explain why cislunar space — particularly the Earth-Moon Lagrange points and the lunar south pole — represents the next arena of strategic competition and how the Dolman high ground argument extends there
+- Describe the Artemis vs. ILRS competition for the lunar south pole and why the legal dispute about "safety zones" maps to the South China Sea template
 
 ---
 

@@ -33,3 +33,15 @@ prompt.distractors = [
 ]
 answer.answer = "China's investment in international norms, UN frameworks, and the Outer Space Treaty as a strategy to constrain adversary action and expand its own freedom of maneuver — not from genuine multilateral commitment but as a tool for shaping the strategic environment in its favor"
 context = "The Go vs. Chess analogy illuminates why: China uses legitimacy as a form of encirclement — establishing norms that limit what the U.S. can do in space (deploy weapons, conduct certain types of testing) while preserving Chinese freedom of maneuver. This explains seemingly contradictory behaviors: China advocates for space arms control while developing ASAT capabilities."
+
+[[questions]]
+id = "c5e7a9b1-4d6f-4c5e-b384-6f8a0c2e4f6a"
+type = "MultipleChoice"
+prompt.prompt = "The competition between the U.S. Artemis program and China's International Lunar Research Station (ILRS) for the lunar south pole is strategically significant primarily because:"
+prompt.distractors = [
+  "The lunar south pole contains rare earth minerals essential for satellite manufacturing that would provide an industrial advantage to whichever nation controls access",
+  "Military installations at the lunar south pole would enable kinetic bombardment of Earth targets from a position outside existing missile defense coverage",
+  "The lunar south pole's permanent shadow regions contain temperatures low enough to store cryogenic propellants indefinitely, providing a forward staging base for deep space operations",
+]
+answer.answer = "Confirmed water ice at the lunar south pole can be converted to hydrogen-oxygen propellant through in-situ resource utilization — whoever establishes the first operational ISRU capability there controls the propellant logistics that make all cislunar operations economically sustainable, while Earth-Moon Lagrange point positions provide persistent surveillance of cislunar space requiring minimal station-keeping fuel"
+context = "This is Dolman's high ground argument extended one domain farther. The lunar south pole ISRU capability plus Lagrange point surveillance positions together determine who can operate sustainably in cislunar space long-term. The Artemis Accords 'safety zones' dispute is about operational protection for this infrastructure — China's objection that safety zones constitute territorial appropriation mirrors the South China Sea territorial claim disputes. The pattern is identical: establish presence, encode legal protection, make adversary response appear destabilizing."
