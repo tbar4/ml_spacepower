@@ -1,8 +1,5 @@
 # Module 0: Orbital Mechanics and the SDA Data Ecosystem
 
-**Module:** ML and Game Theory for Space Power — M00: Orbital Mechanics and the SDA Data Ecosystem
-**Source:** *Satellite Orbits* — Oliver Montenbruck & Eberhard Gill; *Fundamentals of Astrodynamics* — Roger Bate, Donald Mueller, Jerry White; Space-Track.org API documentation; CCSDS 508.0-B-1 CDM standard
-
 ---
 
 ## Why this module comes before everything else
