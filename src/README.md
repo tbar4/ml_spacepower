@@ -4,14 +4,14 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 
 ## The arc in one sentence per module
 
-1. **Foundations**: probability, vectors, and gradients, the three tools every later algorithm uses.
-2. **Neural networks**: MLPs as function approximators, PyTorch mechanics, training loops.
-3. **Reinforcement learning**: MDPs, value functions, Q-learning, and policy gradients.
-4. **Search and planning**: MCTS rollouts, AlphaZero self-play, and neural-guided search.
-5. **Game theory**: extensive-form games, Nash equilibria, CFR, and MCCFR.
-6. **Multi-agent RL**: self-play, PSRO, fictitious play, and alpha-rank.
-7. **Partial observability**: POMDPs, belief states, imperfect-information extensions.
-8. **OpenSpiel and capstone**: a Rust SSA simulation tying everything together.
+1. **Foundations**: probability, linear algebra, calculus, SVD, the multivariate Gaussian, and constrained optimization — every tool every later algorithm uses.
+2. **Neural networks**: MLPs as function approximators, PyTorch mechanics, loss functions with MLE/MAP foundations.
+3. **Reinforcement learning**: MDPs, DQN, policy gradients, actor-critic, hierarchical RL, and IMPALA distributed training.
+4. **Search and planning**: MCTS, AlphaZero self-play, and IS-MCTS for fog-of-war games.
+5. **Game theory**: extensive-form games, Nash equilibria, CFR, MCCFR, and Deep CFR.
+6. **Multi-agent RL**: PSRO, fictitious play, alpha-rank, and cooperative CTDE with MAPPO and QMIX.
+7. **Partial observability**: POMDPs, particle filters, imperfect-information games, and opponent modeling.
+8. **OpenSpiel and capstone**: the full OpenSpiel → PettingZoo → Ray RLlib pipeline, then a Rust CFR solver.
 
 ---
 
@@ -27,6 +27,9 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 5 | Vectors and dot products | State vectors, norms, alignment, cosine similarity |
 | 6 | Matrices and matrix-vector multiplication | Row-as-dot-product, shapes, bias, why nonlinearity is needed |
 | 7 | Derivatives, gradients, and the chain rule | Slope, partial derivatives, ∇f, chain rule, autograd |
+| 8 | Matrix decompositions: SVD and Cholesky | A = UΣVᵀ, low-rank approximation, Eckart-Young, Cholesky sampling |
+| 9 | The multivariate Gaussian | Covariance matrix, Mahalanobis distance, marginals/conditionals, Kalman connection |
+| 10 | Constrained optimization and Lagrange multipliers | Lagrangian, KKT conditions, duality, L2 regularization as MAP |
 
 **Project**: Monte Carlo conjunction probability estimator in Python.
 
@@ -39,7 +42,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 |---|--------|--------------|
 | 1 | Activation functions | Why nonlinearity is needed, ReLU, tanh, softmax |
 | 2 | Building an MLP | Stacking layers, `nn.Sequential`, forward pass by hand |
-| 3 | Loss functions and what we are optimizing | MSE, cross-entropy loss, what minimizing loss means geometrically |
+| 3 | Loss functions and what we are optimizing | MSE and cross-entropy as MLE; L2 regularization as MAP with a Gaussian prior |
 | 4 | The training loop | Datasets and batches, forward/backward/step, overfitting and validation |
 
 **Project**: train a small MLP to approximate a conjunction-risk scoring function from simulated orbital feature data. Lays the groundwork for the value network in Module 4.
@@ -47,7 +50,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 ---
 
 ## Module 3: Reinforcement Learning Fundamentals
-**Builds toward**: a tabular Q-learning agent playing a simple satellite resource allocation game.
+**Builds toward**: a DQN sensor allocation agent; the distributed training infrastructure for thousands of parallel SSA game simulations.
 
 | # | Lesson | Key concepts |
 |---|--------|--------------|
@@ -56,14 +59,16 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 3 | Tabular Q-learning | TD error, ε-greedy exploration, convergence |
 | 4 | Deep Q-Networks (DQN) | Function approximation for Q, experience replay, target networks |
 | 5 | Policy gradient methods | REINFORCE, the score function estimator, entropy regularization |
-| 6 | Actor-critic | Advantage functions, baseline subtraction, the A2C structure |
+| 6 | Actor-critic | Advantage functions, baseline subtraction, GAE, the A2C/A3C structure |
+| 7 | Hierarchical reinforcement learning | Options framework (I, π, β), SMDP Q-values, HIRO goal-conditioned policies, 3-layer SSA decomposition |
+| 8 | IMPALA and distributed RL | Actor-learner decoupling, V-trace off-policy correction, APPO in RLlib, throughput math |
 
 **Project**: a DQN agent that learns to allocate sensor dwell time across a set of tracked objects to maximize conjunction-detection reward. First OpenSpiel touchpoint: the game is defined as an OpenSpiel environment.
 
 ---
 
 ## Module 4: Search and Planning
-**Builds toward**: an MCTS agent that plans in a two-satellite maneuver decision game.
+**Builds toward**: an AlphaZero-lite agent for pursuit-evasion; IS-MCTS as the inference-time planner for fog-of-war SSA games.
 
 | # | Lesson | Key concepts |
 |---|--------|--------------|
@@ -71,6 +76,7 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 2 | Monte Carlo Tree Search | UCB1, selection/expansion/simulation/backpropagation, PUCT |
 | 3 | Neural-guided MCTS | Policy network for priors, value network replacing rollouts |
 | 4 | AlphaZero self-play | Self-play data generation, MCTS as policy improvement operator |
+| 5 | Information Set MCTS | Determinization, strategy fusion problem, PUCT with neural prior, IS-MCTS vs. CFR |
 
 **Project**: an AlphaZero-lite agent trained by self-play on a small pursuit-evasion game between two spacecraft. Uses an OpenSpiel game definition and PyTorch policy/value networks. Rust translation: the MCTS tree structure.
 
@@ -91,8 +97,8 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 
 ---
 
-## Module 6: Multi-Agent RL and Self-Play
-**Builds toward**: a PSRO solver for a multi-operator satellite-constellation game.
+## Module 6: Multi-Agent Reinforcement Learning
+**Builds toward**: a PSRO solver for adversarial satellite-constellation games; MAPPO for cooperative ally coalition training.
 
 | # | Lesson | Key concepts |
 |---|--------|--------------|
@@ -100,34 +106,36 @@ This document maps the full arc from foundations to a working SSA simulation. Ea
 | 2 | Fictitious play | Best response to empirical distribution, convergence in zero-sum games |
 | 3 | Policy Space Response Oracles (PSRO) | Meta-game, restricted Nash, oracle computation |
 | 4 | Alpha-rank | Markov chain over strategy profiles, stationary distribution, eigenvectors |
+| 5 | Centralized training, decentralized execution | CTDE paradigm, MAPPO (centralized critic), QMIX (value decomposition, monotonicity) |
 
-**Project**: a PSRO loop for a 2-player satellite constellation coverage game using OpenSpiel. Alpha-rank used to analyze which strategies dominate. First lesson that needs eigenvalues (handled inline, in context).
-
----
-
-## Module 7: Partial Observability and Imperfect Information
-**Builds toward**: a belief-state POMDP agent for an SSA sensor-tasking problem under adversarial conditions.
-
-| # | Lesson | Key concepts |
-|---|--------|--------------|
-| 1 | POMDPs | Observation functions, belief states, PBVI, point-based methods |
-| 2 | Belief state representation | Particle filters, Gaussian belief, exact Bayes updating |
-| 3 | Imperfect-information game solving | Information sets revisited, blueprint strategies |
-| 4 | Opponent modeling | Recursive reasoning, level-k, Bayesian opponent models |
-
-**Project**: a particle-filter belief state tracker for a pursuit-evasion POMDP. The evader's state is hidden; the tracker maintains a particle approximation of the posterior and uses it to guide sensor tasking. Python, using OpenSpiel's POMDP support.
+**Project**: a PSRO loop for a 2-player satellite constellation coverage game. Alpha-rank used to analyze which strategies dominate.
 
 ---
 
-## Module 8: OpenSpiel Deep Dive and Rust Capstone
-**Builds toward**: a self-contained Rust crate implementing a small SSA game-theoretic simulation end to end.
+## Module 7: Partial Observability
+**Builds toward**: a particle-filter RSO belief tracker; the belief-propagation infrastructure for the Module 8 capstone.
 
 | # | Lesson | Key concepts |
 |---|--------|--------------|
-| 1 | OpenSpiel architecture | Game API, algorithm API, bots, observers |
+| 1 | POMDPs | Observation functions, belief states, belief MDP, PBVI/SARSOP |
+| 2 | Belief state representation | Particle filters, ESS, deprivation detection, DRQN implicit belief |
+| 3 | Imperfect-information games | Multi-agent private information, information sets, value of information |
+| 4 | Opponent modeling | Bayesian type inference, exploit vs. Nash tradeoff, KL drift detection |
+
+**Project**: a bootstrap particle filter tracking an uncooperative RSO from noisy RA/Dec observations, with ESS monitoring and roughening for deprivation recovery.
+
+---
+
+## Module 8: OpenSpiel and the Rust Capstone
+**Builds toward**: the full production pipeline — OpenSpiel game → PettingZoo → Ray RLlib distributed training — plus a Rust CFR solver as the deployable artifact.
+
+| # | Lesson | Key concepts |
+|---|--------|--------------|
+| 1 | OpenSpiel architecture | Game API, algorithm API, bots, observers, information state tensors |
 | 2 | Implementing a custom game | Extending `pyspiel.Game`, state transitions, information states |
 | 3 | Rust and burn: the production gap | What exists, what does not, how to bridge |
 | 4 | Designing the SSA game | State representation, action space, reward structure for the capstone |
+| 5 | PettingZoo, shimmy, and Ray RLlib | OpenSpiel → shimmy → PettingZoo AEC → RLlib MultiAgentEnv → MARLlib MAPPO; self-play config; parallelism math |
 
 **Project (capstone)**: a Rust crate implementing:
 - A two-player extensive-form SSA game (attacker tries to mask a maneuver; defender allocates sensors to detect it)
