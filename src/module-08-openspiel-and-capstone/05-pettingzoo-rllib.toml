@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3f8c2d1-7e45-4b09-8c61-2f9d0e5a1b73"
+type = "MultipleChoice"
+prompt.prompt = "What is shimmy's role in the OpenSpiel-to-RLlib pipeline, and where does it sit?"
+prompt.distractors = [
+  "shimmy is a distributed training scheduler that sits between RLlib and the GPU learner",
+  "shimmy is a reward normalization library that scales OpenSpiel utilities into the [-1, 1] range before RLlib receives them",
+  "shimmy is a replay buffer implementation that bridges PettingZoo environments to Ray object stores",
+]
+answer.answer = "shimmy is a compatibility wrapper that sits between OpenSpiel and PettingZoo; it translates OpenSpiel's game-state-advance loop into the PettingZoo AEC API, handling chance nodes internally, mapping player indices to agent names, and converting information state tensors to numpy observation arrays"
+context = "shimmy's OpenSpielCompatibilityV0 is the second layer in the pipeline (OpenSpiel -> shimmy -> PettingZoo -> RLlib). Its responsibility is AEC API translation only. It does not handle reward scaling, action masking, or observation normalization — those remain the developer's responsibility in the RLlib wrapper layer."
+
+[[questions]]
+id = "b6e1a9f4-3c27-4d58-9e82-5a0c7d3f2e64"
+type = "MultipleChoice"
+prompt.prompt = "In RLlib's multi-agent config, what does the policy_mapping_fn control, and what training modes does it enable?"
+prompt.distractors = [
+  "It controls the learning rate schedule for each policy independently, enabling policies to converge at different speeds",
+  "It controls which environment observations are passed to each policy, filtering out other agents' information to enforce partial observability",
+  "It controls which rollout workers are assigned to which policies, enabling heterogeneous hardware allocation across agents",
+]
+answer.answer = "It routes each agent ID to a named policy at runtime, enabling asymmetric play (different policies for blue and red), self-play (both agents mapped to the same policy), or population-based training (the mapping changes dynamically to use historical policy snapshots as opponents)"
+context = "The policy_mapping_fn is a Python callable called with (agent_id, **kwargs) that returns a policy name string. It is the single point of control for all multi-agent training regimes in RLlib. Setting policies_to_train alongside the mapping function lets you freeze one policy (e.g., the opponent) while training only the other."
+
+[[questions]]
+id = "c9d4b7e2-1f63-4a81-b5e0-8d6c2a9f3b15"
+type = "MultipleChoice"
+prompt.prompt = "Why does MARLlib's MAPPO handle CTDE automatically while vanilla RLlib APPO requires manual implementation for a centralized critic?"
+prompt.distractors = [
+  "MARLlib uses a different neural network backend (JAX instead of PyTorch) that natively supports joint observation inputs",
+  "Vanilla RLlib APPO does not support multi-agent environments at all; CTDE is only possible through MARLlib",
+  "MARLlib handles CTDE automatically because it uses a different rollout collection mechanism that shares trajectories across agents before computing advantages",
+]
+answer.answer = "MARLlib wraps RLlib and includes pre-built model classes that concatenate all agents' observations for the value function (critic) while keeping the policy (actor) head conditioned on local observations only; vanilla RLlib APPO has no built-in joint-observation critic, so achieving CTDE requires writing a custom ModelV2 subclass with postprocess_trajectory callbacks to inject other agents' batches"
+context = "The CTDE property — centralized training, decentralized execution — requires the critic to see global state at training time while the actor uses only local observations at execution time. MARLlib builds this split automatically when you call marl.algos.mappo(). In vanilla RLlib, reproducing it requires non-trivial custom model code to merge other_agent_batches into the value function input without exposing that information to the policy head."

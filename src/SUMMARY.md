@@ -36,6 +36,8 @@
 - [Deep Q-Networks](module-03-reinforcement-learning/04-deep-q-networks.md)
 - [Policy gradient methods](module-03-reinforcement-learning/05-policy-gradient-methods.md)
 - [Actor-critic](module-03-reinforcement-learning/06-actor-critic.md)
+- [Hierarchical reinforcement learning](module-03-reinforcement-learning/07-hierarchical-rl.md)
+- [IMPALA and distributed RL](module-03-reinforcement-learning/08-impala-distributed-rl.md)
 - [Project: a DQN sensor allocation agent](module-03-reinforcement-learning/project.md)
 
 # Module 4: Search and Planning
@@ -45,6 +47,7 @@
 - [Monte Carlo Tree Search](module-04-search-and-planning/02-monte-carlo-tree-search.md)
 - [Neural-guided MCTS](module-04-search-and-planning/03-neural-guided-mcts.md)
 - [AlphaZero self-play training](module-04-search-and-planning/04-alphazero-self-play.md)
+- [Information Set MCTS](module-04-search-and-planning/05-information-set-mcts.md)
 - [Project: AlphaZero-lite for pursuit-evasion](module-04-search-and-planning/project.md)
 
 # Module 5: Game Theory and Equilibrium Computation
@@ -64,6 +67,7 @@
 - [Fictitious play](module-06-multi-agent-rl/02-fictitious-play.md)
 - [Policy-Space Response Oracles (PSRO)](module-06-multi-agent-rl/03-psro.md)
 - [Alpha-rank](module-06-multi-agent-rl/04-alpha-rank.md)
+- [Centralized training, decentralized execution](module-06-multi-agent-rl/05-ctde-mappo.md)
 - [Project: PSRO for satellite constellation coverage](module-06-multi-agent-rl/project.md)
 
 # Module 7: Partial Observability
@@ -82,4 +86,5 @@
 - [Implementing a custom game](module-08-openspiel-and-capstone/02-implementing-custom-games.md)
 - [Rust and burn: the production gap](module-08-openspiel-and-capstone/03-rust-and-burn.md)
 - [Designing the SSA game](module-08-openspiel-and-capstone/04-designing-the-ssa-game.md)
+- [PettingZoo, shimmy, and Ray RLlib](module-08-openspiel-and-capstone/05-pettingzoo-rllib.md)
 - [Capstone: a Rust CFR solver for an SSA conjunction-masking game](module-08-openspiel-and-capstone/project.md)

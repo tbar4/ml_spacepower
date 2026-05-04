@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3f7c2e1-d84b-4f91-b056-7e3a9c512d08"
+type = "MultipleChoice"
+prompt.prompt = "Why does the centralized critic in CTDE solve the non-stationarity problem that defeats independent PPO?"
+prompt.distractors = [
+  "It allows each agent to communicate its intended action to all other agents before the step is taken",
+  "It replaces the shared reward with a per-agent reward so each agent has a stable training signal",
+  "It freezes the other agents' policies during each update step, making the environment stationary",
+]
+answer.answer = "The joint state is Markov even when individual observations are not — the centralized critic's value target depends on the full joint state, so it is not contaminated by other agents' simultaneous policy updates"
+context = "Independent PPO computes advantage estimates from a per-agent value function V(o_i). Because o_i does not capture what the other agents are doing, the value target shifts as the other agents learn — this is non-stationarity from the critic's perspective. CTDE's centralized critic V(s_global) conditions on the full joint state, which evolves according to fixed environment dynamics regardless of the agents' policies. The value target is therefore stable during training, even though all agents are updating simultaneously."
+
+[[questions]]
+id = "b9e4d71c-3a05-4862-af37-1c08f6b20e53"
+type = "MultipleChoice"
+prompt.prompt = "A 5-satellite ISR coalition is trained with MAPPO. After training, the centralized critic is discarded and only the five actor networks are deployed. What does each actor receive as input at execution time?"
+prompt.distractors = [
+  "The concatenated observations of all five satellites, broadcast to each satellite over an inter-satellite link",
+  "The joint state value estimate from the centralized critic, updated once per orbit by a ground station",
+  "A compressed summary of the coalition's global coverage state, computed by a separate coordination algorithm",
+]
+answer.answer = "Only that satellite's own local observation — its coverage footprint, task queue, and sensor readings — with no information from the other satellites"
+context = "The centralized critic is a training artifact. Its role is to provide accurate advantage estimates during training by conditioning on the full joint state. Once training is complete, the coordination knowledge is encoded in the actor policy weights. Each actor has learned to respond to its local observation in a way that implicitly coordinates with the other actors' expected behavior. At deployment, no inter-satellite communication or centralized coordinator is needed — each satellite acts autonomously using only its own sensors."
+
+[[questions]]
+id = "c6b1a843-f295-47de-9e2a-84d370e58f19"
+type = "MultipleChoice"
+prompt.prompt = "QMIX enforces the constraint dQ_total/dQ_i >= 0 for all agents i. What does this monotonicity constraint enable in terms of execution?"
+prompt.distractors = [
+  "It allows Q_total to be computed without accessing the global state at execution time",
+  "It guarantees that Q_total equals the sum of individual Q-values, simplifying the Bellman update",
+  "It prevents any single agent from receiving a negative Q-value, stabilizing training",
+]
+answer.answer = "Each agent can independently take argmax over its own Q-function, and the resulting joint action is guaranteed to equal the argmax of Q_total — fully decentralized greedy execution without enumerating the exponential joint action space"
+context = "The Individual-Global-Max (IGM) principle follows directly from monotonicity: if Q_total is non-decreasing in each Q_i, then improving any agent's individual Q-value (by choosing a better action) can only improve or maintain Q_total. Therefore the joint argmax decomposes into N independent argmaxes. Without this constraint, finding the optimal joint action would require evaluating all N^|A| combinations — intractable for any realistic constellation size."

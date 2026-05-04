@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3f8c2e1-7b4d-4f91-9e5a-2d1b6c0f8e34"
+type = "MultipleChoice"
+prompt.prompt = "Why does IMPALA's decoupled actor-learner architecture improve GPU utilization compared to synchronous A2C or PPO?"
+prompt.distractors = [
+  "It uses a larger neural network that keeps the GPU occupied during data collection",
+  "It eliminates the need for a critic network, so the gradient updates take longer",
+  "It stores all trajectories in GPU memory, avoiding CPU-to-GPU data transfer delays",
+]
+answer.answer = "Actors push trajectories to a queue continuously while the learner pulls and trains continuously — neither side waits for the other, so the GPU is never idle waiting for data collection to finish"
+context = "In synchronous training, the GPU sits idle while actors collect experience (collect → update → collect). IMPALA breaks this serialization: actors run independently and always have environments to step through; the learner always has trajectories in the queue to train on. With 10ms collection and 5ms gradient updates, synchronous training achieves ~33% GPU utilization; the decoupled architecture approaches 100%."
+
+[[questions]]
+id = "b7e5d3a2-1c9f-4e82-8f6b-3a4c0d7e2f51"
+type = "MultipleChoice"
+prompt.prompt = "V-trace clips importance ratios to a threshold rho-bar (typically 1.0) rather than using the full ratio π/μ. What is the primary reason for this clipping?"
+prompt.distractors = [
+  "Clipping ensures the behavior policy μ and target policy π are always identical, eliminating off-policy bias entirely",
+  "Clipping reduces the computational cost of computing importance ratios across a long trajectory",
+  "Clipping prevents the value function from exceeding the maximum possible reward",
+]
+answer.answer = "Without clipping, large importance ratios multiply across trajectory steps and can produce gradient updates orders of magnitude larger than intended, making training catastrophically unstable; clipping bounds the variance at the cost of a small negative bias"
+context = "If π assigns probability 0.8 to an action that μ assigned 0.1, the raw ratio is 8.0. Over five such steps, the trajectory-level ratio is 8^5 = 32,768 — an explosion. Clipping at rho-bar=1.0 accepts a slight conservative bias (the correction understates how much the policies differ) in exchange for bounded, stable gradient updates. When π = μ (on-policy), all ratios equal 1.0 and clipping has no effect; V-trace reduces to a standard n-step return."
+
+[[questions]]
+id = "c1d4f6b8-5a2e-4c73-a9d0-7f8b1e3c5a92"
+type = "MultipleChoice"
+prompt.prompt = "A research team needs to train an SSA orbital wargame policy for 50 million steps and has access to a single GPU and 32 CPU cores. They compare synchronous PPO (all 32 workers collect a batch, then the GPU updates) against APPO (workers push to a queue, GPU trains continuously). Which statement best describes the tradeoff?"
+prompt.distractors = [
+  "Synchronous PPO is preferable because it produces unbiased on-policy gradient estimates, which are essential for stable convergence at 50 million steps",
+  "APPO is preferable only if the environment is implemented in Rust; with Python environments both algorithms have identical GPU utilization",
+  "Synchronous PPO will complete training faster because it avoids the overhead of managing a trajectory queue and V-trace computations",
+]
+answer.answer = "APPO completes training faster because the GPU trains continuously rather than waiting for all 32 workers to synchronize; V-trace corrects for the mild off-policy lag, so gradient quality is comparable while throughput is substantially higher"
+context = "Synchronous PPO with 32 workers still serializes collection and updates: the GPU waits for the slowest worker before each update. APPO's queue decouples them. The V-trace correction introduces a small conservative bias when actor data is a few policy versions old (typical with 512 envs and 50ms GPU update cycles), but this is far less damaging than the GPU idle time in synchronous training. For a 50M-step run with Python environments, APPO at ~25,600 steps/s takes ~32 minutes; synchronous PPO with significant idle time could easily take 2-3x longer."

@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3f8c21d-7b4e-4f92-8d16-e5a09b3c6f71"
+type = "MultipleChoice"
+prompt.prompt = "Why is Perfect Information Monte Carlo (PIMC) exploitable in imperfect-information games?"
+prompt.distractors = [
+  "Because it runs too few simulations to converge to the correct value",
+  "Because it does not use a neural network to guide search",
+  "Because it expands too many nodes in the search tree",
+]
+answer.answer = "Because it combines actions that are individually optimal for different hidden states (strategy fusion), producing a mixed strategy that an adversary who knows the algorithm can exploit"
+context = "In the SSA sensor-tasking example, PIMC recommends tasking sensor X when the adversary is in slot A and sensor Y when in slot B, then averages these recommendations. The resulting mixed strategy wastes sensor capacity against an adversary who positions at the boundary between the two slots. A consistent strategy (always use the wide-beam sensor first) is not exploitable in this way. Strategy fusion is the root cause: the averaging step loses the correlation between which hidden state is true and which action is appropriate."
+
+[[questions]]
+id = "b9e4d70a-2c15-4a8b-9f53-17d824c1e809"
+type = "MultipleChoice"
+prompt.prompt = "What is a determinization in IS-MCTS, and how does the algorithm use multiple determinizations?"
+prompt.distractors = [
+  "A determinization is a pruning rule that removes low-probability branches from the search tree",
+  "A determinization is a terminal state reached by random rollout; IS-MCTS averages rollout outcomes across many terminal states",
+  "A determinization is a fixed exploration constant used to balance UCT across different hidden states",
+]
+answer.answer = "A determinization is one concrete game state sampled from the information set (a specific hypothesis about all hidden information); IS-MCTS runs a full MCTS simulation on each sampled determinization and aggregates action values across all simulations to estimate expected action value under uncertainty"
+context = "For the SSA orbital dominance scenario with 5 adversary satellites of unknown position, one determinization assigns all 5 satellites to specific orbital slots consistent with observations. IS-MCTS samples many such determinizations (e.g., 200) and runs one MCTS simulation per determinization. Averaging action values across simulations approximates E_{s ~ P(s|information_set)}[V(s, a)] for each action a. Because each simulation commits to one concrete world hypothesis, the plan within each simulation is internally consistent, avoiding the strategy fusion that PIMC produces."
+
+[[questions]]
+id = "c6f1a48e-3d92-4b07-8e27-09f537d2a064"
+type = "MultipleChoice"
+prompt.prompt = "How does the neural network prior change IS-MCTS compared to random-rollout IS-MCTS?"
+prompt.distractors = [
+  "The neural network prior replaces determinization sampling, so only one concrete state is evaluated per decision",
+  "The neural network prior eliminates the need for UCB by providing exact action values directly",
+  "The neural network prior changes the backpropagation step to use discounted rewards instead of raw outcomes",
+]
+answer.answer = "The policy head biases PUCT to explore promising actions first (reducing effective branching), while the value head replaces high-variance random rollouts with a direct low-variance value estimate, cutting the required number of simulations from thousands to tens or hundreds"
+context = "In the PUCT formula, the policy prior p(a|s) weights the exploration bonus so that actions the network considers likely are visited first. The value head produces a single scalar estimate of position quality without simulating to a terminal state, eliminating rollout variance. Together, these changes mean a trained IS-MCTS agent can make high-quality decisions with 50-200 simulations where random-rollout IS-MCTS would need 2,000 or more to reach comparable quality."

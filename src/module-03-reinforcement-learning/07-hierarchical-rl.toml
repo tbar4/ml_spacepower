@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3f8d2e1-7c14-4b9a-8e05-2d6f1c3b0a47"
+type = "MultipleChoice"
+prompt.prompt = "An option in the options framework is defined as the triple (I, π_o, β_o). What does each component represent?"
+prompt.distractors = [
+  "I = the intra-option policy, π_o = the initiation reward, β_o = the discount factor for the option",
+  "I = the number of primitive timesteps the option runs, π_o = the option selection policy, β_o = the expected return from the option",
+  "I = the set of goal states the option can reach, π_o = the high-level policy, β_o = the sub-goal vector",
+]
+answer.answer = "I = the initiation set (states where the option can start), π_o = the intra-option policy (what primitive actions to take while executing), β_o = the termination condition (probability of ending the option at each state)"
+context = "An option encodes a temporally extended behavior: where it can be initiated (I), how it behaves internally (π_o), and when it returns control to the higher-level policy (β_o). For example, 'maneuver to eclipse' can only start when sufficient fuel is available (I), follows an orbital mechanics controller internally (π_o), and terminates when the satellite reaches eclipse geometry or fuel is exhausted (β_o)."
+
+[[questions]]
+id = "b7e2c9f4-1a38-4d6b-93c7-5e0d8a2f4b61"
+type = "MultipleChoice"
+prompt.prompt = "Why does the SMDP Q-value for options improve credit assignment compared to a flat policy gradient over the same horizon?"
+prompt.distractors = [
+  "The SMDP Q-value uses a larger discount factor γ, which amplifies signals from distant rewards rather than attenuating them",
+  "Options eliminate the need for a critic, so there is no bias-variance tradeoff to manage",
+  "The SMDP formulation converts the episodic task into a continuing task, which removes the discount entirely",
+]
+answer.answer = "The high-level policy receives a single Q-value update per option execution that accumulates all primitive rewards during the option, rather than needing to propagate gradient signals backward across every individual primitive timestep of confounded lower-level actions"
+context = "With a flat policy, a strategic decision made at step t must receive credit from rewards at step t+100 through a gradient chain of length 100, each link multiplied by γ. With HRL, the high level treats the entire option execution as a single SMDP transition: it observes the state at the option start, receives the accumulated discounted reward over the option duration, and bootstraps from the terminal state. The gradient chain length at the high level equals the number of option executions, not the number of primitive steps."
+
+[[questions]]
+id = "c4a1b6e8-2f57-4c0d-a7e9-3b8d5f0c9214"
+type = "MultipleChoice"
+prompt.prompt = "What is the key difference between options-based HRL and goal-conditioned HRL (such as HIRO)?"
+prompt.distractors = [
+  "Options-based HRL trains both levels end-to-end with a single shared loss, whereas HIRO uses separate losses for each level",
+  "Goal-conditioned HRL requires the high level to select from a fixed finite set of handcrafted behaviors, whereas options-based HRL outputs continuous vectors",
+  "Options-based HRL uses on-policy data only, whereas HIRO is fundamentally an on-policy algorithm that cannot use a replay buffer",
+]
+answer.answer = "Options-based HRL uses a finite set of discrete temporally-extended actions (each with an initiation set, intra-option policy, and termination condition), whereas goal-conditioned HRL has the high level output a continuous sub-goal vector; the low level is then rewarded for moving the state closer to that vector regardless of which primitive actions it uses"
+context = "In the options framework, the high level selects from a predefined or learned discrete set of behaviors, each of which encodes its own internal policy and termination logic. In goal-conditioned HRL like HIRO, the high level outputs a continuous vector in state space and the low level is a single goal-conditioned policy trained to reach any sub-goal it is given. The continuous sub-goal formulation is more flexible but requires off-policy correction (sub-goal relabeling) because the sub-goals stored in the replay buffer may no longer match what the current high-level policy would assign."
