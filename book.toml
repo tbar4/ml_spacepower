@@ -6,6 +6,8 @@ title = "ML for Spacepower Simulations"
 
 [output.html]
 mathjax-support = true
+fold.enable = true
+level = 0 
 
 [preprocessor.quiz]
 [preprocessor.repl]
