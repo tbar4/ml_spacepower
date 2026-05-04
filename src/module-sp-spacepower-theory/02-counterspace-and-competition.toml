@@ -69,3 +69,15 @@ prompt.distractors = [
 ]
 answer.answer = "Asymmetric degradation — Russia cannot match U.S. space capabilities quantity-for-quantity, so it invests in targeted capabilities (ground-based lasers, direct-ascent interceptors, electronic warfare) that degrade specific high-value U.S. space-enabled operational functions at lower cost than building comparable space architecture"
 context = "This is the key distinction between Russian and Chinese space doctrine. China is building toward parity from behind (Guowang, DN-series ASAT, Shijian co-orbital platforms). Russia is exploiting current U.S. vulnerabilities with its existing asymmetric toolkit. A wargame that treats both adversaries as equivalent in strategy and action space will produce wrong equilibria — the Russian player has different available actions and a different objective function than the Chinese player."
+
+[[questions]]
+id = "b4d6f8a0-2c4e-4b6d-f260-4e6f8a0b2c4e"
+type = "MultipleChoice"
+prompt.prompt = "An ML-based TLE maneuver detection pipeline faces a specific vulnerability that kinetic or electronic counterspace does not: adversarial manipulation of the input data. Which of the following best describes this threat and its implication for SDA product design?"
+prompt.distractors = [
+  "TLE data is classified and therefore only accessible to state actors with signals intelligence capability, limiting the attacker population to nation-states",
+  "TLE propagation errors accumulate over time, making injected false entries indistinguishable from legitimate measurement noise within days",
+  "The pipeline can verify TLE authenticity by cross-referencing with commercial optical observations, providing a reliable defense against injection attacks",
+]
+answer.answer = "Space-Track TLEs are publicly available and not cryptographically authenticated, so an adversary with access to the data pipeline or able to perform man-in-the-middle attacks on data consumers can inject false TLE entries — creating fictitious conjunction warnings, masking real maneuvers, or triggering false detections — making data-provenance verification a security engineering requirement for any operationally deployed SDA ML product"
+context = "This is the intersection of the space-cyber nexus and the ML pipeline architecture. A maneuver detection system that cannot reason about the integrity of its input data is operationally fragile in contested environments. The TLE injection threat is structurally similar to the adversarial ML problem: an adversary who understands the detection system can craft inputs (TLE records) designed to evade detection or produce false alarms. This is why production SDA pipelines need anomaly detection at the data layer, not just the behavioral layer."

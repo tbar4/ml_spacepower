@@ -70,6 +70,26 @@ Specific examples:
 
 ---
 
+## ITU filings as orbital positioning warfare
+
+The International Telecommunication Union (ITU) coordinates radio frequency spectrum and orbital slot assignments globally. For geostationary orbit, specific longitudinal positions are assigned to specific national operators. For non-geostationary orbits (LEO, MEO), the principle is "first-come, first-served": file a network with specific parameters, complete required coordination with potentially affected operators, then launch within the deadline to "bring the network into use" and establish priority.
+
+China has used this administrative system with the same strategic intentionality it applies to near-space legal claims and South China Sea island-building.
+
+**The filing scale**: China's state-owned Guowang constellation has filed with the ITU for 12,992 satellites. The Qianfan (Thousand Sails) constellation has filed for an additional 13,000+ satellites. Together, these filings stake claims to a large fraction of the most commercially valuable LEO frequency bands and altitude shells — particularly the 1,200 km shell where low latency and broad coverage intersect, the same shell where Starlink operates. Both SpaceX and Chinese operators have filed active adversarial coordination requests against each other at the ITU — formal legal proceedings that will determine who operates at scale in contested bands.
+
+**The reservation-before-use strategy**: ITU filings are public records. China has filed satellite networks under names that don't correspond to known operational programs — essentially reserving spectrum and orbital capacity against future deployment. The ITU's "bring into use" deadline requires launching some satellites to establish priority, but does not require launching the full constellation. A few launched satellites locks the filing for the rest. This is a bureaucratic positional strategy: claim the orbital capacity before competitors can, at far lower cost than actually deploying the constellation.
+
+**Why this is Three Warfares applied to orbital infrastructure**: No weapons. No OST violations. No diplomatic controversy comparable to an ASAT test. Just the aggressive, early use of an international administrative process to pre-empt competitor access to orbital resources. The legal warfare dimension is direct: by filing first, China can object to competitors' subsequent filings as "interfering with prior-coordinated networks" — turning its own filing position into a legal basis for blocking U.S. commercial constellation expansion.
+
+The South China Sea analogy is exact: occupy the territory and establish legal claims before the international community can coordinate a norm against it. The Spratly Island chain and the ITU filing ledger are different in medium but identical in strategic logic.
+
+**The spectrum scarcity constraint**: Unlike terrestrial land, the orbital environment is genuinely scarce in specific ways. The most valuable communication frequencies (Ka-band, Ku-band, V-band) have finite capacity in a given orbital shell — too many satellites in the same band at similar altitudes create interference. ITU coordination is the mechanism for managing that scarcity. A state that aggressively preempts those bands through early filing constrains what future operators (including U.S. commercial and military operators) can do in those bands without coordination agreement from the prior filer — which China can withhold.
+
+**Implication for wargame design**: A wargame of orbital competition that only models kinetic and electronic counterspace misses the ITU-filing vector entirely. The action space for a realistic Chinese player includes administrative actions — filing, coordination objection, delayed coordination response — that achieve positional advantage without any observable orbital behavior. These actions are invisible to SSA sensors and produce no TLE signatures. They are, however, detectable in public ITU filing records. A commercial SDA product that monitors ITU filing activity alongside TLE history provides a more complete picture of adversary orbital strategy than one that monitors only observable orbital behavior.
+
+---
+
 ## The gray zone wargame: what China actually does
 
 Dugger's "Space as a Gray Zone" (2024) describes a wargame involving senior DoD, State Department, NASA, and intelligence officials. The findings are instructive:
@@ -143,6 +163,8 @@ After this lesson, you should be able to:
 - Describe what the gray zone wargame (Dugger 2024) found and why it matters for behavioral detection requirements
 - Apply the South China Sea template to Chinese space strategy: what does fait accompli look like in the orbital domain?
 - Explain Brands' coalition dynamics argument and its implication for how to structure a multi-actor space competition wargame
+- Explain how ITU megaconstellation filings function as orbital positioning warfare and why this vector is invisible to SSA sensors but detectable in public records
+- Describe the spectrum scarcity constraint and why pre-emptive ITU filing creates a legal basis for blocking competitor operations in contested bands
 
 ---
 

@@ -162,6 +162,26 @@ The ripple effects were wider than the intended target. The hack disabled satell
 
 ---
 
+## The space-cyber nexus
+
+The Viasat KA-SAT hack is the most visible case of cyber attack on space infrastructure — but it is a specific instance of a much broader structural vulnerability. Space systems and cyber systems are converging at the operational level in ways that dissolve the conceptual boundary between the two domains.
+
+**Software-defined satellites and the update attack surface**: Modern satellites are increasingly controlled, reconfigured, and improved via software pushed over network links. Starlink's ability to rapidly update its terminals and satellite software to counter Russian jamming in Ukraine is the clearest operational demonstration: SpaceX deployed new anti-jamming firmware over-the-air within weeks of documented Russian jamming campaigns, restoring service that adversarial electronic warfare had degraded. This is a genuine military advantage. It is also an attack surface. The same over-the-air update mechanism that enables rapid capability improvement allows a nation-state adversary with access to the update infrastructure — or the ability to impersonate it — to push malicious firmware to the satellite or terminal fleet. What Viasat's attackers did by targeting the modem provisioning system is the template; future attacks need only find the equivalent mechanism in any sufficiently software-defined space system.
+
+**Supply chain attacks applied to space**: The SolarWinds intrusion (discovered 2020) demonstrated that nation-state actors can compromise widely-used commercial software through the build process — inserting backdoors that survive deployment into secure environments without triggering detection for months or years. Satellite command and control software runs on commercial operating systems, uses commercial networking libraries, and integrates commercial ground hardware. Any component in that supply chain is a potential compromise vector. A satellite ground system with a SolarWinds-style supply chain backdoor could be commanded to alter satellite behavior, suppress anomaly reporting, or inject false telemetry — all while appearing to function normally to operators.
+
+**TLE data integrity as an attack vector**: Space-Track TLE data is publicly available, widely used by commercial and government operators for collision avoidance, and is not cryptographically authenticated. An adversary with access to Space-Track's data pipeline — or the ability to perform man-in-the-middle attacks on operators who ingest that data — could inject false TLE entries. The effects: fictitious conjunction warnings forcing unnecessary maneuvers (operational disruption without kinetic action), false orbital data causing incorrect collision avoidance decisions, or masked real maneuvers that appear as normal station-keeping in the data record.
+
+This has a direct implication for the ML pipeline in Module 9: an LSTM maneuver detector trained on TLE history will produce false positives if adversarial TLE data is injected upstream, and will fail to detect real maneuvers if those maneuvers are masked by corrupted TLE entries. Building data-provenance verification into the SDA pipeline is a security engineering requirement as much as an ML modeling requirement. A product that cannot reason about the integrity of its input data is operationally fragile in exactly the environments where it matters most.
+
+**GPS spoofing as cyber-adjacent attack**: The sophisticated GPS spoofing documented in the Black Sea and Eastern Mediterranean is not simply an RF jamming problem — it is an exploit of the receiver software stack. Spoofing systems generate authentic-looking GPS signals that cause receivers to report a false, consistent position while appearing to function normally, with no receiver-side indication that the navigation solution is corrupted. Ships have logged positions placing them inland; aircraft have displayed incorrect locations. The mechanism is RF; the effect propagates through software. Distinguishing spoofing from jamming from legitimate signal degradation is an attribution and characterization problem — the same behavioral analysis problem the thesis addresses.
+
+**Ground station targeting**: The KA-SAT hack targeted the ground segment — the modem provisioning system, not the satellite itself. Every satellite system has a ground control segment connecting to commercial internet infrastructure, often located across multiple countries with varying security postures. Targeting the ground station is frequently easier and achieves the same operational effect as targeting the space segment. The most hardened satellite in orbit can be effectively disabled by compromising the ground systems that task it, receive its data, or update its software.
+
+**The cyber-kinetic substitution logic**: For an adversary practicing calibrated escalation or gray zone operations, cyber attacks on space infrastructure offer the same operational effect as kinetic counterspace (disabling specific satellite functions) with lower escalation risk, lower cost, and higher deniability. The Viasat hack disabled Ukrainian military communications as effectively as a kinetic ASAT strike would have — without generating debris, without providing a clearly attributable military act, and without crossing the threshold that would trigger a kinetic response. As satellite systems become more software-defined, the cyber substitution becomes more complete. This trend favors adversaries who are willing to conduct sustained cyber operations below kinetic thresholds, which describes both Russia and China.
+
+---
+
 ## Deterrence by resilience
 
 Offensive counterspace capabilities are one side of the deterrence equation. The other side is making your own assets hard enough to attack that the calculus turns against the attacker. The U.S. Space Force's approach has shifted from point-defense of a small number of exquisite satellites toward **deterrence by resilience**: making the space architecture so distributed, redundant, and rapidly replenishable that attacking it becomes too costly to be worth doing.
@@ -217,6 +237,9 @@ After this lesson, you should be able to:
 - Name at least three allied/partner SSA frameworks and explain why the coalition dimension matters for SDA product positioning
 - Describe Russia's four primary counterspace capabilities (Peresvet, Nudol, Tirada-2, Krasukha-4) and explain how Russia's strategic approach differs from China's
 - Explain why Russian counterspace doctrine focuses on asymmetric degradation rather than parity-building, and what that implies for wargame action space design
+- Explain why software-defined satellites create a cyber attack surface, and describe the supply chain attack model applied to satellite ground systems
+- Explain the TLE data integrity problem and why it matters for ML-based maneuver detection pipelines operating in contested environments
+- Describe the cyber-kinetic substitution logic: why cyber attacks on space infrastructure are attractive alternatives to kinetic counterspace for adversaries practicing calibrated escalation
 
 ---
 

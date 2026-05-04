@@ -33,3 +33,15 @@ prompt.distractors = [
 ]
 answer.answer = "A realistic orbital competition wargame requires multi-player structure (U.S., China, allies, neutral commercial operators) because coalition formation and defection are competitive levers — Chinese gray zone behavior that drives allies toward the U.S. coalition, or U.S. overreach that drives neutral states toward the Chinese position, changes the orbital competition outcome. PSRO (Module 6) handles heterogeneous multi-actor populations better than two-player Nash equilibrium."
 context = "This is why the 'bilateral competition' framing common in wargame design understates the complexity of space competition. The Five Eyes SSA sharing agreements, NATO Space COE, EU SST — these are coalition products that change what the U.S. can see in space. Chinese behavior that alienates potential partners (imagery for Wagner Group, debris-generating ASAT tests) has coalition costs that a two-player game doesn't capture."
+
+[[questions]]
+id = "e8a0c2e4-5f7a-4e8a-b483-2d4f6a8c0e2f"
+type = "MultipleChoice"
+prompt.prompt = "China's ITU megaconstellation filings for Guowang (12,992 satellites) and Qianfan (13,000+ satellites) function as orbital positioning warfare because:"
+prompt.distractors = [
+  "The satellites in these constellations will carry weapons payloads that cannot be detected until they are deployed and operational",
+  "ITU filings grant China legal authority to physically remove competing satellites from the filed orbital shells",
+  "The scale of the filings exceeds what Chinese launch capacity can deploy in any reasonable timeframe, making the filings legally invalid under ITU rules",
+]
+answer.answer = "Filing establishes priority in the ITU's first-come, first-served coordination system — once a network is 'brought into use' by launching even a small number of satellites, China can object to subsequent competitor filings as interfering with prior-coordinated networks, and withhold coordination agreement required for those competitors to operate in the same bands, creating a legal basis for blocking U.S. commercial and military constellation expansion in the most valuable LEO frequency bands"
+context = "This is Three Warfares applied to orbital infrastructure: legal warfare using an international administrative process to pre-empt competitor access without deploying counterspace weapons. It is invisible to SSA sensors (no orbital behavior to detect) but visible in public ITU filing records. A comprehensive SDA intelligence product that monitors ITU activity alongside TLE behavior provides a more complete picture of adversary orbital strategy — detecting the legal-bureaucratic dimension of positioning warfare that pure orbital mechanics analysis misses."
