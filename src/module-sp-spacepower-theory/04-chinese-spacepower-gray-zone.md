@@ -1,4 +1,4 @@
-# Lesson 3: Chinese Spacepower Theory and Gray Zone Competition
+# Lesson 4: Chinese Spacepower Theory and Gray Zone Competition
 
 ---
 
@@ -146,4 +146,4 @@ After this lesson, you should be able to:
 
 ---
 
-{{#quiz 03-chinese-spacepower-gray-zone.toml}}
+{{#quiz 04-chinese-spacepower-gray-zone.toml}}

@@ -1,4 +1,4 @@
-# Lesson 4: Escalation Dynamics, Crisis Stability, and the ML Deterrence Framework
+# Lesson 5: Escalation Dynamics, Crisis Stability, and the ML Deterrence Framework
 
 ---
 
@@ -90,6 +90,42 @@ Unlike the U.S.-Soviet relationship, which developed a crisis communication infr
 Applied to space: China's deliberate opacity about its orbital activities — what its co-orbital inspection satellites are doing, what its near-space vehicles are testing, what targets its ground-based lasers are calibrated against — is a strategic choice, not a transparency failure. The opacity serves Chinese deterrence by denial (you can't prevent what you can't see coming) and Chinese deterrence by punishment (you can't be confident our ASAT won't work because you don't know how it works).
 
 The absence of crisis communication channels means that even minor orbital incidents — a close approach that triggers automated collision avoidance, a temporary loss of satellite signal, a maneuver pattern that is ambiguous to SDA sensors — can generate a perception of hostile action without any channel for rapid de-escalation.
+
+---
+
+## The space escalation ladder: rungs, firebreaks, and historical thresholds
+
+Herman Kahn's original escalation ladder (1965) had 44 rungs between "subcrisis maneuvering" and "spasm war." No equivalent framework exists for space — the field is too young and operational experience too limited. But the cases in Lesson 3 and the strategic frameworks above allow us to sketch the rungs that matter, and more importantly, to identify where the firebreaks are.
+
+**The rungs as they have been operationalized:**
+
+*Rung 1 — Peacetime competitive positioning*: Co-orbital inspection and proximity operations (Luch at GEO). Satellite constellation buildout for dual-use ISR. Near-space legal claiming. ASAT test against own satellites. All of these have happened. None triggered military response. The threshold from Rung 1 to Rung 2 is currently well below what Western powers have treated as actionable.
+
+*Rung 2 — Gray zone operations below attribution threshold*: Jamming over a theater of operations (Russia has done this in Ukraine and Syria). Spoofing GPS in contested areas (Iran, Russia, various actors in Eastern Mediterranean). Deniable proximity operations to commercial or dual-use satellites. Limited cyber probes of satellite ground infrastructure. These have happened. Responses have been diplomatic, not military.
+
+*Rung 3 — Attributable but reversible counterspace attack*: An unambiguously hostile electronic attack on a military communication or ISR satellite — jammed, spoofed, or temporarily disabled. This has not been confirmed in the public record as a deliberate hostile act (the line between Rung 2 and Rung 3 is blurry). The Viasat hack is close to Rung 3 but against commercial infrastructure and attributed after the fact rather than in real time.
+
+*Rung 4 — Coercive positioning / threat of irreversible attack*: Maneuvering a co-orbital vehicle to within intercept proximity of a high-value military satellite (nuclear early warning, nuclear command-and-control relay). This is "Luch near a nuclear asset" — qualitatively different from commercial intelligence collection. The "Ghost in the Orbit" quote from the lesson opening is about this rung. No public confirmation that this has occurred against nuclear assets specifically.
+
+*Rung 5 — Irreversible non-kinetic counterspace attack*: High-power laser permanently blinding a military reconnaissance satellite's sensors. Cyber attack that permanently disables satellite bus control (bricking). These would be irreversible acts of war against military assets. They have not occurred in the public record.
+
+*Rung 6 — Kinetic counterspace against military assets*: Direct-ascent or co-orbital ASAT strike against an adversary military satellite. This is the first unambiguous act of war in the space domain. It has not happened between great powers. India's 2019 test was against its own satellite. The 2021 Russian NUDOL test was against its own satellite.
+
+*Rung 7 — Debris-generating attacks / Kessler trigger*: Kinetic attacks at LEO densities sufficient to start a cascade. This is essentially nuclear deterrence applied to the orbital environment — both sides lose access to the orbital bands affected. Not happened. Kessler deters this rung specifically.
+
+*Rung 8 — Attacks on nuclear C2 space assets*: Attacking early warning satellites, nuclear relay satellites, or GPS in a way that degrades confidence in nuclear command-and-control. This is the rung that compresses the escalation ladder to near-nuclear. Current space architecture places nuclear C2 assets in heavily trafficked orbital regimes without clear firebreaks from conventional counterspace attacks.
+
+**The key firebreaks:**
+
+The transition from Rung 2 to Rung 3 is the first firebreak — the line between deniable harassment and attributed hostile action. Everything in Rungs 1 and 2 has happened without military response. Nothing in Rungs 3–8 has happened between great powers.
+
+The transition from Rung 5 to Rung 6 is the second firebreak — the line between non-kinetic and kinetic attack on military assets. Kinetic attack on a military satellite is universally recognized as an act of war; this provides deterrent pressure that non-kinetic attacks do not trigger.
+
+The transition from Rung 6 to Rung 8 is the most dangerous transition: once kinetic attacks on military satellites begin, the compressed nature of the ladder (from "conventional military satellite" to "nuclear C2 satellite" in a small number of steps) means escalation to nuclear-relevant effects may be rapid and uncontrolled.
+
+**Harrison's ISR blinding finding locates the critical instability**: ISR blinding attacks are likely to happen at Rungs 2–3, before kinetic conflict, intended as preparation. But the effect of ISR blinding at those rungs may be to trigger Rung 4–6 responses from a blinded adversary who cannot distinguish blinding-for-invasion from blinding-for-nuclear-strike. The firebreaks don't hold if the blinded party can't see them.
+
+**Implication for the ML deterrence thesis**: The deterrence framework requires behavioral visibility that allows decision-makers to identify which rung they're on before they respond at the wrong level. A defender who cannot distinguish Rung 2 from Rung 4 will either underrespond (leaving gray zone operations unopposed) or overrespond (escalating to Rung 6 in response to a Rung 2 action). ML-enabled behavioral attribution provides the rung-identification capability that the compressed space escalation ladder requires.
 
 ---
 
@@ -191,6 +227,8 @@ Every module in this curriculum contributes something specific to the deterrence
 After this lesson, you should be able to:
 
 - Explain what makes space escalation different from terrestrial escalation: compressed rungs, attribution delay, the "satellites don't have mothers" threshold problem, and absence of norms
+- Name at least five rungs of the space escalation ladder, identify the two major firebreaks, and explain which rungs have been operationally observed in the public record
+- Explain why Harrison's ISR blinding finding locates the critical instability at the transition between Rungs 2–3 and Rungs 4–6
 - Describe the Russian concept of calibrated escalation (strategic deterrence as cost imposition) and contrast it with U.S. deterrence-by-denial
 - State at least three of the six deterrence dilemmas (Brands and Cooper) and explain why they apply to space
 - Explain the Harrison argument: why ISR blinding is an escalation accelerant rather than an escalation suppressor
@@ -201,4 +239,4 @@ After this lesson, you should be able to:
 
 ---
 
-{{#quiz 04-escalation-and-ml-deterrence.toml}}
+{{#quiz 05-escalation-and-ml-deterrence.toml}}

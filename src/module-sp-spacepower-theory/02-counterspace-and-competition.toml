@@ -33,3 +33,27 @@ prompt.distractors = [
 ]
 answer.answer = "An MTR is a new technology that changes what is militarily possible; an RMA is the successful integration of that technology with new doctrine, organization, training, and leadership to create a qualitatively superior fighting force — an MTR is a necessary but not sufficient condition for an RMA"
 context = "Brose's argument in The Kill Chain is that the U.S. has had the MTR (precision guidance, space-based ISR, GPS) since the 1991 Gulf War but has failed to execute the RMA — continuing to buy expensive platforms rather than investing in the sensor-shooter networks that convert technological advantage into operational superiority. The SDA ML products in this curriculum are small pieces of the SDA RMA: they convert the MTR (raw orbital data feeds) into decision-relevant intelligence."
+
+[[questions]]
+id = "b7d9a1c3-5e7f-4b2d-e849-3f5a7c9b1d3f"
+type = "MultipleChoice"
+prompt.prompt = "The Viasat KA-SAT hack on February 24, 2022 is strategically significant beyond its direct military effect because:"
+prompt.distractors = [
+  "It was the first successful cyberattack against a satellite in orbit, establishing that on-orbit systems are vulnerable to cyber intrusion",
+  "It permanently disabled Ukraine's military communications, demonstrating that cyber attacks on commercial space are strategically decisive",
+  "It violated the Outer Space Treaty's prohibition on attacks against civilian space infrastructure, creating a legal precedent",
+]
+answer.answer = "It demonstrated that commercial satellite infrastructure used by military customers is a legitimate military target — and that attacks on it produce collateral effects far beyond the intended target (5,800 German wind turbines lost communications), making the civilian-military boundary in space operationally meaningless in conflict"
+context = "The CASR (Commercial Augmentation Space Reserve) framework is the DoD's response to this lesson: establishing contractual frameworks so commercial space capabilities can be integrated into military operations with established protocols. For SDA product developers, the Viasat model means commercial SDA products providing decision-relevant intelligence inherit the targeting profile of the assets they protect."
+
+[[questions]]
+id = "d1f3b5e7-7a9c-4d1f-a062-5b7d9f1a3c5e"
+type = "MultipleChoice"
+prompt.prompt = "The Space Development Agency's Proliferated Warfighter Space Architecture (PWSA) deters adversary attack on U.S. space assets by:"
+prompt.distractors = [
+  "Deploying satellites with hardened shielding and maneuvering capability that makes individual satellites expensive to destroy",
+  "Threatening immediate retaliation against adversary space assets if any U.S. satellite is attacked",
+  "Concentrating space capabilities on a small number of highly classified satellites whose location the adversary cannot determine",
+]
+answer.answer = "Deploying hundreds of small satellites so that attacking one satellite provides negligible capability degradation, while attacking the system meaningfully would require simultaneous kinetic attacks against many satellites — creating Kessler Syndrome consequences the attacker shares and making the cost-benefit calculation for attack strongly negative"
+context = "Deterrence by resilience through proliferation is the U.S. alternative to deterrence by punishment (threatening retaliation). The logic is that if the target is hard enough to destroy meaningfully, rational adversaries don't try. This creates the market for SDA ML products: managing a 200+ satellite constellation requires automated anomaly detection and behavioral monitoring that human operators cannot provide at the required scale."

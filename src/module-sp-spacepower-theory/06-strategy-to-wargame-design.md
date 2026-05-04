@@ -1,4 +1,4 @@
-# Lesson 3: From Strategic Theory to Wargame Design
+# Lesson 6: From Strategic Theory to Wargame Design
 
 ---
 
@@ -147,4 +147,4 @@ After this lesson, you should be able to:
 
 ---
 
-{{#quiz 05-strategy-to-wargame-design.toml}}
+{{#quiz 06-strategy-to-wargame-design.toml}}

@@ -116,6 +116,66 @@ For wargame design: gray zone activities are more common than kinetic attacks an
 
 ---
 
+## Commercial space as military infrastructure
+
+The 2022 Russian invasion of Ukraine changed how the U.S. defense community thinks about commercial space. Before February 24, 2022, commercial satellite operators were understood as dual-use in potential — they could support military operations. After that date, commercial satellite operators became dual-use in practice, in ways that exposed vulnerabilities no existing doctrine had addressed.
+
+**The Viasat KA-SAT hack**: John Klein's *Fight for the Final Frontier* describes the opening move of the Ukraine war in blunt terms: "An hour before Russian troops crossed the border, Russian government hackers conducted cyberattacks against the American satellite company Viasat... resulted in an immediate and significant loss of communication in the early days of the war for the Ukrainian military." The attack was not against a military satellite — it was against a commercial communications satellite used by Ukrainian military and government customers because it was the available option.
+
+The ripple effects were wider than the intended target. The hack disabled satellite modems across Europe, including — improbably — the remote communications systems of 5,800 wind turbines in Germany, rendering them unable to communicate because of their satellite link. A cyberattack on a Ukrainian military communications platform created operational effects in German commercial infrastructure. The boundary between military and civilian space systems does not function the way either legal doctrine or operational planning assumes.
+
+**Starlink in Ukraine**: SpaceX provided Starlink terminals to Ukraine starting in the opening days of the invasion. The operational impact was described by Ukrainian commanders as transformative — Starlink provided resilient, tactically usable communications that Russian jamming efforts could not consistently defeat. One Ukrainian officer put it directly: "fighting without Starlink is like fighting without a gun." SpaceX was not operating as a defense contractor — Elon Musk made repeated public statements about not wanting Starlink used for offensive operations and at one point declined to extend coverage to Crimea for a specific Ukrainian operation. A commercial company's CEO was making real-time tactical decisions affecting an active military operation.
+
+**Maxar and commercial imagery**: Maxar Technologies' commercial satellite imagery was widely credited with enabling real-time attribution of Russian military buildups before the invasion and Russian troop movements during it. Intelligence that previously would have required a classified satellite with restricted distribution was published commercially, shared by open-source analysts, and used to build the international diplomatic coalition against Russia. Commercial imagery changed the information environment for the conflict.
+
+**The CASR framework**: The Pentagon's response to the Ukraine lessons was the **Commercial Augmentation Space Reserve (CASR)** — modeled loosely on the Civil Reserve Air Fleet (CRAF). The concept: the DoD creates contractual frameworks and exercises wargame scenarios with commercial space providers (communications, imagery, SDA) so that in a crisis, commercial capacity can be integrated into military operations with established protocols. The CASR held its first wargaming event as a "major milestone" in 2024 — it is still a framework, not a fully integrated operational capability.
+
+**Strategic implications for SDA products**: Commercial satellite operators are now de facto combatants in great-power competition, whether they intend to be or not. This creates several implications:
+
+- Commercial SDA providers — including products built on the architecture this curriculum teaches — become intelligence infrastructure with strategic value. A commercial maneuver detection product that identifies Chinese orbital positioning before the DoD's classified sensors do has obvious value; it also has obvious targeting implications.
+- The Viasat model means commercial space infrastructure is a high-value target in conflict. SDA products that provide indispensable situational awareness inherit the targeting profile of the assets they protect.
+- CASR-type frameworks create a market: DoD is willing to pay for commercial space capabilities that can be surged in a crisis. The SBIR and SpaceWERX pathway (Module 8, Lesson 6) is the entry point for a small company building toward CASR-integration.
+
+---
+
+## Deterrence by resilience
+
+Offensive counterspace capabilities are one side of the deterrence equation. The other side is making your own assets hard enough to attack that the calculus turns against the attacker. The U.S. Space Force's approach has shifted from point-defense of a small number of exquisite satellites toward **deterrence by resilience**: making the space architecture so distributed, redundant, and rapidly replenishable that attacking it becomes too costly to be worth doing.
+
+The USSF Space Capstone Publication defines the passive defense approach explicitly: "Passive defense measures include spacecraft maneuverability; self-protection; disaggregation; orbit diversification; large-scale proliferation; communication, transmission, and emissions security..."
+
+In practice, resilience strategy has taken three forms:
+
+**Proliferated LEO (PWSA / SDA Tranche architecture)**: The Space Development Agency's Proliferated Warfighter Space Architecture (PWSA) aims to deploy hundreds of small satellites in LEO providing transport-layer communications and missile warning — capabilities previously provided by a small number of large, exquisite GEO satellites. The logic: attacking one satellite in a 200-satellite transport layer degrades the capability by less than 1%. Attacking the system meaningfully requires attacking many satellites simultaneously, which creates massive debris and triggers Kessler Syndrome consequences the attacker shares. The SDA Tranche 0 and Tranche 1 satellites began launching in 2023. Tranche 2 and beyond will build out the full constellation.
+
+**Starshield**: Starshield is SpaceX's version of Starlink purpose-built for national security applications — including encryption, government payload hosting, and survivable communications for nuclear command-and-control. Where Starlink provides commercial broadband at scale, Starshield provides the same proliferation-based resilience for classified and military communications. The program represents the CASR logic applied to communications: leverage the commercial megaconstellation architecture for military resilience.
+
+**Disaggregation across orbits and operators**: Rather than hosting all capability on government-owned satellites, the USSF is increasingly distributing capability across commercial hosts, foreign partners, and classified assets. An adversary targeting U.S. space capabilities must now identify and attack assets across LEO, MEO, GEO, and HEO — operated by government, commercial, and allied entities — rather than attacking a defined set of government satellites.
+
+The Salter formulation captures the strategic logic: "America remains the world's premier space power, but that dominance is also a source of vulnerability... One response is proliferation: deploying so many commercial satellites and space assets that it becomes prohibitively expensive for adversaries to target our entire space infrastructure."
+
+**Implication for SDA products**: Resilience by proliferation creates a growth market for SDA. Managing a 200-satellite government constellation plus 4,000 Starshield satellites plus allied assets requires automation that human operators cannot provide. Pattern-of-life analysis, anomaly detection, collision avoidance — the LSTM maneuver detection pipeline in Module 9 is exactly the kind of capability that resilient megaconstellations require. The market exists because the strategy demands it.
+
+---
+
+## Allied and partner dimensions
+
+Space competition is not bilateral. U.S. space power depends on allied infrastructure, allied data sharing, and allied diplomatic support — and Chinese gray zone strategy explicitly targets the U.S.-led coalition.
+
+**Five Eyes SSA sharing**: The Five Eyes intelligence partnership (U.S., UK, Canada, Australia, New Zealand) extends to space domain awareness. U.S. Space Command has acknowledged that SSA data sharing with Five Eyes partners significantly extends coverage for tracking adversary satellite behavior. As noted in strategy discussions: "The U.S. already does this as an arrangement with the Five Eyes." The practical effect: orbital events over certain geographic regions are tracked with better fidelity because allied ground-based sensors contribute to the picture.
+
+**NATO Space COE**: NATO declared space an operational domain in 2019. The NATO Space Centre of Excellence (Space COE) in Ramstein Air Base, Germany coordinates allied space doctrine development, wargaming, and capability interoperability. Ally space capabilities — UK, France, Germany, Japan, Australia — are increasingly integrated into U.S. Space Command operations rather than operating in parallel. This matters for wargaming: a game that models only U.S. assets understates the coalition's actual SSA capability.
+
+**EU SST and Galileo**: The European Union Space Surveillance and Tracking (EU SST) network is an independent SSA capability serving European civil and commercial satellite operators. Galileo, the EU's GPS equivalent, provides independent PNT that reduces European dependence on U.S. GPS in a conflict scenario. These are not interoperable with U.S. government systems by default, but they create a broader allied information environment.
+
+**JAXA and Indo-Pacific partnerships**: Japan's JAXA has deep SSA cooperation with NASA and the U.S. Space Force, including data sharing and joint exercises. The Quad (U.S., Japan, Australia, India) space cooperation initiatives are expanding to include SSA and space traffic management. India conducted its own ASAT test in 2019 — demonstrating capability and, by extension, signaling that it will not be a passive observer in space competition.
+
+**Kronos**: The Kronos program, described by Space News, "aims to deliver a modernized suite for space battle management and intelligence... fuse data in real time, support planning and deconfliction, and provide shared awareness for U.S. and allied operators." This is the operational system through which allied SSA data is expected to be integrated with U.S. Space Command. Products that can feed into Kronos — providing maneuver detection, behavioral attribution, or anomaly characterization — have a clear path to allied operator markets.
+
+**Brands' coalition argument applied to SDA**: Chinese orbital behavior that damages allied satellites or denies allied access drives allied investment in SSA and space resilience. Every Chinese co-orbital inspection event near a UK or Australian satellite is an argument for allied SSA spending. A commercial SDA product positioned as allied-operator-ready has a market that exists precisely because China's behavior created it.
+
+---
+
 ## What you need to be able to do
 
 After this lesson, you should be able to:
@@ -127,6 +187,10 @@ After this lesson, you should be able to:
 - Describe the two key concepts from PLA *Science of Military Strategy 2013* (space deterrence by denial; counter-preemption) and their wargame design implications
 - Name the primary counterspace actors and characterize each one's demonstrated capability set
 - Explain why gray zone space activities are strategically significant and why they are harder to model than kinetic attacks
+- Describe the Viasat KA-SAT hack and its strategic implications for how commercial space infrastructure is targeted in conflict
+- Explain the PWSA/SDA Tranche architecture and the logic of deterrence by resilience through proliferation
+- Describe the CASR framework and its market implications for commercial SDA products
+- Name at least three allied/partner SSA frameworks and explain why the coalition dimension matters for SDA product positioning
 
 ---
 

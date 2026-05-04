@@ -39,10 +39,11 @@ SP. **Spacepower theory and strategic context**: Dolman, Lutes, USSF doctrine, c
 | # | Lesson | Key concepts |
 |---|--------|--------------|
 | 1 | Foundations of spacepower theory | Dolman/Mackinder, Lutes definition, sanctuary vs. high ground debate, USSF SCP seven disciplines, Ziarnick's general theory, Carlson's Chinese framework (Go not Chess), OST and space law basics |
-| 2 | Counterspace operations and the new RMA | Kinetic/non-kinetic, reversible/irreversible taxonomy, stability-instability paradox, Krepinevich MTR/RMA, PLA Science of Military Strategy 2013, commercial space as strategic actor (Viasat/Starlink) |
-| 3 | Chinese spacepower theory and gray zone competition | PLA informationized warfare, Qiao Liang Unrestricted Warfare, Three Warfares (legal/psychological/public opinion), near-space legal warfare, civilian-military blur, gray zone wargame findings, Hal Brands coalition dynamics |
-| 4 | Escalation dynamics, crisis stability, and the ML deterrence framework | Space escalation structure, Russian calibrated escalation model, Brands/Cooper deterrence dilemmas, ISR blinding as escalation accelerant, Campbell crisis communication, Kessler Syndrome limits, OST limits, ML deterrence-by-detection thesis |
-| 5 | From strategic theory to wargame design | Strategic questions → game structures, why CFR/IS-MCTS for gray zone, why PSRO for multi-actor, behavioral attribution → particle filters, AlphaZero Nash equilibrium findings, capstone game design rationale |
+| 2 | Counterspace operations and the new RMA | Kinetic/non-kinetic, reversible/irreversible taxonomy, stability-instability paradox, Krepinevich MTR/RMA, PLA Science of Military Strategy 2013, commercial space as strategic actor (Viasat/Starlink), deterrence by resilience (PWSA/SDA), allied/partner dimensions (Five Eyes, NATO Space COE, CASR) |
+| 3 | Historical case studies in space competition | 2007 Chinese ASAT test (Fengyun-1C, debris, signaling), Russia's Luch co-orbital program (GEO proximity ops, attribution problem), Viasat KA-SAT hack (invasion sequencing, German wind turbines, CASR response) |
+| 4 | Chinese spacepower theory and gray zone competition | PLA informationized warfare, Qiao Liang Unrestricted Warfare, Three Warfares (legal/psychological/public opinion), near-space legal warfare, civilian-military blur, gray zone wargame findings, Hal Brands coalition dynamics |
+| 5 | Escalation dynamics, crisis stability, and the ML deterrence framework | Space escalation ladder (8 rungs, 2 firebreaks), Russian calibrated escalation model, Brands/Cooper deterrence dilemmas, ISR blinding as escalation accelerant, Campbell crisis communication, Kessler Syndrome limits, OST limits, ML deterrence-by-detection thesis |
+| 6 | From strategic theory to wargame design | Strategic questions → game structures, why CFR/IS-MCTS for gray zone, why PSRO for multi-actor, behavioral attribution → particle filters, AlphaZero Nash equilibrium findings, capstone game design rationale |
 
 **No project** — strategic theory module; connections to later projects are explicit in each lesson.
 

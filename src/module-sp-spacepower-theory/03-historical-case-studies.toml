@@ -1,0 +1,35 @@
+[[questions]]
+id = "c4a8e2f6-1b3d-4c7a-d915-8e0a2c4f6b8d"
+type = "MultipleChoice"
+prompt.prompt = "China's 2007 ASAT test destroyed Fengyun-1C, a defunct Chinese weather satellite. What was the primary strategic purpose of targeting a Chinese satellite rather than waiting for an opportunity to demonstrate capability against an adversary satellite?"
+prompt.distractors = [
+  "China lacked the precision guidance to target a fast-moving adversary satellite and chose the easier target to ensure a successful demonstration",
+  "The Outer Space Treaty prohibits testing ASAT capabilities against other nations' satellites, so China had no legal option but to use its own",
+  "China chose Fengyun-1C because its orbital altitude produced minimal debris compared to other available test targets",
+]
+answer.answer = "Demonstrating the capability at all — reaching and destroying a satellite at ~865 km — was the signal. Using its own satellite avoided a direct act of war while still communicating that China could reach U.S. and allied LEO assets at similar altitudes. The international condemnation that followed was accepted as a tolerable cost for the strategic signaling value"
+context = "The 2007 test established the credibility of China's counterspace deterrent without providing a legal or military basis for a U.S. response. The debris costs were shared globally — which is characteristic of kinetic irreversible counterspace: the attacker bears a fraction of the operational cost while the strategic benefit accrues only to them."
+
+[[questions]]
+id = "e6b0d4f8-3c5e-4a8b-f137-0b2d4f6a8c0e"
+type = "MultipleChoice"
+prompt.prompt = "Russia's Luch satellite conducting proximity operations near Intelsat and U.S. military communication satellites in GEO illustrates which core wargaming challenge?"
+prompt.distractors = [
+  "The escalation ladder problem: Luch's behavior is so clearly hostile that it has already crossed a red line, but the U.S. has not responded",
+  "The deterrence failure problem: the U.S. lacks the counterspace capability to threaten Luch effectively, so deterrence by punishment is unavailable",
+  "The technical tracking problem: SSA sensors cannot maintain continuous coverage of GEO, so Luch's activities go undetected",
+]
+answer.answer = "The attribution problem: a satellite maneuvering near another satellite could be conducting intelligence collection, practicing proximity rendezvous for future attack, or testing on-orbit servicing technology — and these cannot be distinguished from observed kinematics alone, making hostile intent unprovable even when the pattern is visible to commercial tracking networks"
+context = "This is the direct operational analog of the conjunction-masking game in Module 8. Luch is real; the game is stylized. The question the wargame asks — how should a defender allocate sensor resources to characterize a potentially threatening approach? — is the question Space Force operators face when Luch parks itself between communication satellites."
+
+[[questions]]
+id = "a0c2e4f8-5d7b-4a0c-b259-2c4e6a8b0d2f"
+type = "MultipleChoice"
+prompt.prompt = "The Viasat KA-SAT hack was executed approximately one hour before Russian ground forces entered Ukraine. 5,800 German wind turbines also lost communications as a result. What does this collateral effect reveal about the structure of commercial space infrastructure vulnerability?"
+prompt.distractors = [
+  "It reveals that Russian hackers overestimated the precision of the attack and accidentally triggered effects beyond the intended target",
+  "It reveals that commercial satellite systems have inadequate cybersecurity because their operators prioritize cost over security",
+  "It reveals that the EU's space infrastructure is so interdependent with U.S. commercial satellites that any U.S. commercial attack automatically becomes an EU attack",
+]
+answer.answer = "The most vulnerable component of commercial satellite infrastructure is the ground segment — the modem management system — not the satellite itself. Malicious firmware propagated through a common ground network to modems in multiple countries, creating collateral effects in entirely unrelated civilian infrastructure. This means attackers can target space-enabled services at ground level, bypassing the hardened space segment entirely"
+context = "This is why the CASR framework and ground-segment security are as important as space resilience. The KA-SAT hack is also the clearest evidence that commercial space infrastructure has become military-relevant in conflict — not by choice, but because military users rely on the best available commercial product. When Viasat is the Ukrainian military's communications backbone, Viasat is a military target."

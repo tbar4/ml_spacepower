@@ -33,3 +33,15 @@ prompt.distractors = [
 ]
 answer.answer = "Placement of nuclear weapons or other weapons of mass destruction in orbit, on celestial bodies, or in outer space — the OST does not prohibit conventional counterspace weapons, military reconnaissance, military communications, or co-orbital inspection vehicles, which is why the entire modern counterspace capability spectrum is technically legal under existing treaty law"
 context = "This is the most important thing to understand about the existing legal framework: it is far narrower than its 'province of all mankind' language implies. The peaceful purposes requirement has been interpreted by the United States to mean non-aggressive, not non-military — which is why military reconnaissance satellites are legal. The gap between the treaty's idealistic framing and its actual legal prohibitions is where all of contemporary space competition takes place."
+
+[[questions]]
+id = "f2d4b6a8-8c0e-4f2d-c371-4d6e8a0b2d4f"
+type = "MultipleChoice"
+prompt.prompt = "According to the space escalation ladder framework, which transition represents the most dangerous instability point — where limited counterspace conflict most risks runaway escalation toward nuclear-relevant effects?"
+prompt.distractors = [
+  "The transition from Rung 1 (peacetime competitive positioning) to Rung 2 (gray zone operations below attribution threshold), because establishing the norm of tolerance makes later escalation more likely",
+  "The transition from Rung 6 (kinetic counterspace against military assets) to Rung 7 (debris-generating attacks), because Kessler Syndrome consequences are irreversible for all parties",
+  "The transition from Rung 3 (attributable but reversible attack) to Rung 4 (coercive positioning near nuclear assets), because attribution triggers mandatory response protocols",
+]
+answer.answer = "The transition from Rung 6 (kinetic attack on conventional military satellites) to Rung 8 (attacks affecting nuclear C2 space assets) is compressed because current space architecture places nuclear early warning and relay satellites in the same orbital regimes as conventional military satellites — so conventional counterspace attacks may inadvertently degrade nuclear command-and-control, triggering nuclear-level responses"
+context = "This is why Harrison's ISR blinding finding matters so much: ISR blinding attacks begin at Rungs 2–3, before kinetic conflict, but a blinded adversary cannot identify the escalation rung they are on. If they cannot distinguish Rung 2 jamming from Rung 4 coercive positioning near nuclear assets, they may respond at the nuclear-relevant level to a conventional-level action. The ML deterrence thesis requires behavioral visibility to keep decision-makers correctly located on the ladder."
