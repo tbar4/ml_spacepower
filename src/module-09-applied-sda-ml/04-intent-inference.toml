@@ -1,0 +1,35 @@
+[[questions]]
+id = "a3c5e7b9-2d4f-4a3c-c371-5f7a9b1d3e5f"
+type = "MultipleChoice"
+prompt.prompt = "Why does an intent classifier trained on historical maneuver data remain exploitable by an adversary, and what training approach addresses this?"
+prompt.distractors = [
+  "Historical data is too sparse to train a reliable intent classifier; the solution is to augment with synthetic maneuvers from physics simulation rather than from adversarial game theory",
+  "The historical data includes only legitimate operator maneuvers, not adversarial ones; the solution is to collect examples from known adversarial actors such as Luch co-orbital operations",
+  "Historical classifiers fail because they use orbital element features; the solution is to train on HCW relative frame features that are orbit-regime-independent",
+]
+answer.answer = "A classifier trained on historical patterns learns to recognize those specific patterns — but an adversary who has studied the classifier can route around it by executing approaches with signatures that appear consistent with station-keeping or collision avoidance in the classifier's feature space. PSRO (from Module 6) trains the classifier against an adversary that actively adapts to exploit the classifier's current decision boundary, iterating until neither side can improve against the other's strategy — producing a classifier robust to the best-known adversarial disguise strategies."
+context = "This is the same argument that makes CFR solutions to the conjunction-masking game more robust than supervised learning on historical data. A supervised classifier has a fixed decision boundary. An adversary with the classifier's weights can find inputs that cross the true maneuver/not-maneuver boundary while remaining on the classifier's 'not an RPO' side. The PSRO adversary is explicitly optimizing for this exploit. At Nash equilibrium, the Defender's mixed strategy across multiple classifier variants cannot be exploited by any single adversary strategy — each time the adversary adapts, the Defender already has a counter-classifier in the portfolio."
+
+[[questions]]
+id = "c7e9b1d3-4f6a-4c7e-d483-7b9d1f3e5a7b"
+type = "MultipleChoice"
+prompt.prompt = "What is the conjunction-masking orbital signature that distinguishes it from both standard station-keeping and overt RPO approaches?"
+prompt.distractors = [
+  "Conjunction-masking approaches use an out-of-plane burn to change inclination, creating a cross-track closing geometry that ground-based radars cannot observe from a single pass",
+  "Conjunction-masking approaches time their burns during solar maximum when atmospheric drag noise is highest, making the maneuver signature indistinguishable from drag perturbations",
+  "Conjunction-masking approaches park at exactly the same altitude as the target, creating identical Keplerian periods that prevent TLE-based relative motion detection",
+]
+answer.answer = "Conjunction-masking maneuvers place the approaching satellite's new orbit in a geometry that is also consistent with a natural close approach to a nearby debris object or defunct satellite — making it ambiguous whether the reduced separation from the target asset is deliberate or incidental. The approach is along-track (minimizing radial HCW anomaly, which is the primary RPO detection signal), and the orbital geometry is carefully chosen so that the conjunction analysis software produces a plausible natural conjunction warning for the cover object."
+context = "This is the central strategic design of the Module 8 game. The Adversary wins by achieving approach while making the Defender uncertain whether to respond — if the Defender cannot distinguish 'RPO toward defended asset' from 'natural conjunction involving debris,' the Defender cannot justify an operational or diplomatic response without risking appearing to overreact to a routine event. The Nash equilibrium strategy from ssa_cfr characterizes the exact orbital geometry distribution that optimally exploits this ambiguity — which is why those equilibrium trajectories are the most valuable training examples for the intent classifier."
+
+[[questions]]
+id = "e1f3a5c7-8b0d-4e1f-f594-9d1f3b5e7a9c"
+type = "MultipleChoice"
+prompt.prompt = "What is the boundary between what ML-based intent inference can deliver and what requires cross-domain intelligence fusion, and why is maintaining this boundary important for an honest SDA product?"
+prompt.distractors = [
+  "ML intent inference can determine intent but not attribution; attribution requires radar data that provides object identity with higher certainty than TLE catalog numbers",
+  "ML intent inference and attribution are the same problem — if you know the intent is adversarial RPO, you have attributed the action to an adversarial actor",
+  "ML intent inference cannot be delivered reliably enough for operational use; cross-domain fusion is required for both intent and attribution in all cases",
+]
+answer.answer = "ML-based intent inference on TLE data can establish that a maneuver is consistent with RPO toward a specific asset (probability 77%, say) and characterize the approach geometry — this is detection + characterization. Attribution — asserting that a specific state actor authorized and executed an adversarial action — requires additional intelligence (satellite registry, launch records, signals intelligence, prior behavior patterns) that is outside the scope of public TLE data. Conflating the two makes the product appear to offer more certainty than it can deliver, which undermines credibility with DoD customers who need to act on attributions."
+context = "This is the honest framing that Module SP establishes for the deterrence-by-detection thesis: ML enables attribution (in the sense of 'something adversarial may have occurred') but not attribution (in the sense of 'this specific actor is responsible and we can respond accordingly'). A DoD analyst using the product needs to understand exactly which uncertainty has been resolved and which has not. An alert that says 'intent assessment: 77% RPO toward AEHF-6, basis: TLE data and orbital geometry' is actionable. An alert that says 'Russian satellite executing adversarial approach to AEHF-6' overstates the inference and damages trust if the assessment turns out to be wrong."

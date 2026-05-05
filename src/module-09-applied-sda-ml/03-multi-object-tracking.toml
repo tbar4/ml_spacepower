@@ -1,0 +1,35 @@
+[[questions]]
+id = "b2d4f6a8-3c5e-4b2d-e526-4d6e8a0b2d4e"
+type = "MultipleChoice"
+prompt.prompt = "What does the Mahalanobis distance of the innovation vector measure in the context of orbital state tracking, and why is it preferred over a raw Euclidean distance between predicted and observed TLE?"
+prompt.distractors = [
+  "Mahalanobis distance measures the number of standard deviations of error accumulated across the entire TLE history, providing a cumulative rather than per-observation anomaly score",
+  "Mahalanobis distance normalizes by the orbital period so that anomaly scores are comparable between LEO and GEO objects with very different absolute orbital element values",
+  "Mahalanobis distance is preferred because it can handle missing TLE observations by substituting zero for missing dimensions, which Euclidean distance cannot do",
+]
+answer.answer = "Mahalanobis distance normalizes the innovation by the prediction covariance S — dividing each element's deviation by its expected variance and accounting for correlations between orbital elements. This makes the score dimensionless and physically meaningful: under the no-maneuver null hypothesis, the Mahalanobis distance follows a chi-squared distribution with 6 degrees of freedom, and the 99.9th percentile threshold (~22.5) applies regardless of which object or orbital regime is being tracked."
+context = "The raw innovation in mean motion might be 0.0003 rev/min — meaningless without knowing whether that is large or small for this object at this epoch. Dividing by the prediction variance converts it to a dimensionless score: 0.0003 / σ_n is 1.5 standard deviations if σ_n is typical, or 12 standard deviations if σ_n is very small. The chi-squared threshold gives a universal, statistically grounded anomaly decision boundary that is independent of the absolute scale of any orbital element."
+
+[[questions]]
+id = "d6e8a0c2-5f7b-4d6e-f637-5e7f9b1c3d5f"
+type = "MultipleChoice"
+prompt.prompt = "Why is a global chi-squared threshold of 22.5 insufficient for production deployment, and what does the personalized baseline approach provide instead?"
+prompt.distractors = [
+  "The chi-squared threshold assumes the orbital state follows a 6-dimensional Gaussian distribution, which is invalid for highly elliptical orbits where element distributions are non-Gaussian",
+  "22.5 is only valid for 6-dimensional state vectors; objects tracked with fewer than 6 elements require a different chi-squared percentile",
+  "The chi-squared threshold is too sensitive for DoD customers who require a more conservative false alarm rate; a threshold of 50.0 is the operational standard",
+]
+answer.answer = "TLE fit quality varies by 2-3 orders of magnitude across the catalog: well-tracked GEO satellites have TLE errors of tens of meters, while tumbling debris at high solar activity has errors of several kilometers. A threshold calibrated for well-tracked objects produces intolerable false alarm rates for noisy debris; a threshold calibrated for noisy objects produces high miss rates for clean objects. Personalized thresholding maintains a 90-day rolling distribution of each object's own innovation scores and sets the threshold at the 99.9th percentile of its own history."
+context = "This is a classic calibration problem: the chi-squared distribution describes what anomaly scores look like under a correctly-specified model, but the model is never perfectly specified in practice. Each object's tracking filter accumulates a history of its actual innovation magnitudes during confirmed-quiet periods. That empirical distribution is the correct reference for anomaly detection, not the theoretical chi-squared. The personalized baseline self-calibrates to each object's noise level without requiring any per-object model tuning."
+
+[[questions]]
+id = "f0a2c4e6-7b9d-4f0a-a748-6a8c0e2f4a6c"
+type = "MultipleChoice"
+prompt.prompt = "What does a sustained anomaly score (CUSUM approach) detect that a single-epoch Mahalanobis threshold misses, and why does this matter for adversarial proximity operations?"
+prompt.distractors = [
+  "CUSUM detects maneuvers that occur at a fixed daily cadence, which is characteristic of orbital station-keeping but not of adversarial approaches",
+  "CUSUM accumulates evidence across multiple sensor types (TLE, radar, optical), while Mahalanobis operates on TLE data only",
+  "CUSUM is sensitive to maneuvers that occur below 400 km altitude where atmospheric drag makes single-TLE anomaly scores unreliable",
+]
+answer.answer = "CUSUM detects a sustained pattern of slightly-elevated innovation scores that individually never cross the single-epoch threshold — the signature of a slow, low-delta-V approach campaign. An adversary who wants to avoid triggering per-epoch anomaly detection can execute a series of small burns, each within the noise floor, whose cumulative effect achieves a significant orbit change. The CUSUM sliding-window accumulator detects this by summing normalized scores over 7 days: individually sub-threshold burns that accumulate consistently produce a CUSUM score that exceeds its own threshold even when no single observation does."
+context = "This is the adversarial threat model for the conjunction-masking game. The Adversary in Module 8's game knows the Defender's detection threshold and has incentive to execute maneuvers below it. A Defender using only per-epoch thresholds is defeated by any adversary that distributes delta-V across many small burns. CUSUM is the classical control-theory response: it is specifically designed to detect mean shifts that are too small to flag individually but too consistent to be noise. This is one reason why the Module 8 Rust CFR solver's equilibrium strategy profiles are relevant training data — they characterize exactly the distribution of small-burn approaches that a CUSUM-aware adversary would execute."

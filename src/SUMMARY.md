@@ -93,4 +93,7 @@
 
 - [Module 9: Applied SDA ML](module-09-applied-sda-ml/00-overview.md)
   - [Sequence models for maneuver detection](module-09-applied-sda-ml/01-sequence-models-maneuver-detection.md)
+  - [Transformers for orbital sequences](module-09-applied-sda-ml/02-transformers-orbital-sequences.md)
+  - [Multi-object tracking and fleet-level anomaly scoring](module-09-applied-sda-ml/03-multi-object-tracking.md)
+  - [Intent inference and game-theoretic adversary modeling](module-09-applied-sda-ml/04-intent-inference.md)
   - [Project: production maneuver detection pipeline](module-09-applied-sda-ml/project.md)

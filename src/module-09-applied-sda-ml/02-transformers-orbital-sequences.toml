@@ -1,0 +1,35 @@
+[[questions]]
+id = "a1f3e5b7-2c4d-4a1f-c293-5e7f9a1b3c5d"
+type = "MultipleChoice"
+prompt.prompt = "Why does standard positional encoding by integer index fail for raw TLE sequences, and what is the recommended fix?"
+prompt.distractors = [
+  "Integer-indexed encoding assigns higher weight to more recent positions, which biases the attention mechanism toward recent TLEs and away from the historical baseline",
+  "Standard positional encoding requires sequences of exactly the same length, and TLE archives have variable numbers of epochs per object",
+  "Integer-indexed encoding cannot represent orbital period, which is the most important temporal structure in TLE data",
+]
+answer.answer = "Integer-indexed encoding assumes uniform time spacing between positions — but TLE publication cadence is highly irregular (multiple TLEs on some days, none on others). The recommended fix is daily gridding with an observation mask: interpolate or fill to uniform daily resolution, mark missing days as padding, and pass the mask to the attention computation so the model ignores interpolated positions"
+context = "A Δt between consecutive TLEs ranges from under an hour to several days depending on object tracking priority and Space-Track publication patterns. The same orbital element change occurring over 6 hours and 72 hours has completely different physical interpretation — the same reason Lesson 1 required time-normalizing all delta features. Positional encoding does not know these intervals are different. Daily gridding removes this ambiguity by making every position index correspond to exactly one calendar day."
+
+[[questions]]
+id = "c5d7f9a1-4b6c-4c5d-d415-7f9b1d3e5f7a"
+type = "MultipleChoice"
+prompt.prompt = "What does the CLS token output represent in an encoder-only transformer applied to a TLE sequence, and why is this approach preferred over using the mean of all position outputs?"
+prompt.distractors = [
+  "The CLS token output represents the most recent TLE epoch's orbital state, which is the most relevant for current maneuver detection",
+  "The CLS token output is used only during pretraining and is replaced by the mean-pooled representation during fine-tuning",
+  "The CLS token output represents the transformer's confidence in its classification, with higher-magnitude values indicating greater certainty",
+]
+answer.answer = "The CLS token is a learnable position prepended to the sequence that has no fixed meaning initially — through training, it learns to aggregate the global sequence representation useful for classification. The attention mechanism allows it to selectively attend to the specific TLE positions most relevant to the classification task. Mean-pooling all positions weights every TLE epoch equally, including quiet background epochs with no anomaly signal, diluting the maneuver signature."
+context = "This is the same design as BERT's [CLS] token. The CLS position can allocate its attention budget entirely to the anomalous epochs — in practice, attention heads consistently place high weight on the 1-3 epochs immediately following a confirmed maneuver, where mean motion changes abruptly. Mean-pooling would spread this budget equally across all 30 epochs, most of which carry no maneuver signal."
+
+[[questions]]
+id = "e9b1d3f5-6a8c-4e9b-f537-9c1e3a5b7c9e"
+type = "MultipleChoice"
+prompt.prompt = "Why does masked pretraining on unlabeled TLE histories improve fine-tuned maneuver detection performance, rather than just training on synthetic labeled data directly?"
+prompt.distractors = [
+  "Masked pretraining forces the model to learn a larger vocabulary of orbital element values, which helps it generalize to unseen objects",
+  "Pretraining initializes the model's weights close to zero, preventing the exploding gradient problem that occurs when training from random initialization on small labeled datasets",
+  "Pretraining is required because transformers cannot be trained end-to-end with backpropagation on classification tasks — they require a two-phase training procedure by design",
+]
+answer.answer = "Masked pretraining uses millions of unlabeled TLE epochs (the entire public catalog history) to teach the encoder what normal orbital evolution looks like — without any maneuver labels. The fine-tuning task then requires relatively few synthetic examples to identify deviations from that learned normal, because the encoder already has a calibrated representation of quiet orbital dynamics. Training from scratch on synthetic data alone trains the model to recognize synthetic injection artifacts, not real maneuver signatures."
+context = "The key insight: the bottleneck for maneuver detection is not data volume — there are millions of TLE epochs in Space-Track — but label quality. Pretraining shifts the learning problem: instead of learning 'what is a maneuver?' from a few hundred real examples, the model first learns 'what is normal orbital evolution?' from millions of unlabeled examples, then learns 'what deviates from normal?' from synthetic labels. The former task is easy with TLE data; the latter task becomes much easier once the former is solved."
