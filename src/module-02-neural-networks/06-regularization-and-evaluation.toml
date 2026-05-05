@@ -1,0 +1,35 @@
+[[questions]]
+id = "a5b7c9d1-2e3f-4a5b-d283-5f7a9c1b3d5f"
+type = "MultipleChoice"
+prompt.prompt = "A maneuver detection model achieves 99.2% accuracy on the test set, but the development team considers this a failure. Why, and what metric should they report instead?"
+prompt.distractors = [
+  "99.2% accuracy is a failure because it implies the model has memorized the training set; a model that generalizes well should have lower accuracy on unseen data",
+  "99.2% accuracy is a failure because the test set should never be used for performance evaluation — only the validation set performance should be reported",
+  "99.2% accuracy is a failure because accuracy requires balanced classes, and a multi-class problem (station-keeping vs. CAM vs. RPO) should use macro-averaged F1 instead",
+]
+answer.answer = "The TLE catalog has roughly 1% maneuver windows at best — a model predicting 'no maneuver' for every input achieves ~99% accuracy while having zero recall. Accuracy is meaningless for severely imbalanced classes. Report precision (of flagged maneuvers, what fraction were real), recall (of actual maneuvers, what fraction were detected), F1 (harmonic mean), and AUC-ROC (discrimination ability independent of threshold). For deployment, characterize the precision-recall tradeoff curve and report at operationally relevant thresholds."
+context = "This is the most common mistake in applied ML on rare event detection. The confusion matrix for a trivially-always-negative classifier on 1% positive data: TN=9900, FP=0, FN=100, TP=0 — 99% accuracy, 0% recall, undefined precision. The same confusion matrix for a useful detector at 80% recall / 90% precision: TP=80, FP=9, FN=20, TN=9891 — still 99.1% accuracy, but now operationally useful. Accuracy cannot distinguish these."
+
+[[questions]]
+id = "c9d1f3a5-4b6c-4c9d-e394-7b9d1f3a5c7e"
+type = "MultipleChoice"
+prompt.prompt = "Why must model.eval() be called before running inference in PyTorch, and what specifically goes wrong if it is omitted?"
+prompt.distractors = [
+  "model.eval() flushes the GPU memory cache so that inference uses fresh memory rather than cached training tensors, preventing memory corruption",
+  "model.eval() compiles the model to an optimized inference graph; without it, PyTorch uses the slower training graph and inference is 10-100x slower",
+  "model.eval() is only required when using model.save() — omitting it during inference is a style issue but does not affect correctness",
+]
+answer.answer = "Two components change behavior between training and inference mode: (1) nn.Dropout randomly zeros activations during training but is disabled in eval mode — omitting model.eval() makes inference non-deterministic, with different predictions on identical inputs on different forward passes. (2) nn.BatchNorm1d uses batch statistics during training but running statistics during eval — omitting model.eval() makes predictions depend on the batch composition rather than learned normalization, introducing noise proportional to batch size variation."
+context = "The non-determinism from active dropout is especially dangerous: you can validate a model in eval mode (correctly), deploy it without eval mode (incorrectly), and never notice because the average prediction over many calls is approximately correct — but individual predictions for an analyst alert system are unpredictably noisy. The fix is exactly one line before inference: model.eval(). Pair it with torch.no_grad() to also disable gradient computation during inference: with torch.no_grad(): preds = model(x)."
+
+[[questions]]
+id = "e1f3a5b7-6c8d-4e1f-f516-9d1f3b5e7c9f"
+type = "MultipleChoice"
+prompt.prompt = "What is the specific risk of using the test set to select hyperparameters or choose between model architectures, even if the selection is done only once?"
+prompt.distractors = [
+  "Using the test set for selection is only a risk if the test set is small; with a large test set (>10,000 examples) it is statistically valid to use it for model selection",
+  "Using the test set for selection is a computational risk — it increases the total number of forward passes and can cause GPU memory overflow for large models",
+  "Using the test set once for selection is acceptable as long as the final reported accuracy is measured on a fresh re-split of the same data",
+]
+answer.answer = "Any decision made based on test set performance converts it into a validation set — the model was implicitly selected to perform well on those specific examples. The reported test performance then overestimates real generalization performance because the selection process found the architecture/hyperparameters that happened to do best on those specific test examples, not the ones that will do best on truly unseen data. This is true even if the test set is used only once and the selection was done in good faith."
+context = "The information leakage is subtle: you observe that Model A achieves 0.84 AUC and Model B achieves 0.81 AUC on the test set, and select Model A. But the 0.03 gap may be noise — if you ran the experiment on a different test split, Model B might win. By choosing based on test performance, you're effectively doing hyperparameter search on the test set, and the result will look better than it is. The solution is a fixed train/val/test split where the test set is sealed until the very end, or nested cross-validation for small datasets."

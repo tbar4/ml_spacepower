@@ -1,0 +1,35 @@
+[[questions]]
+id = "b4d6f8c0-1a2b-4b4d-c182-4f6a8c0e2d4f"
+type = "MultipleChoice"
+prompt.prompt = "Why do vanilla RNNs fail to learn dependencies between events separated by 30+ time steps, and what specific mechanism does the LSTM cell state introduce to address this?"
+prompt.distractors = [
+  "Vanilla RNNs fail because they use tanh activation, which saturates for large inputs and produces zero gradients; the LSTM replaces tanh with ReLU, which does not saturate",
+  "Vanilla RNNs fail because they use the same weight matrix at every step, which causes the hidden state to converge to the same value regardless of input history",
+  "Vanilla RNNs fail because backpropagation through time requires O(T^2) memory, which is infeasible for sequences longer than 10 steps",
+]
+answer.answer = "Backpropagation through T time steps multiplies Jacobian matrices ∂h_t/∂h_{t-1} across T steps; if those Jacobians have eigenvalues less than 1 (typical for tanh outputs), the product shrinks exponentially with T — the gradient reaching early steps is numerically zero, so the network cannot learn from events far in the past. The LSTM cell state pathway involves only element-wise multiplication and addition (no Jacobian multiplication), so gradients propagate back through the cell state highway with much less decay."
+context = "This is why LSTM hidden states are 'short-term memory' and the cell state is 'long-term memory.' The forget gate controls how much of the cell state persists across steps — near 1 means retain, near 0 means reset. A maneuver's orbital signature can be encoded in the cell state at the maneuver epoch and persist through many subsequent quiet TLE epochs to the classifier at the end of the sequence, even though the hidden state has 'moved on' during the quiet period."
+
+[[questions]]
+id = "d8e0f2a4-3c5b-4d8e-e294-6a8c0e2f4a6c"
+type = "MultipleChoice"
+prompt.prompt = "In PyTorch's nn.LSTM with batch_first=True, what is the correct tensor to use as input to the classification head for sequence classification, and what is a common mistake?"
+prompt.distractors = [
+  "Use lstm_out[:, -1, :] (last time step from lstm_out); the common mistake is using h_n, which contains unordered layer states rather than the time-ordered output",
+  "Use lstm_out.mean(dim=1) (mean-pooled hidden states across all time steps); the common mistake is using h_n[-1] which only represents the final step and ignores the rest of the sequence history",
+  "Use c_n[-1] (final cell state of the last LSTM layer); the common mistake is using h_n, since the cell state contains the long-term memory needed for classification",
+]
+answer.answer = "Use h_n[-1] — the final hidden state of the last LSTM layer. For a single-layer LSTM, h_n[-1] equals lstm_out[:, -1, :], so both work; but for multi-layer LSTMs they differ: lstm_out[:, -1, :] is only the last layer's last step, while h_n contains all layers' final states. The common mistake is forgetting to call model.eval() before inference — nn.LSTM's dropout parameter applies dropout between layers during training but must be disabled for deterministic inference."
+context = "The h_n shape is (num_layers, batch, hidden_size). h_n[-1] selects the last layer's final hidden state, which is the representation that has been processed through all LSTM layers and all time steps. For sequence classification, this is the correct summary of the entire input sequence. The model.eval() issue is especially pernicious: with dropout enabled during inference, the same input produces different outputs on different forward passes, making predictions non-deterministic."
+
+[[questions]]
+id = "f2a4c6e8-5d7f-4f2a-f416-8c0e2a4f6c8e"
+type = "MultipleChoice"
+prompt.prompt = "For maneuver detection from TLE sequences, when is a GRU preferable to an LSTM, and what property of GRUs makes them appropriate in that setting?"
+prompt.distractors = [
+  "GRU is preferable when the sequence contains out-of-plane maneuvers (inclination/RAAN changes), because the GRU's update gate better captures gradual orbital element changes than LSTM's cell state",
+  "GRU is always preferable because it has fewer parameters and never overfits, while LSTM's extra cell state makes it prone to memorizing training sequences",
+  "GRU is preferable for sequences longer than 60 epochs, because GRU's gradient flow scales better than LSTM's gating mechanism for very long sequences",
+]
+answer.answer = "GRU is preferable when training speed is the binding constraint. GRU has 3 gate weight matrices (update, reset, candidate) vs. LSTM's 4 (forget, input, output, cell candidate), resulting in roughly 25% fewer parameters for the same hidden dimension. For 30-60 epoch orbital sequences with 6-dimensional inputs, LSTM and GRU achieve comparable accuracy; the difference is training and inference time. The practical guidance is: start with LSTM for canonical reproducibility; switch to GRU if training speed matters and accuracy is comparable on validation."
+context = "Neither LSTM nor GRU is categorically better for orbital sequences — the empirical literature on time series shows similar performance across tasks at this sequence length. The architectural differences (separate cell state vs. merged hidden state) matter most for very long sequences where the cell state highway's gradient advantages become significant. At 30-60 epochs the distinction is largely academic. The more important choice for maneuver detection performance is feature engineering (time-normalizing features, removing J2 drift, handling irregular cadence) rather than LSTM vs. GRU selection."

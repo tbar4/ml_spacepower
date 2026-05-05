@@ -18,12 +18,18 @@ So this module is deliberately compressed. Four lessons, then a project. Classif
 
 **The training loop (lesson 4)**: The complete gradient descent cycle in PyTorch: load a batch, forward pass, compute loss, backward pass, optimizer step. Overfitting, validation, and why you need both. This lesson is largely mechanical; the concepts from Module 1 lessons 3 and 7 do the heavy lifting.
 
+**Recurrent networks: LSTM and GRU (lesson 5)**: The extension from fixed-input MLPs to sequential data. Vanilla RNNs fail on long sequences because of vanishing gradients; LSTMs solve this by separating long-term memory (cell state) from short-term memory (hidden state) via learned forget, input, and output gates. GRU is a simpler alternative. This lesson is the direct prerequisite for Module 9's maneuver detection pipeline, which processes 30-day TLE histories as LSTM inputs.
+
+**Regularization and model evaluation (lesson 6)**: The tools that prevent overfitting and the evaluation practices that detect it. Covers train/val/test splits, dropout, L2 weight decay, batch normalization, early stopping with checkpoint restoration, and the evaluation metrics appropriate for imbalanced classification. In Module 9's label-scarce setting — a few hundred real maneuver labels supplemented by synthetic injection — these practices are not optional extras; they are what separates a deployable model from one that memorized its training set.
+
 ## Lessons
 
 1. [Activation functions: giving networks their power](01-activation-functions.md)
 2. [Building an MLP in PyTorch](02-building-an-mlp.md)
 3. [Loss functions and what we are optimizing](03-loss-functions.md)
 4. [The training loop](04-the-training-loop.md)
+5. [Recurrent networks: LSTM and GRU](05-recurrent-networks.md)
+6. [Regularization and model evaluation](06-regularization-and-evaluation.md)
 
 ## Module project: approximating a conjunction-risk value function
 
@@ -33,4 +39,4 @@ This is exactly the pattern used in deep RL and deep CFR: generate data by simul
 
 ## What this module is not
 
-We are not building an image classifier or training GPT. We are not covering convolutional layers, attention mechanisms, batch normalization, dropout (more than briefly), or learning rate schedules. These are important topics for a broader ML education; they are not on the path to OpenSpiel and SSA simulations. If you want to go deeper into deep learning fundamentals after finishing this curriculum, the fast.ai course and Andrej Karpathy's "Neural Networks: Zero to Hero" series are excellent.
+We are not building an image classifier or training GPT. We are not covering convolutional layers, attention mechanisms (attention is introduced in Module 9 as a contrast to LSTMs), or advanced training techniques like gradient checkpointing and mixed-precision training. These are important topics for a broader ML education; they are not on the path to OpenSpiel and SSA simulations. If you want to go deeper into deep learning fundamentals after finishing this curriculum, the fast.ai course and Andrej Karpathy's "Neural Networks: Zero to Hero" series are excellent.

@@ -37,6 +37,8 @@
   - [Building an MLP in PyTorch](module-02-neural-networks/02-building-an-mlp.md)
   - [Loss functions and what we are optimizing](module-02-neural-networks/03-loss-functions.md)
   - [The training loop](module-02-neural-networks/04-the-training-loop.md)
+  - [Recurrent networks: LSTM and GRU](module-02-neural-networks/05-recurrent-networks.md)
+  - [Regularization and model evaluation](module-02-neural-networks/06-regularization-and-evaluation.md)
   - [Project: approximating a conjunction-risk value function](module-02-neural-networks/project.md)
 
 - [Module 3: Reinforcement Learning Fundamentals](module-03-reinforcement-learning/00-overview.md)
@@ -46,8 +48,9 @@
   - [Deep Q-Networks](module-03-reinforcement-learning/04-deep-q-networks.md)
   - [Policy gradient methods](module-03-reinforcement-learning/05-policy-gradient-methods.md)
   - [Actor-critic](module-03-reinforcement-learning/06-actor-critic.md)
-  - [Hierarchical reinforcement learning](module-03-reinforcement-learning/07-hierarchical-rl.md)
-  - [IMPALA and distributed RL](module-03-reinforcement-learning/08-impala-distributed-rl.md)
+  - [Proximal Policy Optimization](module-03-reinforcement-learning/07-ppo.md)
+  - [Hierarchical reinforcement learning](module-03-reinforcement-learning/08-hierarchical-rl.md)
+  - [IMPALA and distributed RL](module-03-reinforcement-learning/09-impala-distributed-rl.md)
   - [Project: a DQN sensor allocation agent](module-03-reinforcement-learning/project.md)
 
 - [Module 4: Search and Planning](module-04-search-and-planning/00-overview.md)

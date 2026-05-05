@@ -1,4 +1,4 @@
-# Lesson 7: Hierarchical Reinforcement Learning
+# Lesson 8: Hierarchical Reinforcement Learning
 
 **Module:** Reinforcement Learning — M03: Sequential Decision-Making
 **Source:** [cite: Sutton & Barto "Between MDPs and semi-MDPs: A Framework for Temporal Abstraction in Reinforcement Learning" (options paper); Precup, Sutton & Singh "Between MDPs and Semi-MDPs"; Barto & Mahadevan "Recent Advances in Hierarchical Reinforcement Learning"; Nachum et al. "Data-Efficient Hierarchical Reinforcement Learning (HIRO)" NeurIPS 2018]
@@ -571,4 +571,4 @@ For the SSA wargame — with hundreds of turns, multi-level command decisions, a
 - **The three-layer SSA decomposition** — strategic (N-turn), operational (few-turn), tactical (every turn) — reduces the effective action space at each level, provides meaningful gradient signal at each timescale, and enables curriculum training where lower levels stabilize before upper levels are introduced. This architecture mirrors military command doctrine and is validated by recent Air University research on AI for wargame agents.
 - **HRL adds complexity that must be justified**: the sub-goal assignment problem, low-level reward hacking, and residual multi-timescale credit assignment are failure modes that do not exist in flat RL. In environments with short episodes, dense rewards, and compact action spaces, a flat actor-critic outperforms HRL with far less implementation overhead. Reserve HRL for tasks where the decision hierarchy is genuinely multi-scale.
 
-{{#quiz 07-hierarchical-rl.toml}}
+{{#quiz 08-hierarchical-rl.toml}}

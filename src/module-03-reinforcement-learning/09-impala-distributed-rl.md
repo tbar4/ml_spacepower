@@ -1,4 +1,4 @@
-# Lesson 8: IMPALA and Distributed Reinforcement Learning
+# Lesson 9: IMPALA and Distributed Reinforcement Learning
 
 **Module:** Reinforcement Learning — M03: Sequential Decision-Making
 **Source:** [cite: Espeholt et al. "IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures" ICML 2018; Schulman et al. "Proximal Policy Optimization Algorithms" 2017; Liang et al. "RLlib: Abstractions for Distributed Reinforcement Learning" ICML 2018]
@@ -570,4 +570,4 @@ For the full SSA wargame, replace `SimpleSatelliteEnv` with the wargame environm
 - **Throughput scales with environment speed**: with 512 Python environments at 20ms per step, APPO achieves ~25,600 steps/second; with Rust game logic at 2ms per step, it reaches ~256,000 steps/second. A 50M-step training run shrinks from 32 minutes to 3 minutes — this is the direct motivation for Module 8's Rust game implementation.
 - **Multi-GPU scaling is actor-limited**: adding GPUs helps only if the actor throughput can keep the queue full. For Python environments and 512 envs, start with 1 GPU and 32 workers; for Rust environments, 2–4 GPUs and 64–96 workers are appropriate for the SSA wargame research setup.
 
-{{#quiz 08-impala-distributed-rl.toml}}
+{{#quiz 09-impala-distributed-rl.toml}}
