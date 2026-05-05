@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Every state in a reinforcement learning system, every observation your agent receives, every action embedding, every intermediate representation inside a neural network, is a vector. The dot product is the single most common operation performed on those vectors: it is how a neural network layer evaluates whether its input "matches" a learned pattern. If you can look at a vector and say what it represents, and look at a dot product and say what it is measuring, you have the geometric intuition for 90% of what deep learning does internally.

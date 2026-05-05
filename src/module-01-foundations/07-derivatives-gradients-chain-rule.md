@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 This is the final foundational lesson before we start building neural networks. Every learning algorithm in the rest of this curriculum trains by gradient descent: compute a loss function, figure out which direction to adjust the parameters to reduce that loss, take a small step in that direction. The gradient is the mathematical object that tells you which direction that is. The chain rule is what makes computing the gradient tractable when the loss function involves a long composition of operations (which it always does in a neural network). Backpropagation is the chain rule applied systematically to a computational graph. If you understand this lesson, the training of neural networks is bookkeeping, not magic.

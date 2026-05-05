@@ -1,5 +1,8 @@
 # Module 5 Project: A CFR Solver for an SSA Negotiation Game
 
+
+<!-- toc -->
+
 ## What you are building
 
 You will implement vanilla CFR for a small extensive-form imperfect-information game and use it to compute Nash equilibrium strategies for a satellite conjunction negotiation scenario. Optionally, you will also implement MCCFR and compare convergence rates. This is the Rust-most-relevant project in the curriculum: the data structures (information set table, regret vector) are simple and translate cleanly to Rust, and CFR is what your capstone (Module 8) will revolve around.

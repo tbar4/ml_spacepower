@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1 and 2 built single-object detectors: given one satellite's 30-day TLE window, output a maneuver probability. This is the right unit of analysis for building the model. It is the wrong unit of analysis for an operator who needs to watch a catalog.

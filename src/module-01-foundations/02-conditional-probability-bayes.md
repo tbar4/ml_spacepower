@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 In partially observable settings, which describes almost every real SSA scenario and every game with hidden information, an agent maintains a **belief**: a probability distribution over what it cannot directly observe. Every time a new observation arrives, that belief gets updated. The mechanism for that update is Bayes' rule. When you later read about belief states in POMDPs, reach probabilities in CFR, or opponent modeling in multi-agent RL, you are reading about Bayes' rule with domain-specific packaging. This lesson is the unpackaged version.

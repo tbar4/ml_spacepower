@@ -1,5 +1,8 @@
 # Lesson 3: Policy-Space Response Oracles (PSRO)
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Fictitious play tracks a frequency count over a small finite set of actions. When the game is "choose channel A or channel B," tracking counts is easy. When the game is "command a constellation of 12 satellites across 6 orbital planes for a 72-hour coverage window," the action space is not a handful of discrete choices — it is a continuous high-dimensional space of satellite tasking sequences. Fictitious play cannot represent this.

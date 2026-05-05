@@ -1,5 +1,8 @@
 # Module 2: Neural Networks as Function Approximators
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Module 1 gave you three tools: probability (to reason about uncertainty), linear algebra (to represent states and compute scores), and calculus (to find the direction that improves a score). This module assembles those tools into a working machine learning system.

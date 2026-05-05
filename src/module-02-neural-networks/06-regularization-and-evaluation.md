@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 4 built the training loop: forward pass, compute loss, backward pass, optimizer step, repeat. That loop works — but for the applications in this curriculum, following it naively produces models that appear to work during training but fail in deployment.

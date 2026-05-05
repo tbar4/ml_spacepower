@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1–4 built the complete feedforward neural network toolkit: activation functions, MLP construction, loss functions, and the training loop. Every network in those lessons took a fixed-size input vector and produced an output — the same computation every time, with no memory of past inputs.

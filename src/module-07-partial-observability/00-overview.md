@@ -1,5 +1,8 @@
 # Module 7: Partial Observability
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Every module so far has assumed the agent can see the full state of the environment. That assumption is false in almost every real SSA scenario. A ground telescope sees a two-dimensional angular position at a single moment in time, not a six-dimensional orbital state vector. An operator knows the locations and behaviors of their own satellites but not the adversary's. A conjunction risk assessment is based on an uncertain covariance estimate propagated forward from an old observation. The game is almost always played with incomplete information.

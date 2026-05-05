@@ -1,5 +1,8 @@
 # Lesson 4: Alpha-Rank
 
+
+<!-- toc -->
+
 ## Where this fits
 
 PSRO produces a population of policies and a Nash equilibrium mixture over them. But Nash equilibrium has practical limitations: it is not unique in general-sum games, it does not tell you which of multiple equilibria will actually emerge, and computing it in large populations is NP-hard. When a research team at DeepMind needed to evaluate and rank dozens of distinct agents trained by different algorithms — agents playing StarCraft II, Quake III, and other large games — Nash equilibrium was not a useful tool.

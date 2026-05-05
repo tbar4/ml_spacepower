@@ -1,5 +1,8 @@
 # Lesson 2: Monte Carlo Tree Search
 
+
+<!-- toc -->
+
 ## Where this fits
 
 MCTS is the most important search algorithm in modern game AI. It powered AlphaGo (which beat Lee Sedol in 2016), AlphaZero (which mastered chess, shogi, and Go from self-play in 2017), and a long line of game-playing systems before and since. It is also used as the planning subroutine inside many RL systems and as the sampling method inside MCCFR (Module 5). Understanding MCTS gives you a versatile algorithm for any problem you can simulate forward.

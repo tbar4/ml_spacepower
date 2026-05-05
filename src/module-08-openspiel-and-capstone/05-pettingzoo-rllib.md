@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1 and 2 of this module built and registered a custom OpenSpiel game (the conjunction-masking scenario). Lesson 3 added the Rust solver. Lesson 4 designed the SSA game for CFR. Those lessons focused on game logic and tabular equilibrium computation. This lesson asks a different question: once you have a working game, how do you train large-scale neural policies against it using a cluster of CPUs and a GPU?

@@ -2,6 +2,9 @@
 
 This document maps the full arc from foundations to a working SSA simulation. Each module builds on the previous ones. The final module project is the payoff: a Rust implementation of a small game-theoretic SSA scenario using everything learned.
 
+
+<!-- toc -->
+
 ## The arc in one sentence per module
 
 0. **Orbital mechanics and SDA domain**: TLEs, SGP4, reference frames, CDMs, conjunction probability, and the commercial SDA data ecosystem — the domain foundation every later ML model is built on top of.

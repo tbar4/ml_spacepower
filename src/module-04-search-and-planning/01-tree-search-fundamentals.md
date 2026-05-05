@@ -1,5 +1,8 @@
 # Lesson 1: Tree Search Fundamentals
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Before MCTS, classical game AI used minimax search with alpha-beta pruning. These techniques are foundational vocabulary even if they are not what we end up using. The concept of a game tree, the alternation between maximizing and minimizing players, and the idea of pruning provably-irrelevant branches all carry over to MCTS and AlphaZero. This lesson is the shortest in the module because we are not going to use minimax in any project; we just need to understand it well enough that the MCTS lesson does not feel like it appeared from nowhere.

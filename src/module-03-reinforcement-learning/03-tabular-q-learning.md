@@ -1,5 +1,8 @@
 # Lesson 3: Tabular Q-Learning
 
+
+<!-- toc -->
+
 ## Where this fits
 
 This is the first lesson where we actually build a learning agent. Q-learning is the simplest reinforcement learning algorithm that solves the central RL problem: finding a good policy without being told the dynamics of the environment in advance. The agent learns purely from experience, by trial and error. The "tabular" version (this lesson) stores Q values in a literal table, one entry per state-action pair. The next lesson replaces the table with a neural network, and you get DQN. Everything else in deep RL builds on the ideas you will see here.

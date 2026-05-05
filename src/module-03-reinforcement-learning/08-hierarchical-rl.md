@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Actor-critic (lesson 6) gave us a two-headed architecture — policy and value — that updates every primitive timestep. That works for tasks with compact action spaces and dense rewards. In the SSA wargame we are building toward, a single flat policy must simultaneously choose which orbital plane to contest, how to allocate sensors, and which satellite to maneuver on the current turn. That joint action space is enormous, and the reward signal for a strategic decision (contest GEO sector 3) may not materialize for dozens of turns. Gradients wash out before they can propagate backward to the strategic choice.

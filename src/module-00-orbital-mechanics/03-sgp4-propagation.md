@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1 and 2 taught you what a TLE contains and what reference frame SGP4 uses. This lesson covers the propagator itself — what SGP4 actually computes, what physics it includes, and critically, what it gets wrong and why. Understanding SGP4's accuracy model is prerequisite to building any ML system that uses TLE-derived features: every ground truth label you compute, every feature residual you engineer, and every uncertainty estimate you use derives from propagation. If you do not know when SGP4 is reliable and when it is not, you cannot reason about your training data quality.

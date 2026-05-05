@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 07 covered unconstrained gradient descent: minimize \\(f(x)\\) by following the negative gradient. But real-world optimization is almost always constrained. Maneuver a satellite to a new orbit with a fixed delta-v budget. Train a policy subject to a KL divergence bound. Find the minimum-fuel trajectory subject to orbital dynamics. Constrained optimization is the tool for all of these.

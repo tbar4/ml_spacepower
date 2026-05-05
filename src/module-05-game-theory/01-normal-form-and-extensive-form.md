@@ -2,6 +2,9 @@
 
 **Module/Source:** *An Introduction to Game Theory* (Osborne, 2004), Chapters 1–3 (normal-form games, Nash equilibrium, mixed strategies) and Chapter 7 (extensive-form games). The minimax theorem is from von Neumann (1928); the computational treatment follows *Algorithmic Game Theory* (Nisan et al., Chapter 1). CFR connections developed in Zinkevich et al. (2007) "Regret Minimization in Games with Incomplete Information" and Lanctot et al. (2009) "Monte Carlo Sampling for Regret Minimization in Extensive Games."
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Game theory is the framework for reasoning about decisions when multiple agents are involved and what is best for one depends on what the others do. This lesson introduces the two main ways of representing such games and the central solution concept: Nash equilibrium. Without these foundations, CFR (lesson 3) would not make sense; with them, it is just a clever algorithm for computing something well-defined.

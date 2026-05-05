@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Start with the taxonomy
 
 The Secure World Foundation publishes an annual *Global Counterspace Capabilities* assessment — an open-source analysis of every state's demonstrated ability to attack, degrade, or destroy space systems. It is the closest thing to a public intelligence assessment of the counterspace landscape. The April 2025 edition opens with a quote from the USSF Space Force Delta Doctrine 1 (SFDD-1):

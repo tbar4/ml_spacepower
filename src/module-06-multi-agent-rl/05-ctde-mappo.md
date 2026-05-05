@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 diagnosed the core difficulty of multi-agent RL: non-stationarity. Because every agent is learning simultaneously, no agent faces a fixed environment, and the convergence guarantees of single-agent RL break down. Lesson 3 addressed one half of the problem — adversarial settings — with PSRO, which builds a population of policies and converges toward Nash equilibrium through iterative best-response training. PSRO is the right tool when agents are opponents.

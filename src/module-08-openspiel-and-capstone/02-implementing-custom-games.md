@@ -1,5 +1,8 @@
 # Lesson 2: Implementing a Custom Game
 
+
+<!-- toc -->
+
 ## Where this fits
 
 In Module 3 you implemented a single-agent MDP as an OpenSpiel game, mostly as a thin wrapper around an episodic environment. Now we do it properly for the case that matters for the capstone: a two-player imperfect-information sequential game. The mechanics here are also what you will translate into Rust traits in Module 8 lesson 3 and the capstone. Once you have done this in Python, the Rust version is largely a syntactic restatement.

@@ -1,5 +1,8 @@
 # Lesson 4: AlphaZero Self-Play
 
+
+<!-- toc -->
+
 ## Where this fits
 
 The previous lesson showed how MCTS guided by a network produces a stronger policy than the network alone. AlphaZero turns this into a learning algorithm: train the network to match the search's policy, then use the improved network to guide better searches, then train again. This iteration, **self-play training**, is the central conceptual contribution of AlphaZero. It produces dramatically strong game-playing agents starting from zero domain knowledge. The same pattern is used in Module 6 (PSRO is an analogous "best-response and update" loop) and is the conceptual model for the capstone in Module 8.

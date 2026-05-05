@@ -1,5 +1,8 @@
 # Module 8 Capstone: A Rust CFR Solver for an SSA Conjunction-Masking Game
 
+
+<!-- toc -->
+
 ## What you are building
 
 A self-contained Rust crate, `ssa_cfr`, that implements:

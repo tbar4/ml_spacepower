@@ -1,5 +1,8 @@
 # Module 9: Applied SDA ML
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Modules 0 through 8 built the full stack: orbital mechanics, neural network training, reinforcement learning, search and planning, game theory, multi-agent RL, partial observability, OpenSpiel, and a Rust systems capstone. Every algorithm in those modules was motivated by SDA scenarios but trained on toy environments. This module drops the toy environments. You are now building a commercial product.

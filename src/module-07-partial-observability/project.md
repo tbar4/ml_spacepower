@@ -1,5 +1,8 @@
 # Module 7 Project: Particle-Filter Belief Tracker for RSO Tracking
 
+
+<!-- toc -->
+
 ## What you are building
 
 You will implement a bootstrap particle filter that tracks the orbital state of a resident space object (RSO) from noisy ground-based angular measurements. The filter maintains a set of weighted particles, each representing a hypothesis about the RSO's current position and velocity in Earth-centered inertial (ECI) coordinates. As new telescope observations arrive, particles are reweighted by their measurement likelihood and resampled. Between observations, particles propagate forward under simplified orbital dynamics plus a small stochastic perturbation modeling unmodeled forces.

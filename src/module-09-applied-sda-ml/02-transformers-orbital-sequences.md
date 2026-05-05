@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 built a maneuver detector using an LSTM — the right tool when the sequence is short, the dataset is small, and computational resources are limited. This lesson builds the same detector using a transformer, which replaces the LSTM's sequential processing with self-attention. The result is a model that can process longer orbital histories in parallel, capture dependencies between non-adjacent TLE epochs directly, and produce attention weights that tell you *which past epochs the model attended to* when flagging a maneuver.

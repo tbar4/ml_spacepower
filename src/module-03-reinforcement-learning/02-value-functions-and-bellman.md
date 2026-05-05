@@ -1,5 +1,8 @@
 # Lesson 2: Value Functions and Bellman Equations
 
+
+<!-- toc -->
+
 ## Where this fits
 
 The MDP framework from lesson 1 lets us describe a sequential decision problem. But describing it does not tell us how to solve it. Value functions are the central mathematical object that makes solving possible: they assign a number to each state (or each state-action pair) that captures "how good is it to be here?" The Bellman equations express value functions recursively (a state's value relates to the values of its successor states), and that recursion is the engine that drives Q-learning, DQN, MCTS, AlphaZero, and essentially every other algorithm in this curriculum. This lesson builds the central machinery.

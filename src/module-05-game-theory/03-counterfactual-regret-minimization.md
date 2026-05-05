@@ -2,6 +2,9 @@
 
 **Module/Source:** Zinkevich et al. (2007) "Regret Minimization in Games with Incomplete Information" (NeurIPS 2007) — the original CFR paper. Tammelin et al. (2015) "Solving Large Imperfect Information Games Using CFR+" for the CFR+ / regret matching+ variant. Convergence analysis follows Bowling et al. (2015) and Brown and Sandholm (2019) "Solving Imperfect-Information Games via Discounted Regret Minimization." Background on online learning and regret bounds: Cesa-Bianchi and Lugosi (2006) *Prediction, Learning, and Games*, Chapter 4. The game theory foundations follow Osborne (2004) Chapters 1–3 and 6–7.
 
+
+<!-- toc -->
+
 ## Where this fits
 
 This is the algorithm that the entire module builds toward. CFR is the workhorse of computational game theory: it solves extensive-form games (including imperfect-information ones) and converges to Nash equilibrium. Variants of CFR have produced superhuman poker bots (Cepheus solved limit Texas Hold'em; Libratus and Pluribus solved no-limit Hold'em). The mathematics behind CFR is more involved than what we have seen so far, but the algorithm itself is surprisingly simple once the conceptual pieces are in place.

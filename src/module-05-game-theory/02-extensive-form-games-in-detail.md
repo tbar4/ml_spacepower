@@ -2,6 +2,9 @@
 
 **Module/Source:** *An Introduction to Game Theory* (Osborne, 2004), Chapters 6–7 (extensive-form games, subgame perfect equilibrium, backward induction). Formal definitions of information sets and reach probabilities follow the notation in Zinkevich et al. (2007) "Regret Minimization in Games with Incomplete Information" and Lanctot et al. (2009) "Monte Carlo Sampling for Regret Minimization in Extensive Games." The OpenSpiel library uses the same vocabulary throughout its API.
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 introduced extensive-form games at a high level. CFR (lesson 3) operates on the detailed structure of these games: information sets, reach probabilities, and strategies defined as policies over information sets. This lesson develops that structure precisely. The vocabulary here is exactly the vocabulary used in OpenSpiel's API and in CFR research papers.

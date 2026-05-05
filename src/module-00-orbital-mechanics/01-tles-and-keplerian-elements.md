@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Before any ML model can process space domain data, a data engineer has to answer a fundamental question: what exactly is the input data, and where does it come from? In SDA, the answer starts here — with the Two-Line Element set. TLEs are the most widely used format for tracking the 50,000+ objects in Earth orbit. Every public conjunction screening pipeline, every orbital mechanics simulation, every satellite pass prediction tool starts by reading TLEs. This lesson makes you fluent in the format.

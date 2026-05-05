@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 5 and 6 built policy gradient and actor-critic methods that work correctly on a single machine running a single environment. Those algorithms are conceptually complete, but they have a throughput ceiling that matters for this curriculum. The SSA orbital dominance wargame being developed in later modules requires training over millions of interactions across hundreds of parallel game instances. A single synchronous actor-critic loop running one environment at a time would take days or weeks to collect enough data. Research backing this curriculum explicitly recommends IMPALA/APPO as the training backbone, targeting 250,000 frames per second throughput.

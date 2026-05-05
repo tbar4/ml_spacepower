@@ -1,5 +1,8 @@
 # Module 6: Multi-Agent Reinforcement Learning
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Modules 3–5 built a progression: single-agent RL, then planning with search, then game-theoretic equilibrium computation. All of that assumed we could either solve the game directly (CFR) or train a single neural network against fixed opponents. Real SSA scenarios break both assumptions: there are multiple agents learning simultaneously, the strategy space is too large for CFR, and the notion of a "fixed opponent" is exactly what we are trying to move beyond.

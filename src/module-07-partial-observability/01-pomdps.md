@@ -1,5 +1,8 @@
 # Lesson 1: Partially Observable Markov Decision Processes (POMDPs)
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Module 3 built the MDP framework: an agent observes the full state, acts, and receives a reward. That assumption — full observability — is almost never true in practice. A ground telescope can only observe one satellite at a time. Radar cross-sections do not reveal the object's mass or fuel state. An adversarial satellite's maneuver intent is never transmitted openly.

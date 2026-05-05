@@ -1,5 +1,8 @@
 # Lesson 3: Neural-Guided MCTS
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Pure MCTS works but has two weaknesses: random rollouts produce noisy value estimates, and there is no way to inject prior knowledge about which moves are likely to be good. Neural networks fix both problems. A **value network** replaces the rollout: instead of playing random moves to a terminal state, just ask the network "what is the expected outcome from this position?" A **policy network** biases the selection phase: instead of UCT treating all children equally a priori, weight them by the network's prediction of which moves a strong player would consider.

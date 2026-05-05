@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Three quantities, all measuring something about probability distributions. They show up in specific and important places downstream. Policy gradient methods add entropy bonuses to encourage exploration. PPO and TRPO constrain policy updates using KL divergence. Cross-entropy is the training loss for nearly every classification network. If you have ever seen a training log print "cross-entropy loss = 0.43" or a paper say "we constrain the KL between old and new policy," this lesson is where those terms become concrete.

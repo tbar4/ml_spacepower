@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Start with the claim you need to be able to evaluate
 
 > "Who controls low-Earth orbit controls near-Earth space. Who controls near-Earth space dominates Terra. Who dominates Terra determines the destiny of humankind."

@@ -2,6 +2,9 @@
 
 **Module/Source:** Brown et al. (2019) "Deep Counterfactual Regret Minimization" (ICML 2019) — the original Deep CFR paper. Heinrich and Silver (2016) "Deep Reinforcement Learning from Self-Play in Imperfect-Information Games" for Neural Fictitious Self-Play, a related approach. Brown and Sandholm (2019) "Superhuman AI for multiplayer poker" (Science) — Pluribus, which used a deep CFR blueprint strategy. Architecture and training details follow the notation in the Deep CFR paper and the OpenSpiel implementation. Game theory foundations: Zinkevich et al. (2007) and Lanctot et al. (2009). PyTorch implementation patterns follow the official PyTorch documentation.
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Vanilla CFR and MCCFR store regrets in a table indexed by information set. For huge games, the table is too big. Deep CFR replaces the table with a neural network: at each information set, the network predicts the regrets for each action. This is the same idea as DQN (Module 3, lesson 4): replace a tabular representation with a function approximator that can generalize across similar inputs. Deep CFR has produced state-of-the-art results in poker games too large for tabular MCCFR. The pattern (table → network) is a recurring theme: every algorithm in this curriculum has both a tabular and a deep variant.

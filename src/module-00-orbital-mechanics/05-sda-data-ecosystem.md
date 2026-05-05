@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 This is a reference lesson with no quiz. Its purpose is to give you a complete, honest map of every data source you will encounter when building commercial SDA ML products — what each source provides, how to access it, what its limitations are, and where it fits in a production pipeline architecture. You can return to this lesson anytime you encounter a new data source or API.

@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1 and 2 detect that a maneuver occurred. Lesson 3 tracks it fleet-wide. This lesson asks the question that makes the product commercially and strategically valuable: *why did the satellite maneuver?*

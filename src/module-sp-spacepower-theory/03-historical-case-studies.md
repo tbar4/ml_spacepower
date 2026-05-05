@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Why cases matter in theory-building
 
 The strategic frameworks in Lessons 1 and 2 are tools for thinking — useful precisely because they abstract away from particular events. But abstraction can become a liability when you need to explain to a government customer why your wargame design captures a real problem, or when you need to judge whether a strategic claim is supported by actual adversary behavior.

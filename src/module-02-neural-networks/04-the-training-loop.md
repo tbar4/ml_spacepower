@@ -1,5 +1,8 @@
 # Lesson 4: The Training Loop
 
+
+<!-- toc -->
+
 ## Where this fits
 
 You have a network (lesson 2), a loss function (lesson 3), and gradient descent (Module 1, lesson 7). The training loop is how they combine into an actual learning algorithm. This lesson is mostly mechanical, but it is machinery you will run in every subsequent module. Module 3's DQN agent, Module 4's AlphaZero, and Module 5's deep CFR all execute a training loop at their core. The outer loop changes; the inner loop (forward, loss, backward, step) stays the same.

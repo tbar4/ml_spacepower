@@ -1,5 +1,8 @@
 # Module 3: Reinforcement Learning Fundamentals
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Modules 1 and 2 gave you the mathematical and computational tools. This module is where we start using those tools to make decisions over time. Reinforcement learning is the framework for "an agent acts in an environment, receives feedback, and learns to act better." That is the structural skeleton of every algorithm in the rest of this curriculum: MCTS planning (Module 4), CFR equilibrium computation (Module 5), multi-agent self-play (Module 6), and POMDP planning (Module 7) are all variations on this theme.

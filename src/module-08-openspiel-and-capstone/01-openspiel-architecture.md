@@ -1,5 +1,8 @@
 # Lesson 1: OpenSpiel Architecture
 
+
+<!-- toc -->
+
 ## Where this fits
 
 You have used OpenSpiel piecemeal across several modules: defining a single-agent MDP in Module 3, running CFR on a built-in game in Module 5, and so on. Now we step back and look at the framework as a whole. The goal of this lesson is for you to come away with a clear mental model of OpenSpiel's abstractions, so that when you are reading the source or extending it, you know which file to look at and which class to subclass. This also informs how we design the Rust capstone: many of OpenSpiel's design choices are forced by the structure of the problem, so the Rust version will end up looking similar in places.

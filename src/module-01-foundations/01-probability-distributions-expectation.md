@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Every algorithm in this curriculum, from MCTS rollouts to CFR regret minimization to policy gradient training, is answering one core question: given that I am uncertain about the world, what should I expect? That question has a precise mathematical answer, and this lesson is that answer. Once you understand expectation, you understand the conceptual shape of half the algorithms in OpenSpiel. The rest is detail.

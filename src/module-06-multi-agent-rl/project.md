@@ -1,5 +1,8 @@
 # Module 6 Project: PSRO for Satellite Constellation Coverage
 
+
+<!-- toc -->
+
 ## What you are building
 
 You will implement the PSRO outer loop for a two-player satellite constellation coverage game. Each player controls a set of satellites that can observe one orbital slot per turn. Players compete for coverage of a shared region. The project builds the complete PSRO pipeline: simulating policy rollouts to fill a payoff matrix, solving the meta-game Nash with linear programming, training RL best-response oracles, and iterating until the population converges. By the end you will have a working PSRO loop and a policy population that plays a non-trivial coverage strategy.

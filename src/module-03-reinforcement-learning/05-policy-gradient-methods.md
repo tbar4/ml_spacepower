@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Q-learning and DQN are **value-based**: they learn a value function and derive a policy from it (greedy with respect to Q). This works well, but has limitations:

@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 2 and 3 built MCTS for perfect-information games: every node in the tree is a fully specified game state, and selection, expansion, and backpropagation all operate on that concrete state. This works because there is no ambiguity about "what state we are in" — both players see the full board.

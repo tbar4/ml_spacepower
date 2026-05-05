@@ -1,5 +1,8 @@
 # Lesson 2: Fictitious Play
 
+
+<!-- toc -->
+
 ## Where this fits
 
 The previous lesson established that independent Q-learning fails in multi-agent settings because agents treat each other as part of a stationary environment when in fact both are learning simultaneously. Fictitious play is the oldest and simplest algorithm that takes other agents' behavior into account explicitly. Instead of ignoring the other agent, each player tracks the empirical frequency of the opponent's past actions and best-responds to that historical average.

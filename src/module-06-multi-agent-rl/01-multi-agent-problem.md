@@ -1,5 +1,8 @@
 # Lesson 1: The Multi-Agent Problem
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Module 3 trained a single RL agent to make decisions in an MDP. The world was simple: one agent, one environment, one reward signal. The optimal policy existed and gradient descent could find it. Module 5 introduced game theory — the language of strategic interaction among multiple rational agents. This lesson bridges those two modules: what happens when you try to run RL in a world that is itself a game?

@@ -1,0 +1,35 @@
+[[questions]]
+id = "a2b4c6d8-1e3f-4a2b-c182-3e5f7a9b1c3d"
+type = "MultipleChoice"
+prompt.prompt = "Harrison argues that AI provides a 'force exponent' effect in battle networks rather than a 'force multiplier.' What is the operational distinction, and why does it matter for evaluating SDA ML investment?"
+prompt.distractors = [
+  "A force multiplier increases the lethality of individual weapons systems; a force exponent increases the speed of logistics and sustainment, which is what makes SDA ML operationally relevant for long-duration conflicts",
+  "A force multiplier applies to kinetic capabilities; a force exponent applies to non-kinetic capabilities like electronic warfare and cyber, which SDA ML belongs to",
+  "A force multiplier increases capability proportionally to investment; a force exponent requires adversary-parity investment to achieve — meaning SDA ML only provides exponent effects if both sides invest equally",
+]
+answer.answer = "A force multiplier increases the effectiveness of a single component (e.g., a better radar increases that radar's detection range). A force exponent increases the effectiveness of every other component in the network — an AI-enabled data fusion node that integrates ten sensors and delivers structured alerts makes all ten sensors more useful simultaneously. SDA ML investment justification uses the force exponent argument: the maneuver detection and intent inference pipeline doesn't just detect maneuvers, it accelerates the OODA loop for every decision-maker in Space Command who would otherwise be doing manual analysis."
+context = "This is the argument that elevates SDA ML from a research product to a strategic investment. A new radar is a force multiplier — it adds incremental sensing capability. An AI-enabled SDA pipeline connected to Kronos and Space Battle Management is a force exponent — it makes the entire battle network faster and more precise. Harrison's framework is the basis for why DoD program offices are interested in AI-enabled SDA at a level of priority that far exceeds what the underlying technical novelty would suggest."
+
+[[questions]]
+id = "c6d8e0f2-3a5b-4c6d-d294-5f7a9c1b3d5e"
+type = "MultipleChoice"
+prompt.prompt = "The USSF SCP distinguishes Orbital Warfare and Space Battle Management as separate disciplines. Where do the maneuver detection, fleet tracking, and intent inference tools built in this curriculum fit?"
+prompt.distractors = [
+  "They fit in Orbital Warfare, because detecting adversary maneuvers and inferring intent is the first step in executing offensive counterspace operations",
+  "They fit in Space Domain Awareness only, not in Space Battle Management, because SDA produces intelligence products while SBM produces operational decisions — the two disciplines do not overlap",
+  "They fit in Space Battle Management exclusively, because SBM is defined to include all data processing and AI functions, with SDA being a legacy term for manual tracking",
+]
+answer.answer = "They are SDA functions that feed Space Battle Management. Maneuver detection, fleet tracking, and intent inference are 'identification, characterization, and understanding of factors associated with the space domain' — the SCP's definition of SDA. But SDA outputs that feed into Kronos's real-time data fusion, support Space Battle Management planning and deconfliction, and enable fast decisions about orbital operations are SDA serving the SBM function. The curriculum builds the sensing and processing layers; SBM is the C2 layer that acts on them."
+context = "The distinction matters for customer conversations and contract framing. SBIR topics, Program Objective Memorandum line items, and Space Force procurement are organized around these disciplines. Accurately identifying which USSF SCP discipline your product supports — and demonstrating that it feeds the SBM decision cycle rather than just producing an intelligence archive — is how you position a research prototype as a mission system. The 'operational intelligence' framing (SDA as a live input to SBM rather than a background intelligence product) is the value proposition."
+
+[[questions]]
+id = "e0f2a4b6-5c7d-4e0f-f416-7a9b1c3d5e7f"
+type = "MultipleChoice"
+prompt.prompt = "Why does the cislunar theater represent a qualitatively different battle network challenge compared to LEO/MEO/GEO, and what is the specific gap that neither U.S. nor Chinese systems currently fill?"
+prompt.distractors = [
+  "The cislunar theater's challenge is orbital mechanics: objects in Earth-Moon Lagrange points and cislunar trajectories cannot be modeled with TLE/SGP4, requiring entirely different propagation systems that do not yet exist",
+  "The cislunar theater's challenge is communication latency: the 1.3-second one-way light travel time to the Moon makes real-time SBM impossible, requiring autonomous on-orbit decision-making that current systems cannot provide",
+  "The cislunar theater's challenge is treaty law: no existing arms control framework covers cislunar space, making any military activity there legally ambiguous in ways that LEO/GEO operations are not",
+]
+answer.answer = "The battle network infrastructure that enables SDA and Space Battle Management in near-Earth orbits — Space-Track TLE catalog, the SDA constellation, Kronos, commercial SDA providers — is entirely oriented toward LEO/MEO/GEO. There is no continuous tracking coverage of the cislunar theater, no real-time anomaly detection for objects in Earth-Moon Lagrange points or translunar trajectories, and no SBM C2 architecture for cislunar operations. The Artemis and ILRS competition is contesting strategic positions that cannot currently be monitored by either side's existing SDA battle networks."
+context = "This is why the cislunar gap is strategically significant beyond the orbital mechanics arguments in Lesson 1. The high ground argument (Lagrange points, lunar south pole) is about physical position. The battle network gap argument is about the intelligence and C2 layer: even if the U.S. achieves Artemis infrastructure at the lunar south pole, it cannot currently maintain SDA of the cislunar theater that would be required to operate that infrastructure safely under adversarial conditions. The research agenda this implies — extending the SDA sensing and processing pipeline from GEO to the Earth-Moon system — is the natural forward extension of the Module 9 maneuver detection pipeline."

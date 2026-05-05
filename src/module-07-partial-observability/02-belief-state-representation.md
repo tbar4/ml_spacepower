@@ -1,5 +1,8 @@
 # Lesson 2: Belief State Representation
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 defined what a belief state is: a probability distribution \\(b(s) = P(s \mid \text{history})\\) that summarizes everything the agent knows about the true world state. It showed that maintaining a belief is both necessary (ignoring partial observability causes systematic errors) and sufficient (the belief is all you need to make optimal decisions).

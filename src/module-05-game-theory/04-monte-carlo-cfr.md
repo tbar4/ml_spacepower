@@ -2,6 +2,9 @@
 
 **Module/Source:** Lanctot et al. (2009) "Monte Carlo Sampling for Regret Minimization in Extensive Games" (NeurIPS 2009) — the paper that introduced and analyzed outcome sampling and external sampling MCCFR. Gibson et al. (2012) "Generalized Sampling and Variance in Counterfactual Regret Minimization" for variance analysis. Brown and Sandholm (2019) "Solving Imperfect-Information Games via Discounted Regret Minimization" for discounted and linear CFR variants. Background on importance sampling: *Monte Carlo Statistical Methods* (Robert and Casella, 2004). Game theory foundations: Osborne (2004) Chapters 6–7; Zinkevich et al. (2007).
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Vanilla CFR (lesson 3) is correct but slow: every iteration traverses the entire game tree. For games beyond a certain size, this is hopeless. MCCFR replaces the full tree traversal with a sampled traversal, just like Monte Carlo (Module 1, lesson 3) replaces an intractable expectation with a sample-based estimate. The trade-off is the same: noisier per-iteration updates, but many more iterations are possible. MCCFR is the workhorse algorithm for medium-sized games and the foundation of deep CFR (next lesson).

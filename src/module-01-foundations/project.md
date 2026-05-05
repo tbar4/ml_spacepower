@@ -1,5 +1,8 @@
 # Module 1 Project: Monte Carlo Conjunction Probability
 
+
+<!-- toc -->
+
 ## What you're building
 
 You're going to write a small Python program that estimates the probability that two satellites will pass within some unsafe distance of each other, given that we know their states only with some uncertainty. This is a real problem in your field. The 18th Space Defense Squadron does an industrial-strength version of it for every conjunction screen they publish, and commercial services like LeoLabs and ComSpOC do dressed-up versions for their customers.

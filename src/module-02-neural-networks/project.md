@@ -1,5 +1,8 @@
 # Module 2 Project: Approximating a Conjunction-Risk Value Function
 
+
+<!-- toc -->
+
 ## What you are building
 
 In the Module 1 project, you wrote a Monte Carlo estimator for conjunction probability. It works: give it a scenario, run N samples, get Pc. The problem is it is slow. For N = 50,000 samples it takes a few seconds per evaluation. If you need to evaluate thousands of candidate maneuver decisions in real time, or use Pc as a reward signal inside an RL training loop, you cannot afford a Monte Carlo simulation for every single evaluation.

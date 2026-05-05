@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 05–07 built up three capabilities: representing observations as vectors, applying weight matrices to those vectors, and computing gradients to train the weights. Those tools treat matrices as flat objects — grids of numbers you multiply through. But many of the most powerful ML and SSA algorithms depend on understanding the structure hidden inside a matrix: which directions does it stretch? Which directions are most important? What is the signal versus the noise? How do you sample efficiently from a multivariate distribution over orbital states?

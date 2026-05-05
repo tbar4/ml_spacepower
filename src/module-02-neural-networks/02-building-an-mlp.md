@@ -1,5 +1,8 @@
 # Lesson 2: Building an MLP in PyTorch
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 gave you the activation functions. Module 1 gave you linear layers. This lesson snaps those pieces together into a complete neural network and traces exactly what happens to a state vector as it flows through. Then it shows you how PyTorch packages all of this so you do not have to manage weights manually. The MLP you build here is the same architecture used as a value network in Module 4 and as a regret network in Module 5, just with different input/output dimensions and different training objectives.

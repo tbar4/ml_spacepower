@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Why this module comes before everything else
 
 Every lesson in this curriculum involves building, evaluating, or deploying a machine learning model that processes space domain data. Before you can reason about what those models are doing, you need to understand the data artifacts they consume.

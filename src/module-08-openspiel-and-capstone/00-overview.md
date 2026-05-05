@@ -1,5 +1,8 @@
 # Module 8: OpenSpiel and the Rust Capstone
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Modules 1 through 7 built a complete algorithmic toolkit: neural networks, RL, search and planning, game theory, multi-agent RL, and partial observability. Every lesson used toy environments or small Python prototypes. This module converts that toolkit into systems that could actually be deployed — and culminates in a Rust implementation of everything.

@@ -1,5 +1,8 @@
 # Module 9 Project: Production Maneuver Detection Pipeline
 
+
+<!-- toc -->
+
 ## What you're building
 
 A complete production pipeline that fetches real TLE history from Space-Track, engineers time-normalized features, generates synthetic training data, trains the LSTM from Lesson 1, and evaluates it against a hardcoded set of documented ISS reboost dates — the only portion of the pipeline that requires real labeled data.

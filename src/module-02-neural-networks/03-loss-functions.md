@@ -1,5 +1,8 @@
 # Lesson 3: Loss Functions and What We Are Optimizing
 
+
+<!-- toc -->
+
 ## Where this fits
 
 A neural network with random weights is useless. Training makes it useful. But what does training mean, precisely? It means adjusting the weights to minimize a **loss function**: a single number that measures how wrong the network's current outputs are. Gradient descent (from Module 1, lesson 7) steps the weights in the direction that reduces the loss. The loss function determines what "wrong" means, and choosing the right one is as important as choosing the right architecture.

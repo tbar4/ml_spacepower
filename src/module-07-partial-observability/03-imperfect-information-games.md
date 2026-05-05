@@ -1,5 +1,8 @@
 # Lesson 3: Imperfect-Information Games
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Module 5 introduced game theory — normal-form games, extensive-form trees, information sets, and CFR. Module 7 so far has covered POMDPs and belief states: how an agent reasons under uncertainty about the world. This lesson fuses both threads.

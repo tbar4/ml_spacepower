@@ -9,6 +9,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 You now have working ML models for SSA. This lesson answers the question that follows: how do you get paid for them? The DoD innovation pipeline — SBIR, SpaceWERX, OTAs — is purpose-built for exactly your situation: a small, technically capable entity with a novel capability that a large prime contractor has no incentive to build. But the pipeline has gates, timelines, and eligibility traps that have surprised many first-time applicants. This lesson maps the terrain honestly.

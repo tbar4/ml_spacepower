@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 In lesson 5, you saw that the dot product of a weight vector and an observation vector scores how well the observation matches that weight vector's "interest." A neural network layer does that simultaneously for many weight vectors at once, producing a score for each one. That simultaneous scoring is matrix-vector multiplication. Once you understand what \\(W\mathbf{x} + \mathbf{b}\\) computes, you know what a neural network layer does. Every modern deep learning architecture, from the policy networks in AlphaZero to the value networks in deep CFR, is built by stacking this operation repeatedly with nonlinearities in between.

@@ -1,5 +1,8 @@
 # Lesson 4: Designing the SSA Game
 
+
+<!-- toc -->
+
 ## Where this fits
 
 This is the last lesson before the capstone. The capstone implements one specific game; this lesson designs that game and explains the design choices. The aim is for you to be able to extend or replace the game with one that better suits your eventual thesis work, knowing what the design constraints are. Once you have read this lesson, the capstone is essentially execution.

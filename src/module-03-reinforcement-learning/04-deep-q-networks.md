@@ -1,5 +1,8 @@
 # Lesson 4: Deep Q-Networks (DQN)
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Tabular Q-learning works beautifully for small problems. It cannot work for the kinds of problems we care about (chess, satellite scheduling, anything with a continuous state space) because the table would be impossibly large or infinite. DQN replaces the table with a neural network: instead of looking up Q(s, a) in a table indexed by states, you pass the state through a network that outputs Q values for all actions. The conceptual algorithm is unchanged. The implementation requires two engineering tricks (experience replay and target networks) that solve specific instability problems caused by the function approximator. This is the algorithm that achieved superhuman Atari play in 2013-2015 and is the foundation of every modern value-based deep RL method.

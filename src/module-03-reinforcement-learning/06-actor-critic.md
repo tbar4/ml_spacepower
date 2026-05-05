@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Actor-critic methods combine the strengths of value-based learning (low variance, sample efficiency) and policy gradient methods (direct policy parameterization, support for continuous actions and stochastic policies). They are the architecture used by AlphaZero (Module 4), most modern deep RL (PPO, A3C, SAC), and the intuition matters for deep CFR (Module 5). If you understand REINFORCE with a value baseline (lesson 5), you already have most of actor-critic. This lesson adds the engineering and the standard naming.

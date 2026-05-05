@@ -1,5 +1,8 @@
 # Lesson 3: Rust and burn (The Production Gap)
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Up to this point you have used Python and OpenSpiel for everything. The capstone is going to be in Rust. Before we design the capstone, we need to be honest about what is available in the Rust ecosystem for ML and game-theoretic algorithms, what is not, and how the design of the capstone reflects these realities. The short version: there is no Rust-native equivalent to OpenSpiel, and that is a feature of the project (you fill the gap), not a bug.

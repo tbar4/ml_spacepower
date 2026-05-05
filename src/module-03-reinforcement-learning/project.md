@@ -1,5 +1,8 @@
 # Module 3 Project: A DQN Sensor Allocation Agent
 
+
+<!-- toc -->
+
 ## What you are building
 
 You will build a DQN agent that learns to allocate ground-based sensor time across multiple satellites under uncertainty about which ones are in conjunction risk situations. The environment is a custom OpenSpiel game (your first OpenSpiel touchpoint), and the Q-network is structurally similar to the conjunction-risk approximator from Module 2.

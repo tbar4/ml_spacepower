@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Start with the provocation
 
 > "The coming war with China will be fought for control of outer space. Although its effects will be widely felt, the conflict itself will not be visible to those looking up into the night sky. It will not be televised. Most will not even be aware it is occurring. It may already have begun."

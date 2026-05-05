@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 You have spent the last eight modules building ML components — classifiers, MARL agents, MCTS planners — for space domain awareness. This lesson addresses a different application: using an LLM to adjudicate player actions in a structured wargame. The technical problem is interesting. The compliance and architecture constraints are non-negotiable for any DoD engagement. Read the compliance section before you write a single line of code.

@@ -1,5 +1,8 @@
 # Lesson 1: Activation Functions
 
+
+<!-- toc -->
+
 ## Where this fits
 
 At the end of Module 1, lesson 6, we noted a problem: stacking linear layers produces another linear layer. No matter how deep you make the network, if every layer is just \\(W\mathbf{x} + \mathbf{b}\\), the whole thing is equivalent to a single linear transformation. It can only learn straight-line relationships between inputs and outputs.

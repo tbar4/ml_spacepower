@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Why this module exists
 
 Every wargame is a theory in disguise. When you define the action space of your SSA game — what moves are available to an attacker trying to mask a maneuver — you are implicitly taking a position on what coercive options exist in the space domain. When you choose imperfect information over perfect information for your game structure, you are making a claim about the epistemic situation of real orbital operations. When you train your CFR solver against a specific reward function, you are encoding a theory of what actors value.
@@ -57,6 +60,10 @@ The thesis core. Covers the 8-rung space escalation ladder with its two major fi
 **Lesson 6: From Strategic Theory to Wargame Design**
 
 The bridge from theory to implementation. Covers how strategic questions map to specific game structures, why information asymmetry in orbital operations implies imperfect-information game theory (IS-MCTS and CFR), why multi-actor deterrence dynamics require population-level solution concepts (PSRO and alpha-rank), and why behavioral inference maps to opponent modeling and particle filters. Uses the exploratory wargaming literature to show what computational approaches reveal that human wargames miss. Provides explicit design rationale for every choice in the Module 8 capstone game.
+
+**Lesson 7: Battle Networks, Space Battle Management, and the AI-Enabled Decision Loop**
+
+The operational frame that makes the curriculum's ML tools strategically legible. A battle network is the integrated sensing-processing-decision-action system that connects what forces can see to what they can do. Modern battle networks are space-dependent at every critical layer. This lesson covers Harrison's battle network framework and the force exponent effect of AI; the USSF SCP disciplines of Space Domain Awareness, Space Battle Management, and Orbital Warfare and how they relate; the evolution from SSA to SDA to "operational intelligence" and Kronos as its programmatic embodiment; AI as the mechanism that accelerates the OODA loop at each layer; resilience architecture (graceful degradation, disaggregation, dynamic space operations, commercial backup); adversary approaches (PLA AI as space battle management backbone, Russian asymmetric degradation targeting the network rather than individual satellites); the cislunar battle network gap; and the explicit positioning of the curriculum's ML pipeline as sensing and processing layers of a battle network whose C2 layer feeds Space Command decisions.
 
 ---
 

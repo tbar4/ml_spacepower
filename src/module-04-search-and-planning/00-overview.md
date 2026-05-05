@@ -1,5 +1,8 @@
 # Module 4: Search and Planning
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Module 3 gave you model-free RL: the agent learns from experience without explicitly reasoning about the future. That is powerful but limited. When you can simulate possible futures (in a game, you can imagine the consequences of moves), explicit search through those futures is often dramatically better than learned policies alone. This module covers Monte Carlo Tree Search (MCTS), the most important search algorithm in modern game AI, and AlphaZero, which combines MCTS with neural networks trained by self-play.

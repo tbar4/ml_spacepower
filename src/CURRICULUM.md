@@ -2,6 +2,9 @@
 
 This curriculum builds from orbital domain knowledge through mathematical foundations to a production-grade AI system for space domain awareness (SDA) wargaming. Each module introduces a new layer of the recommended architecture and connects it to SSA/SDA applications throughout.
 
+
+<!-- toc -->
+
 ## Module 0: Orbital Mechanics and the SDA Data Ecosystem
 
 The domain foundation required before any SDA ML work. Covers the TLE format and Keplerian orbital elements, coordinate reference frames (ECI/ECEF/TEME/RTN), SGP4 propagation, conjunction analysis and the CCSDS CDM format, and the commercial SDA data ecosystem (Space-Track, CelesTrak, LeoLabs, and commercial providers). Every concept is tied to practical data engineering: parsing TLEs, batch propagation with python-sgp4, reading CDM covariance matrices, and building a conjunction screening pipeline.

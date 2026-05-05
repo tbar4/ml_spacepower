@@ -1,5 +1,8 @@
 # Lesson 4: Opponent Modeling
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lessons 1 through 3 of this module developed the tools for reasoning under partial observability: belief states, particle filters, and imperfect-information equilibria. Those tools assume either a single agent (POMDPs) or rational opponents (Nash equilibrium). This lesson addresses a different regime: real adversaries in space operations are not perfectly rational, and their irrationality is exploitable if modeled correctly.

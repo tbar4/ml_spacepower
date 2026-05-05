@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 In lesson 1 you learned that expectation is a weighted sum over all possible outcomes. That works perfectly when there are three object types or six dice faces. It becomes completely impossible when there are millions of possible game trajectories, or when the quantity you want to average does not have a tidy formula. Monte Carlo estimation is how you compute expectations when direct computation is hopeless. MCTS, MCCFR, and the REINFORCE policy gradient estimator are all, at their core, Monte Carlo estimation with extra structure on top. This lesson is where those algorithms get their conceptual foundation.

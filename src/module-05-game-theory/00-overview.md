@@ -1,5 +1,8 @@
 # Module 5: Game Theory and Equilibrium Computation
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Until now, we have treated decision-making in two ways: single-agent (Modules 1-3) and two-player perfect-information (Module 4). Real SSA scenarios are messier. They involve multiple agents (operators, debris-flagging services, adversarial actors). They often involve imperfect information (you cannot see what the other operator is doing or planning). And in cooperative or adversarial multi-agent settings, "the optimal policy" is no longer a single thing: it depends on what the other agents are doing.

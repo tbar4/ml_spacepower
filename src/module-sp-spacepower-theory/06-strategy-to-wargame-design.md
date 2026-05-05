@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## The wargame design problem
 
 Every wargame makes modeling choices — what to include, what to abstract away, which actors are present, what actions are available, how outcomes are determined. Those choices are not neutral. They encode assumptions about the strategic problem.

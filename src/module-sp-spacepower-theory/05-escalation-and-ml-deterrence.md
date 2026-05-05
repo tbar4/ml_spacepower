@@ -2,6 +2,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## The scenario that should keep you up at night
 
 > "In a world without the verification protocols once provided by New START, a commercial maneuver near a nuclear command-and-control node could be misinterpreted as a prelude to a strike, creating a hair-trigger environment where a technical error or a pilot's misjudgment becomes an existential threat."

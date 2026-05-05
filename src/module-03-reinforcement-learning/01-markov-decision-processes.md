@@ -1,5 +1,8 @@
 # Lesson 1: Markov Decision Processes
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Reinforcement learning needs a precise way to describe "an agent acts in an environment over time." The Markov Decision Process (MDP) is that description. Every algorithm in this curriculum from now on assumes the world is structured as an MDP (or a generalization of one). When you read about "states," "actions," "rewards," "transitions," and "discount factors" in any RL paper or codebase, those terms are coming from the MDP framework. Get comfortable with the vocabulary in this lesson and the rest of the module unfolds naturally.

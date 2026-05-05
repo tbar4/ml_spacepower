@@ -4,6 +4,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## What you are building
 
 A Python pipeline that performs the first two stages of a real conjunction assessment workflow:

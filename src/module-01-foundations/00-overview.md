@@ -1,5 +1,8 @@
 # Module 1: Foundations
 
+
+<!-- toc -->
+
 ## Where this module fits
 
 Everything you'll build later in this curriculum (value functions, policy gradients, MCTS rollouts, CFR regret updates, neural network forward passes) reduces to three operations: pushing numbers through matrices, taking derivatives of those numbers with respect to other numbers, and reasoning about what those numbers mean when they're random. This module gives you working intuition for those three things and nothing else.

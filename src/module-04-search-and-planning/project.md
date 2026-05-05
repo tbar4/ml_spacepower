@@ -1,5 +1,8 @@
 # Module 4 Project: An AlphaZero-Lite Agent for Pursuit-Evasion
 
+
+<!-- toc -->
+
 ## What you are building
 
 You will train an AlphaZero-style agent on a simplified two-player pursuit-evasion game between spacecraft. One spacecraft (the evader) is trying to traverse a region of space without being detected. The other (the defender, equipped with a sensor) is trying to keep eyes on the evader. The evader can take evasive maneuvers; the defender can change sensor pointing direction. After a fixed number of moves, the defender wins if the evader was detected often enough; otherwise the evader wins.

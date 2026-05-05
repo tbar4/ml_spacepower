@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Module 2 taught you how to train neural networks. Module 3 taught you sequential decision-making. This lesson combines them into the first commercially viable product in this curriculum: a classifier that reads a satellite's TLE history and flags maneuver events.

@@ -5,6 +5,9 @@
 
 ---
 
+
+<!-- toc -->
+
 ## Where this fits
 
 Lesson 1 introduced the Gaussian for scalar quantities: a single mean and a single variance describe your uncertainty about one number. But a satellite's orbital state is six-dimensional — position in three axes (x, y, z) and velocity in three axes (vx, vy, vz) — and those six components are correlated. A single variance cannot capture the fact that "position uncertainty is larger in the radial direction than cross-track," or that a large along-track position error often comes with a correspondingly large along-track velocity error.
