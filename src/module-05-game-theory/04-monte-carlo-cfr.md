@@ -353,6 +353,56 @@ importance_sampling_variance_demo(
 )
 ```
 
+```rust
+# extern crate rand;
+// rand = "0.10"
+use rand::{Rng, RngExt, SeedableRng};
+
+fn is_variance_demo(
+    rng: &mut impl Rng,
+    p_rare: f64, q_rare: f64,
+    u_rare: f64, u_common: f64,
+    n: usize,
+) {
+    let true_mean = p_rare * u_rare + (1.0 - p_rare) * u_common;
+
+    // Direct sampling from the true distribution
+    let direct: Vec<f64> = (0..n)
+        .map(|_| if rng.random::<f64>() < p_rare { u_rare } else { u_common })
+        .collect();
+    let d_mean = direct.iter().sum::<f64>() / n as f64;
+    let d_var  = direct.iter().map(|&x| (x - d_mean).powi(2)).sum::<f64>() / n as f64;
+
+    // Importance-weighted sampling from q (may differ from p)
+    let is: Vec<f64> = (0..n)
+        .map(|_| {
+            if rng.random::<f64>() < q_rare {
+                (p_rare / q_rare) * u_rare           // importance weight p/q applied
+            } else {
+                ((1.0 - p_rare) / (1.0 - q_rare)) * u_common
+            }
+        })
+        .collect();
+    let is_mean = is.iter().sum::<f64>() / n as f64;
+    let is_var  = is.iter().map(|&x| (x - is_mean).powi(2)).sum::<f64>() / n as f64;
+
+    println!("True mean: {:.4}", true_mean);
+    println!("Direct:  mean={:.4}  var={:.2}", d_mean, d_var);
+    println!("IS:      mean={:.4}  var={:.2}", is_mean, is_var);
+    println!("Variance ratio: {:.1}x", is_var / d_var);
+}
+
+fn main() {
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(42);
+
+    println!("=== Rare conjunction event (IS undersamples by 10x) ===");
+    is_variance_demo(&mut rng, 0.001, 0.0001, -100.0, 1.0, 50_000);
+
+    println!("\n=== IS matches true probability (no correction needed) ===");
+    is_variance_demo(&mut rng, 0.001, 0.001, -100.0, 1.0, 50_000);
+}
+```
+
 The output demonstrates that when \(q \neq p\), variance increases proportionally to \((p/q)^2\). Undersampling rare high-payoff events by 10× multiplies variance by up to 100×. This is why MCCFR practitioners are careful about the sampling distribution and why some variants use **ε-greedy sampling** (mixing the strategy with a small uniform component) to ensure all actions get sampled with a minimum probability.
 
 ## Convergence bounds for MCCFR

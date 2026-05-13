@@ -418,6 +418,79 @@ print(f"Iterations to epsilon<0.01: RM={rm_iters:,}  RM+={rmp_iters:,}")
 # Typically: RM+ reaches threshold ~10x faster than standard RM
 ```
 
+```rust
+// No external crates — pure arithmetic on a 3×3 payoff matrix.
+
+type V3 = [f64; 3];
+type M3 = [[f64; 3]; 3];
+
+fn dot(a: &V3, b: &V3) -> f64 { a.iter().zip(b).map(|(x, y)| x * y).sum() }
+
+fn matvec(m: &M3, v: &V3) -> V3 {
+    [dot(&m[0], v), dot(&m[1], v), dot(&m[2], v)]
+}
+
+fn vecmat(v: &V3, m: &M3) -> V3 {
+    // v^T M: result[j] = sum_i v[i] * m[i][j]
+    let mut out = [0.0_f64; 3];
+    for i in 0..3 { for j in 0..3 { out[j] += v[i] * m[i][j]; } }
+    out
+}
+
+fn max3(v: &V3) -> f64 { v.iter().cloned().fold(f64::NEG_INFINITY, f64::max) }
+
+fn regret_match(r: &V3) -> V3 {
+    let pos = [r[0].max(0.0), r[1].max(0.0), r[2].max(0.0)];
+    let s: f64 = pos.iter().sum();
+    if s > 0.0 { [pos[0]/s, pos[1]/s, pos[2]/s] } else { [1.0/3.0; 3] }
+}
+
+fn run_rm(payoff: &M3, t_iters: usize, rm_plus: bool) -> usize {
+    let (mut r1, mut r2) = ([0.0_f64; 3], [0.0_f64; 3]);
+    let (mut s1, mut s2) = ([0.0_f64; 3], [0.0_f64; 3]);
+    let threshold = 0.01_f64;
+
+    for t in 0..t_iters {
+        let (sig1, sig2) = (regret_match(&r1), regret_match(&r2));
+        for i in 0..3 { s1[i] += sig1[i]; s2[i] += sig2[i]; }
+
+        let ev = dot(&sig1, &matvec(payoff, &sig2));
+        for a in 0..3 {
+            let col_a: V3 = [payoff[0][a], payoff[1][a], payoff[2][a]];
+            let dr1 = dot(&payoff[a], &sig2) - ev;
+            let dr2 = -dot(&sig1, &col_a) + ev;
+            if rm_plus {
+                r1[a] = (r1[a] + dr1).max(0.0);
+                r2[a] = (r2[a] + dr2).max(0.0);
+            } else {
+                r1[a] += dr1; r2[a] += dr2;
+            }
+        }
+
+        // Exploitability: max P1 gain + max P2 gain against current average strategies
+        let tot1: f64 = s1.iter().sum(); let tot2: f64 = s2.iter().sum();
+        let avg1: V3 = [s1[0]/tot1, s1[1]/tot1, s1[2]/tot1];
+        let avg2: V3 = [s2[0]/tot2, s2[1]/tot2, s2[2]/tot2];
+        let vm1 = vecmat(&avg1, payoff);
+        let expl = max3(&matvec(payoff, &avg2)) + max3(&[-vm1[0], -vm1[1], -vm1[2]]);
+        if expl < threshold { return t + 1; }
+    }
+    t_iters
+}
+
+fn main() {
+    // 3×3 satellite-frequency-vs-jammer game: diagonal is cooperation (-1), off-diagonal (+1)
+    let freq_game: M3 = [[-1.0, 1.0, 1.0], [1.0, -1.0, 1.0], [1.0, 1.0, -1.0]];
+    let t = 10_000;
+
+    let rm_iters  = run_rm(&freq_game, t, false);
+    let rmp_iters = run_rm(&freq_game, t, true);
+    println!("Iterations to epsilon < 0.01:  RM = {}  RM+ = {}", rm_iters, rmp_iters);
+}
+```
+
+`[1.0/3.0; 3]` is array-repeat syntax: create `[1.0/3.0, 1.0/3.0, 1.0/3.0]`.
+
 In practice on this 3×3 spectrum game, RM+ typically reaches ε < 0.01 in roughly 1/10th the iterations of standard RM, because it does not need to "unlearn" the accumulated negative regret from early suboptimal rounds.
 
 ## Why CFR finds Nash, not just best response

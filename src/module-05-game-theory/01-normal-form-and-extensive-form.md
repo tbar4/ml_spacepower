@@ -227,6 +227,33 @@ print("Best response:", action_names[np.argmax(br)])
 # Best response: Maneuver
 ```
 
+```rust
+// No external crates — pure arithmetic on a 2×2 payoff matrix.
+
+fn expected_payoffs(payoff: &[[f64; 2]; 2], opp: &[f64; 2]) -> [f64; 2] {
+    // payoff[action_p1][action_p2] · opp[action_p2] summed over P2's actions
+    [
+        payoff[0][0] * opp[0] + payoff[0][1] * opp[1],
+        payoff[1][0] * opp[0] + payoff[1][1] * opp[1],
+    ]
+}
+
+fn main() {
+    // Conjunction payoff matrix for Operator 1:
+    // rows = Op1 actions [Maneuver, Hold], cols = Op2 actions [Maneuver, Hold]
+    let payoffs = [[-1.0_f64, -1.0], [-3.0, -10.0]];
+    let op2_strategy = [0.7_f64, 0.3];   // Op2: maneuver 70%, hold 30%
+
+    let ev = expected_payoffs(&payoffs, &op2_strategy);
+    let names = ["Maneuver", "Hold"];
+    for (name, &e) in names.iter().zip(ev.iter()) {
+        println!("  {}: {:.2}", name, e);
+    }
+    let best = if ev[0] >= ev[1] { 0 } else { 1 };
+    println!("Best response: {}", names[best]);
+}
+```
+
 Notice that for almost any strategy Op 2 plays, Op 1's best response in this game is to maneuver: the asymmetric collision cost (-10) makes holding too risky unless Op 2 is nearly certain to maneuver.
 
 ## Mixed strategy Nash equilibrium
@@ -338,6 +365,48 @@ ne_payoff = p_ne @ isr_payoffs @ q_ne
 print(f"Expected payoff for monitor at NE: {ne_payoff:.3f}")
 # Expected payoff: 0.500 (monitor catches adversary half the time on average)
 ```
+
+```rust
+// No external crates — pure arithmetic.
+// Solve a 2×2 zero-sum game's mixed Nash equilibrium by the indifference condition.
+
+fn solve_2x2_mixed_ne(a: [[f64; 2]; 2]) -> ([f64; 2], [f64; 2]) {
+    // Player 2 must mix so Player 1 is indifferent between their two actions:
+    // a[0][0]*q + a[0][1]*(1-q) = a[1][0]*q + a[1][1]*(1-q)  →  solve for q
+    let denom = a[0][0] - a[0][1] - a[1][0] + a[1][1];
+    let q_star = if denom.abs() < 1e-10 {
+        [0.5, 0.5]
+    } else {
+        let q = ((a[1][1] - a[0][1]) / denom).clamp(0.0, 1.0);
+        [q, 1.0 - q]
+    };
+    // Symmetrically, Player 1 must mix so Player 2 is indifferent
+    let denom2 = a[0][0] - a[1][0] - a[0][1] + a[1][1];
+    let p_star = if denom2.abs() < 1e-10 {
+        [0.5, 0.5]
+    } else {
+        let p = ((a[1][1] - a[1][0]) / denom2).clamp(0.0, 1.0);
+        [p, 1.0 - p]
+    };
+    (p_star, q_star)
+}
+
+fn main() {
+    // ISR sensor allocation game: monitor gets +1 if both choose same sector, 0 otherwise
+    let isr = [[1.0_f64, 0.0], [0.0, 1.0]];
+    let (p_ne, q_ne) = solve_2x2_mixed_ne(isr);
+
+    println!("Monitor NE:   P(A)={:.3}  P(B)={:.3}", p_ne[0], p_ne[1]);
+    println!("Adversary NE: P(A)={:.3}  P(B)={:.3}", q_ne[0], q_ne[1]);
+
+    // Expected payoff at NE: p^T A q
+    let ne_payoff = p_ne[0] * (isr[0][0] * q_ne[0] + isr[0][1] * q_ne[1])
+                 + p_ne[1] * (isr[1][0] * q_ne[0] + isr[1][1] * q_ne[1]);
+    println!("Expected monitor payoff at NE: {:.3}", ne_payoff);
+}
+```
+
+`f64::clamp` keeps the mixing probability in `[0, 1]` and handles degenerate payoff matrices where the denominator is near zero (pure strategy equilibrium).
 
 The key insight is that randomization is not weakness — it is the equilibrium strategy. A monitor that predictably focuses on one sector can be exploited. A monitor that randomizes uniformly cannot be.
 
