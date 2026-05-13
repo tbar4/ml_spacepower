@@ -70,7 +70,7 @@ version = "0.1.0"
 authors = ["Trevor Barnes"]
 
 [workspace.dependencies]
-rand = "0.8"
+rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 clap = { version = "4", features = ["derive"] }
@@ -784,10 +784,10 @@ The structure parallels the tabular version. The recursive tree walk is the same
 
 We do not write the full deep CFR code in this document because it is mechanical translation of patterns you have already seen (Module 5 lesson 5 covered deep CFR conceptually; Module 8 lesson 3 showed the burn syntax). Implementing it is the natural extension exercise. A skeleton:
 
-```rust
+```rust,no_run
 // crates/solver/src/deep_cfr.rs
 #[cfg(feature = "nn")]
-use burn::{module::Module, nn::{Linear, LinearConfig, Relu}, 
+use burn::{module::Module, nn::{Linear, LinearConfig, Relu},
            tensor::{backend::Backend, Tensor}};
 
 #[derive(Module, Debug)]
