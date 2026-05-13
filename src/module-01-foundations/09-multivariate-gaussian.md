@@ -92,6 +92,37 @@ print(f"\nCorrelation matrix (off-diagonals are in [-1, 1]):")
 print(corr.round(decimals=3))
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::{Array1, Array2};
+
+fn main() {
+    let sigma = Array2::from_shape_vec((3, 3), vec![
+         9.0_f64,  2.1, -0.5,
+         2.1,      4.0,  0.8,
+        -0.5,      0.8,  2.25,
+    ]).unwrap();
+
+    // Symmetry check
+    let is_symmetric = sigma.iter().zip(sigma.t().iter()).all(|(a, b)| (a - b).abs() < 1e-10);
+    println!("Symmetric: {is_symmetric}"); // true
+
+    // Standard deviations: sqrt of the diagonal entries
+    let stds: Array1<f64> = sigma.diag().mapv(f64::sqrt);
+    println!("Std dev x: {:.2} km, y: {:.2} km, z: {:.2} km", stds[0], stds[1], stds[2]);
+
+    // Correlation matrix: corr[i,j] = Sigma[i,j] / (std[i] * std[j])
+    let n = stds.len();
+    let std_outer = Array2::from_shape_fn((n, n), |(i, j)| stds[i] * stds[j]);
+    let corr = &sigma / &std_outer;
+    println!("Diagonal of correlation matrix (should all be 1.0):");
+    println!("  [{:.3}, {:.3}, {:.3}]", corr[[0, 0]], corr[[1, 1]], corr[[2, 2]]);
+    println!("Off-diagonal corr[0,1] = {:.3}", corr[[0, 1]]); // positive correlation
+}
+```
+
+`sigma.diag()` returns a 1D view of the diagonal; `.mapv(f64::sqrt)` applies sqrt element-wise. `Array2::from_shape_fn((n, n), |(i, j)| stds[i] * stds[j])` builds the outer product of the standard deviations, then element-wise `&sigma / &std_outer` gives the correlation matrix. The PSD check (all eigenvalues ≥ 0) requires `ndarray-linalg` and is omitted here.
+
 Note that `torch.linalg.eigvalsh` is the right function here: it is specialized for symmetric matrices, returns real eigenvalues in ascending order, and is numerically more stable than the general `torch.linalg.eig`. A covariance matrix with a negative eigenvalue indicates a numerical or construction error — it is not a valid covariance matrix.
 
 ---
@@ -170,6 +201,44 @@ for name, x in [("A", x_A), ("B", x_B), ("C", x_C)]:
 # Output shows A is 0.4 Mahalanobis sigma (plausible), B is 4.0 (suspicious),
 # even though both are 2 km Euclidean. log_prob reflects this ranking.
 ```
+
+The example uses a **diagonal** Σ, which means Σ⁻¹ is also diagonal (just reciprocals of the diagonal entries) — no matrix inversion needed:
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+/// Mahalanobis distance for a *diagonal* covariance matrix.
+/// For full Σ, computing Σ⁻¹ requires ndarray-linalg.
+fn mahalanobis_diag(x: &Array1<f64>, mu: &Array1<f64>, sigma_diag: &Array1<f64>) -> f64 {
+    // d_M = sqrt( Σ_i (x_i - mu_i)^2 / Sigma_ii )
+    x.iter().zip(mu.iter()).zip(sigma_diag.iter())
+        .map(|((xi, mi), si)| (xi - mi).powi(2) / si)
+        .sum::<f64>()
+        .sqrt()
+}
+
+fn main() {
+    let mu         = Array1::from_vec(vec![7000.0_f64, 0.0, 0.0]);
+    let sigma_diag = Array1::from_vec(vec![25.0_f64, 0.25, 0.25]); // variances on diagonal
+
+    let x_a = Array1::from_vec(vec![7002.0_f64, 0.0, 0.0]); // 2 km radial (easy direction)
+    let x_b = Array1::from_vec(vec![7000.0_f64, 2.0, 0.0]); // 2 km cross-track (tight!)
+    let x_c = Array1::from_vec(vec![7001.0_f64, 0.3, 0.1]); // realistic noisy obs
+
+    for (name, x) in [("A", &x_a), ("B", &x_b), ("C", &x_c)] {
+        let diff  = x - &mu;
+        let eucl  = diff.mapv(|v| v * v).sum().sqrt();
+        let mahal = mahalanobis_diag(x, &mu, &sigma_diag);
+        println!("Candidate {name}: Euclidean={eucl:.2} km, Mahalanobis={mahal:.2} sigma");
+    }
+    // A: 0.40 sigma  (2 km / 5 km std — along the loose direction, totally plausible)
+    // B: 4.00 sigma  (2 km / 0.5 km std — across the tight direction, very surprising)
+    // C: small sigma (small deviations in all three axes)
+}
+```
+
+`(xi - mi).powi(2) / si` divides each squared deviation by its variance (the diagonal entry of Σ), giving the per-dimension contribution to Mahalanobis distance squared. For a full (non-diagonal) covariance matrix, computing Σ⁻¹ requires `ndarray-linalg`; the diagonal shortcut only works when off-diagonal entries are zero.
 
 ---
 
@@ -498,6 +567,42 @@ print(f"\nDet ECI: {torch.linalg.det(Sigma_eci).item():.4f}")
 print(f"Det RSW: {torch.linalg.det(Sigma_rsw).item():.4f}")
 # Determinant is also preserved under orthogonal transformation
 ```
+
+The core transformation `R @ Σ @ Rᵀ` is pure matrix multiplication — no special linear algebra needed:
+
+```rust
+# extern crate ndarray;
+use ndarray::Array2;
+
+fn main() {
+    let sigma_eci = Array2::from_shape_vec((3, 3), vec![
+        16.0_f64,  2.0,  0.5,
+         2.0,      2.25, 0.3,
+         0.5,      0.3,  1.0,
+    ]).unwrap();
+
+    // Rotation matrix: 45-degree rotation in the x-y plane
+    let theta = 0.7854_f64; // ~45 degrees (radians)
+    let (c, s) = (theta.cos(), theta.sin());
+    let r = Array2::from_shape_vec((3, 3), vec![
+         c,   s,  0.0,
+        -s,   c,  0.0,
+        0.0, 0.0, 1.0,
+    ]).unwrap();
+
+    // Covariance frame transformation: Sigma_rsw = R @ Sigma_eci @ R^T
+    let sigma_rsw = r.dot(&sigma_eci).dot(&r.t().to_owned());
+
+    // Trace is preserved under orthogonal transformation (rotation)
+    let trace_eci: f64 = sigma_eci.diag().sum();
+    let trace_rsw: f64 = sigma_rsw.diag().sum();
+    println!("Trace ECI: {trace_eci:.4}");
+    println!("Trace RSW: {trace_rsw:.4}");
+    println!("Traces equal: {}", (trace_eci - trace_rsw).abs() < 1e-10); // true
+}
+```
+
+`r.dot(&sigma_eci).dot(&r.t().to_owned())` chains two matrix multiplications: first `R @ Σ`, then the result `@ Rᵀ`. `.t()` returns a transposed view; `.to_owned()` materializes it for `.dot()`. The eigenvalue and determinant invariance checks from the Python block require `ndarray-linalg`; the trace check here is sufficient to confirm the rotation is numerically sound.
 
 The rotation-invariance of eigenvalues, trace, and determinant is a useful sanity check: if any of these change significantly during a frame transformation, you have introduced a numerical error.
 

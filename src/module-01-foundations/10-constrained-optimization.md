@@ -477,6 +477,39 @@ print(f"Lagrangian objective: {obj.item():.4f}")
 print(f"Updated λ: {lam0:.4f} → {lam1:.4f}  (increased: KL={kl.item():.3f} > ε=0.01)")
 ```
 
+```rust
+fn ppo_lagrangian_update(
+    ratios: &[f64],
+    advantages: &[f64],
+    kl_div: f64,
+    lam: f64,
+    eps: f64,
+) -> (f64, f64) {
+    let n = ratios.len() as f64;
+    let surrogate: f64 = ratios.iter().zip(advantages.iter())
+        .map(|(r, a)| r * a)
+        .sum::<f64>() / n;
+    let lagrangian = surrogate - lam * (kl_div - eps);
+    // Dual ascent: increase λ if KL exceeded budget, decrease if under (clamp at 0)
+    let lam_new = (lam + 0.1 * (kl_div - eps)).max(0.0);
+    (lagrangian, lam_new)
+}
+
+fn main() {
+    let ratios    = [1.05, 0.98, 1.12, 0.95];
+    let advantages = [0.3, -0.1, 0.5, 0.2];
+    let kl  = 0.015_f64;   // slightly over eps
+    let lam0 = 1.0_f64;
+    let eps  = 0.01_f64;
+
+    let (obj, lam1) = ppo_lagrangian_update(&ratios, &advantages, kl, lam0, eps);
+    println!("Lagrangian objective: {:.4}", obj);
+    println!("Updated λ: {:.4} → {:.4}  (increased: KL={:.3} > ε={:.2})", lam0, lam1, kl, eps);
+}
+```
+
+No external crates needed — the update rule is pure arithmetic. The `.max(0.0)` enforces dual feasibility (\\(\lambda \geq 0\\)).
+
 ### Weight decay as a Lagrangian
 
 L2 regularization adds a penalty \\(\lambda \|w\|^2\\) to the training loss. This is exactly the Lagrangian for the constrained problem:
@@ -520,6 +553,35 @@ print("Formulation 1 (L2 penalty): weight_decay = 2*lambda added to optimizer")
 print("Formulation 2 (projection): enforce ||w||^2 <= C at each step")
 print("Both are solving the same constrained problem; lambda <-> C are paired by KKT.")
 ```
+
+```rust
+fn project_onto_l2_ball(params: &mut [f64], c: f64) {
+    let norm_sq: f64 = params.iter().map(|p| p * p).sum();
+    if norm_sq > c {
+        let scale = (c / norm_sq).sqrt();
+        for p in params.iter_mut() {
+            *p *= scale;
+        }
+    }
+}
+
+fn main() {
+    let mut weights = vec![0.5_f64, -0.8, 1.2, -0.3, 0.9];
+    let c = 1.0_f64;  // enforce ||w||^2 <= 1.0
+
+    let norm_sq_before: f64 = weights.iter().map(|p| p * p).sum();
+    println!("||w||² before projection: {:.4}", norm_sq_before);
+
+    project_onto_l2_ball(&mut weights, c);
+
+    let norm_sq_after: f64 = weights.iter().map(|p| p * p).sum();
+    println!("||w||² after  projection: {:.4}", norm_sq_after);
+    println!("Constraint satisfied: {}", norm_sq_after <= c + 1e-10);
+    println!("Projected weights: {:?}", weights.iter().map(|x| format!("{:.4}", x)).collect::<Vec<_>>());
+}
+```
+
+No external crates needed. The projection divides by the current norm and scales down to the ball boundary — the Rust translation maps directly to the Python version.
 
 ### Minimum-fuel orbit transfer as a linear program
 
