@@ -176,6 +176,38 @@ print(f"Interpretation: the defender would gain {voi:.2f} additional expected pa
 print(f"by learning the challenger's type before acting.")
 ```
 
+```rust
+fn main() {
+    // Payoff matrix: rows = [Focus, Spread], cols = [Type H, Type L]
+    let payoffs = [[10.0f64, -3.0], [-5.0, 1.0]];
+    let p_h = 0.3f64;
+    let prior = [p_h, 1.0 - p_h];
+
+    // Expected payoff per defender action, no information
+    let ev: [f64; 2] = std::array::from_fn(|i| {
+        payoffs[i][0] * prior[0] + payoffs[i][1] * prior[1]
+    });
+    let best_no_info = if ev[0] >= ev[1] { 0usize } else { 1 };
+    let value_no_info = ev[best_no_info];
+
+    println!("E[payoff | Focus]  = {:.2}", ev[0]);
+    println!("E[payoff | Spread] = {:.2}", ev[1]);
+    println!("Best action without info: {}, value = {:.2}",
+             if best_no_info == 0 { "Focus" } else { "Spread" }, value_no_info);
+
+    // Best payoff per type: column-wise max over defender actions
+    let best_per_type: [f64; 2] = std::array::from_fn(|j| {
+        payoffs.iter().map(|row| row[j]).fold(f64::NEG_INFINITY, f64::max)
+    });
+    let value_with_info = best_per_type[0] * prior[0] + best_per_type[1] * prior[1];
+
+    println!("\nBest payoff if type H revealed: {:.2} (Focus)", best_per_type[0]);
+    println!("Best payoff if type L revealed: {:.2} (Spread)", best_per_type[1]);
+    println!("Expected payoff with perfect info: {:.2}", value_with_info);
+    println!("\nValue of information: {:.2}", value_with_info - value_no_info);
+}
+```
+
 The VOI gives a concrete bound: it tells the defender how much it is worth spending on intelligence gathering (additional observations, intelligence sources, etc.) to reduce uncertainty about the challenger's type.
 
 ## Level-k reasoning and why equilibrium matters

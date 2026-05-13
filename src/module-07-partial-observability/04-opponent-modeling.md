@@ -118,6 +118,46 @@ class ExponentialMovingFrequencyModel:
         return self.weights / self.weights.sum()
 ```
 
+```rust
+fn normalize(counts: &[f64; 3]) -> [f64; 3] {
+    let total: f64 = counts.iter().sum();
+    std::array::from_fn(|i| counts[i] / total)
+}
+
+fn main() {
+    // Observed history: 12 holds, 5 small maneuvers, 2 large, 3 holds
+    let history: &[usize] = &[
+        0,0,0,0,0,0,0,0,0,0,0,0,  // 12 holds
+        1,1,1,1,1,                  // 5 small_maneuver
+        2,2,                        // 2 large_maneuver
+        0,0,0,                      // 3 holds
+    ];
+
+    // --- Frequency model with Laplace smoothing (alpha = 0.5) ---
+    let mut counts = [0.5f64; 3];
+    for &a in history { counts[a] += 1.0; }
+    let probs = normalize(&counts);
+    println!("Frequency model prediction:");
+    for (label, p) in ["hold", "small_maneuver", "large_maneuver"].iter().zip(probs.iter()) {
+        println!("  {}: {:.3}", label, p);
+    }
+
+    // --- Exponential moving frequency model (decay = 0.95) ---
+    let mut weights = [0.5f64; 3];
+    for &a in history {
+        weights.iter_mut().for_each(|w| *w *= 0.95);
+        weights[a] += 1.0;
+    }
+    let ema_probs = normalize(&weights);
+    println!("\nEMA model prediction (recent observations weighted more):");
+    for (label, p) in ["hold", "small_maneuver", "large_maneuver"].iter().zip(ema_probs.iter()) {
+        println!("  {}: {:.3}", label, p);
+    }
+}
+```
+
+`weights.iter_mut().for_each(|w| *w *= 0.95)` decays all weights in place before recording the new observation.
+
 ## Bayesian opponent modeling
 
 A richer approach: maintain a prior over *types* of opponents, where each type is associated with a different behavioral strategy. Update the type posterior as actions are observed.
@@ -264,6 +304,66 @@ def run_operator_tracking_demo() -> None:
 
 if __name__ == "__main__":
     run_operator_tracking_demo()
+```
+
+```rust
+fn bayes_update(posterior: &mut [f64; 3], likelihoods: &[[f64; 3]; 3], action: usize) {
+    let unnorm: [f64; 3] = std::array::from_fn(|k| likelihoods[k][action] * posterior[k]);
+    let total: f64 = unnorm.iter().sum();
+    if total < 1e-12 {
+        *posterior = [1.0 / 3.0; 3];
+    } else {
+        for k in 0..3 { posterior[k] = unnorm[k] / total; }
+    }
+}
+
+fn predict_next(posterior: &[f64; 3], likelihoods: &[[f64; 3]; 3]) -> [f64; 3] {
+    // Mixture over types: pred[a] = sum_k P(type k) * P(action a | type k)
+    let mut pred = [0.0f64; 3];
+    for k in 0..3 {
+        for a in 0..3 { pred[a] += posterior[k] * likelihoods[k][a]; }
+    }
+    pred
+}
+
+fn entropy_bits(p: &[f64; 3]) -> f64 {
+    -p.iter().filter(|&&x| x > 0.0).map(|&x| x * x.log2()).sum::<f64>()
+}
+
+fn main() {
+    // (3 types) x (3 actions: small, medium, large)
+    let likelihoods: [[f64; 3]; 3] = [
+        [0.70, 0.25, 0.05],   // Type A: min-fuel
+        [0.10, 0.35, 0.55],   // Type B: max-coverage
+        [0.33, 0.34, 0.33],   // Type C: random
+    ];
+    let mut posterior = [1.0f64 / 3.0; 3];
+
+    // Fixed sequence representative of a type-B (max-coverage) operator
+    let true_sequence: &[usize] = &[
+        2, 2, 1, 2, 2, 1, 2, 2, 2, 1,
+        2, 2, 1, 2, 2, 2, 1, 2, 2, 2,
+    ];
+
+    println!("{:>8}  {:>8}  {:>12}  {:>10}  {:>10}  {:>8}",
+             "Decision", "Action", "P(min_fuel)", "P(max_cov)", "P(random)", "Entropy");
+    for (i, &action) in true_sequence.iter().enumerate() {
+        let decision = i + 1;
+        bayes_update(&mut posterior, &likelihoods, action);
+        if decision == 1 || decision % 2 == 0 {
+            let labels = ["small", "medium", "large"];
+            println!("{:>8}  {:>8}  {:>12.3}  {:>10.3}  {:>10.3}  {:>8.3}",
+                     decision, labels[action], posterior[0], posterior[1], posterior[2],
+                     entropy_bits(&posterior));
+        }
+    }
+
+    let pred = predict_next(&posterior, &likelihoods);
+    println!("\nPredicted next action distribution:");
+    for (label, p) in ["small", "medium", "large"].iter().zip(pred.iter()) {
+        println!("  {}: {:.3}", label, p);
+    }
+}
 ```
 
 ## The response function

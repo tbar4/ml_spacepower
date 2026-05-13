@@ -88,6 +88,64 @@ for obs, label in zip(observations, labels):
     print(f"{label:<24}  {b[0]:.3f}        {b[1]:.3f}       {b[2]:.3f}       {b[3]:.3f}")
 ```
 
+```rust
+fn mat_vec_mul_t(t: &[[f64; 4]; 4], b: &[f64; 4]) -> [f64; 4] {
+    // result[s'] = sum_s T[s, s'] * b[s]  (transpose-multiply)
+    let mut out = [0.0f64; 4];
+    for s in 0..4 {
+        for sp in 0..4 {
+            out[sp] += t[s][sp] * b[s];
+        }
+    }
+    out
+}
+
+fn exact_belief_update(
+    b: &[f64; 4],
+    obs: usize,
+    t: &[[f64; 4]; 4],
+    o: &[[f64; 3]; 4],
+) -> [f64; 4] {
+    // Step 1: predict — propagate belief through transition matrix
+    let b_pred = mat_vec_mul_t(t, b);
+    // Step 2: update — scale by observation likelihood and renormalize
+    let mut b_new: [f64; 4] = std::array::from_fn(|sp| o[sp][obs] * b_pred[sp]);
+    let norm: f64 = b_new.iter().sum();
+    b_new.iter_mut().for_each(|x| *x /= norm);
+    b_new
+}
+
+fn main() {
+    let t: [[f64; 4]; 4] = [
+        [0.85, 0.13, 0.02, 0.00],
+        [0.10, 0.70, 0.18, 0.02],
+        [0.05, 0.15, 0.65, 0.15],
+        [0.20, 0.30, 0.30, 0.20],
+    ];
+    let o: [[f64; 3]; 4] = [
+        [0.90, 0.09, 0.01],
+        [0.50, 0.45, 0.05],
+        [0.10, 0.70, 0.20],
+        [0.05, 0.25, 0.70],
+    ];
+
+    let mut b = [0.25f64; 4];
+    let observations = [0usize, 0, 1, 1, 2, 1, 2];
+    let labels = [
+        "no_anomaly", "no_anomaly", "possible_conjunction",
+        "possible_conjunction", "maneuver_signature",
+        "possible_conjunction", "maneuver_signature",
+    ];
+
+    println!("{:<24}  S0:Safe/slow  S1:Approach  S2:Conjunct  S3:Maneuver", "Obs");
+    for (&obs, &label) in observations.iter().zip(labels.iter()) {
+        b = exact_belief_update(&b, obs, &t, &o);
+        println!("{:<24}  {:.3}        {:.3}       {:.3}       {:.3}",
+                 label, b[0], b[1], b[2], b[3]);
+    }
+}
+```
+
 Exact belief update is fast and exact. Its limitation is the state space: with a 30-dimensional continuous orbital state, the "belief vector" has infinitely many entries. The exact approach is reserved for small problems used for validation or simple threat models.
 
 ## Gaussian belief: the Kalman filter family
