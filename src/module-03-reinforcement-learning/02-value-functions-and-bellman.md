@@ -283,6 +283,37 @@ V_estimate[s_idx] += learning_rate * td_error
 print(f"Updated V({state}): {V_estimate[s_idx]:.2f}")
 ```
 
+```rust
+fn main() {
+    // Current V estimates: (calm,calm)=0, (calm,alert)=1, (alert,calm)=2, (alert,alert)=3
+    let mut v = [20.0, 24.0, 23.0, 28.0_f64];
+    let gamma = 0.9_f64;
+
+    // Example transition: state 2 (alert,calm), observe S1 → reward=1, next state=0
+    let s_idx      = 2_usize;
+    let reward     = 1.0_f64;
+    let next_s_idx = 0_usize;
+
+    let td_target = reward + gamma * v[next_s_idx];
+    let td_error  = td_target - v[s_idx];
+
+    println!("V estimate state 2: {:.2}", v[s_idx]);
+    println!("TD target:          {:.2}", td_target);
+    println!("TD error δ:         {:.2}", td_error);
+
+    if td_error > 0.0 {
+        println!("Underestimated — update V upward.");
+    } else {
+        println!("Overestimated — update V downward.");
+    }
+
+    let lr = 0.1_f64;
+    v[s_idx] += lr * td_error;
+    println!("Updated V(state 2): {:.2}", v[s_idx]);
+    // td_error < 0: td_target (1 + 0.9*20 = 19.0) < V(2) (23.0) → move downward
+}
+```
+
 This is the core of Q-learning and DQN: use the Bellman equation to generate training targets, compute the error between our current estimate and those targets, and update our estimate in the direction that reduces the error. In DQN, the "estimate" is a neural network, and the update is a gradient descent step. The machinery is more complex, but the idea is exactly this TD error computation.
 
 ## Bootstrapping: using our own estimates to update our estimates
@@ -354,6 +385,31 @@ print(f"1-step TD target: {G_1step:.2f}")
 
 # The 3-step return uses more actual data and less of our (potentially wrong) estimate.
 ```
+
+```rust
+fn n_step_return(rewards: &[f64], v_final: f64, gamma: f64) -> f64 {
+    // Work backwards: G = r_n + γ*(r_{n-1} + γ*(...))
+    rewards.iter().rev().fold(v_final, |g, &r| r + gamma * g)
+}
+
+fn main() {
+    let rewards    = [1.0, 5.0, 1.0_f64];
+    let v_bootstrap = 25.0_f64;
+    let gamma       = 0.9_f64;
+
+    let g3 = n_step_return(&rewards, v_bootstrap, gamma);
+    println!("3-step return: {:.2}", g3); // 24.54
+
+    let g1 = rewards[0] + gamma * v_bootstrap;
+    println!("1-step TD target: {:.2}", g1); // 23.5
+
+    // Verify 3-step by expanding: 1 + 0.9*(5 + 0.9*(1 + 0.9*25))
+    let manual = 1.0 + 0.9 * (5.0 + 0.9 * (1.0 + 0.9 * 25.0));
+    println!("Manual expansion: {:.2}", manual); // 24.54
+}
+```
+
+`.fold(v_final, |g, &r| r + gamma * g)` iterates in reverse: start with \\(G = V_\text{final}\\), then for each reward (from last to first) apply \\(G \leftarrow r + \gamma G\\). This is the same backward accumulation as the Python `reversed(rewards)` loop, in one expression.
 
 ## The optimal value function
 

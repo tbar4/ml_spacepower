@@ -147,6 +147,24 @@ print(f"Step 10000: ε = {schedule.get_epsilon(10000):.3f}")
 # Step 10000: ε = 0.101
 ```
 
+```rust
+fn get_epsilon(step: u64, eps_start: f64, eps_end: f64, decay_steps: u64) -> f64 {
+    eps_end + (eps_start - eps_end) * (-(step as f64) / decay_steps as f64).exp()
+}
+
+fn main() {
+    let (eps_start, eps_end, decay_steps) = (1.0, 0.05, 5000_u64);
+    for &step in &[0_u64, 500, 2500, 5000, 10000] {
+        println!("Step {:>6}: ε = {:.3}", step, get_epsilon(step, eps_start, eps_end, decay_steps));
+    }
+    // Step      0: ε = 1.000
+    // Step   2500: ε = 0.606  (e^{-0.5} ≈ 0.606)
+    // Step  10000: ε = 0.101
+}
+```
+
+No external crates needed. `(-step / decay_steps).exp()` is the decay multiplier; `eps_end + (eps_start - eps_end) * ...` interpolates from start to end.
+
 A common alternative is **linear decay**: ε decreases by a fixed amount each step until it hits ε_end. Exponential decay tends to be more forgiving because it slows down naturally as it approaches the minimum.
 
 ### Optimistic initialization: built-in early exploration
@@ -199,6 +217,32 @@ def ucb_action(Q_state, N_state, t, c=2.0):
     return int(np.argmax(ucb_values))
 ```
 
+```rust
+fn ucb_action(q_values: &[f64], visit_counts: &[f64], t: usize, c: f64) -> usize {
+    q_values.iter().zip(visit_counts.iter())
+        .map(|(&q, &n)| q + c * ((t as f64 + 1.0).ln() / (n + 1e-6)).sqrt())
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .unwrap().0
+}
+
+fn main() {
+    // 4 sensor-tasking actions with Q estimates and visit counts
+    let q_values     = [1.5, 2.0, 0.8, 1.2_f64];
+    let visit_counts = [100.0, 5.0, 50.0, 1.0_f64]; // actions 1 and 3 under-explored
+    let t = 200_usize;
+    let c = 2.0_f64;
+
+    let action = ucb_action(&q_values, &visit_counts, t, c);
+    println!("UCB selected action: {}", action);
+    // Action 3: Q=1.2, N=1 → uncertainty=2*sqrt(ln(201)/1.0)≈10.5 → UCB=11.7
+    // Action 1: Q=2.0, N=5 → uncertainty=2*sqrt(ln(201)/5.0)≈4.7  → UCB=6.7
+    // Action 3 wins despite lower Q because it is nearly unexplored.
+}
+```
+
+`.partial_cmp(...).unwrap()` is required for float comparison (floats do not implement `Ord`). The expression inside `.map()` is the UCB value for each action: Q estimate plus the exploration bonus `c * sqrt(ln(t+1) / N)`.
+
 UCB is the principled alternative to ε-greedy. It never wastes exploration on well-understood actions (those with low uncertainty), and it systematically explores uncertain ones. The downside: it requires tracking visit counts N(s, a), and the confidence bound is derived for bandit problems (single state); its guarantees weaken in the full RL setting with state transitions.
 
 ### In the SSA context: exploration means observing unfamiliar satellites
@@ -245,6 +289,53 @@ class TabularQLearner:
         # Update toward the target
         self.Q[state, action] += self.alpha * td_error
 ```
+
+```rust
+struct TabularQLearner {
+    q: Vec<Vec<f64>>,  // q[state][action]
+    alpha: f64,
+    gamma: f64,
+}
+
+impl TabularQLearner {
+    fn new(num_states: usize, num_actions: usize, alpha: f64, gamma: f64) -> Self {
+        TabularQLearner { q: vec![vec![0.0; num_actions]; num_states], alpha, gamma }
+    }
+
+    fn best_action(&self, state: usize) -> usize {
+        self.q[state].iter().enumerate()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0
+    }
+
+    fn update(&mut self, state: usize, action: usize, reward: f64, next_state: usize, done: bool) {
+        let target = if done {
+            reward
+        } else {
+            let max_next = self.q[next_state].iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            reward + self.gamma * max_next
+        };
+        let td_error = target - self.q[state][action];
+        self.q[state][action] += self.alpha * td_error;
+    }
+}
+
+fn main() {
+    // Walk through the hand-trace from the lesson: 3 states, 2 actions
+    // Initial Q table matches the one in the lesson text
+    let mut agent = TabularQLearner::new(3, 2, 0.1, 0.9);
+    agent.q[0] = vec![1.0, 0.5];
+    agent.q[1] = vec![2.0, 3.0];
+    agent.q[2] = vec![0.0, 0.0];
+
+    println!("Q(0, 0) before: {:.2}", agent.q[0][0]);
+    agent.update(0, 0, 2.0, 1, false); // state=0, action=0, reward=2.0, next=1
+    println!("Q(0, 0) after:  {:.2}", agent.q[0][0]);
+    // target = 2.0 + 0.9 * max(Q[1]) = 2.0 + 0.9*3.0 = 4.7
+    // δ = 4.7 - 1.0 = 3.7  →  Q[0][0] += 0.1 * 3.7 = 1.37
+}
+```
+
+`vec![vec![0.0; num_actions]; num_states]` initializes the Q table as a flat 2D Vec. The `update` method is a direct translation of the Python: compute the TD target, compute the error, move `alpha * error` toward the target.
 
 That is the complete algorithm. Train by repeatedly:
 1. Reset the environment to a starting state

@@ -374,6 +374,33 @@ print(f"Observing low-risk sat 0 (routine): {reward_safe:.2f}")
 # 0.0 (no conjunction) + 0.1 (low risk) + 0.17 (not stale) = 0.27
 ```
 
+```rust
+fn shaped_telescope_reward(
+    sat_idx: usize,
+    risk_scores: &[f64],
+    hours_stale: &[f64],
+    caught_conjunction: bool,
+) -> f64 {
+    let true_goal  = if caught_conjunction { 20.0 } else { 0.0 };
+    let risk_bonus = 2.0 * risk_scores[sat_idx];
+    let staleness  = (hours_stale[sat_idx] / 6.0).min(1.0); // caps at +1 after 6 hrs
+    true_goal + risk_bonus + staleness
+}
+
+fn main() {
+    let risk_scores = [0.05, 0.1, 0.85, 0.2, 0.3_f64];
+    let hours_stale  = [1.0, 0.5, 8.0, 3.0, 2.0_f64];
+
+    let r_good = shaped_telescope_reward(2, &risk_scores, &hours_stale, true);
+    println!("High-risk sat 2, caught conjunction: {:.2}", r_good);
+    // 20.0 + 1.70 (risk) + 1.00 (staleness) = 22.70
+
+    let r_routine = shaped_telescope_reward(0, &risk_scores, &hours_stale, false);
+    println!("Low-risk sat 0 (routine):            {:.2}", r_routine);
+    // 0.0 + 0.10 (risk) + 0.17 (staleness) = 0.27
+}
+```
+
 The design principle: the shaping terms (risk bonus, staleness bonus) provide dense guidance, but their magnitude is small compared to the true goal signal (20.0 for a caught conjunction). The agent has strong incentive to pursue the real objective, and the shaping terms steer it toward productive exploration without dominating its behavior.
 
 Reward design is as much art as science. The telescope reward above still has failure modes — for example, an agent that learns to declare every observation a "conjunction event" via some upstream classification manipulation. Good reward design requires thinking adversarially: assume the agent will find every loophole in your specification, and close them before they are found in production.
@@ -541,6 +568,54 @@ returns = [simulate_episode(S0, A1) for _ in range(1000)]
 print(f"Average return starting from S0: {np.mean(returns):.2f}")
 # Should be close to 46.0
 ```
+
+> **Dependency** for the Rust block below: `rand = "0.10"` in `[dependencies]`.
+
+```rust
+# extern crate rand;
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+
+/// Sample an index from a discrete probability distribution.
+fn sample_discrete(rng: &mut StdRng, probs: &[f64]) -> usize {
+    let r = rng.random::<f64>();
+    let mut cumsum = 0.0;
+    for (i, &p) in probs.iter().enumerate() {
+        cumsum += p;
+        if r < cumsum { return i; }
+    }
+    probs.len() - 1
+}
+
+fn main() {
+    // 2-state, 2-action MDP  (S0=0, S1=1, A0=0, A1=1)
+    // p[s][a] = transition probabilities over [S0, S1]
+    let p = [
+        [[0.8, 0.2], [0.0, 1.0]], // from S0: A0 goes to S0 80% / S1 20%; A1 always S1
+        [[0.5, 0.5], [0.0, 1.0]], // from S1: A0 goes to S0 50% / S1 50%; A1 always S1
+    ];
+    let rewards = [1.0, 5.0_f64]; // R[S0] = 1.0, R[S1] = 5.0
+    let gamma = 0.9_f64;
+    let policy_action = 1_usize; // always take A1
+
+    let mut rng = StdRng::seed_from_u64(0);
+    let avg_return: f64 = (0..1000).map(|_| {
+        let mut state = 0_usize; // start in S0
+        let mut total = 0.0;
+        let mut discount = 1.0;
+        for _ in 0..100 {
+            total    += discount * rewards[state];
+            state     = sample_discrete(&mut rng, &p[state][policy_action]);
+            discount *= gamma;
+        }
+        total
+    }).sum::<f64>() / 1000.0;
+
+    println!("Average return from S0 (should be ~46.0): {:.2}", avg_return);
+}
+```
+
+`sample_discrete` converts a uniform random draw into a categorical sample by scanning the cumulative probability. Under policy A1, the agent always transitions to S1 and stays there, so the return converges to the geometric series 1 + 5·(0.9 + 0.81 + …) = 46.0.
 
 ## Why all this matters
 
