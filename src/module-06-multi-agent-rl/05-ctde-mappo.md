@@ -32,15 +32,15 @@ The result is that independent RL agents often converge to **miscoordinated** po
 
 The mathematical reason: independent PPO for agent i computes policy gradients of the form:
 
-\\[ \nabla_{\theta_i} J_i \approx \mathbb{E} \left[ \nabla_{\theta_i} \log \pi_i(a_i | o_i) \cdot \hat{A}_i \right] \\]
+\[ \nabla_{\theta_i} J_i \approx \mathbb{E} \left[ \nabla_{\theta_i} \log \pi_i(a_i | o_i) \cdot \hat{A}_i \right] \]
 
 **Decoding:**
-- \\(\theta_i\\): the parameters of agent i's policy
-- \\(\pi_i(a_i | o_i)\\): agent i's policy — the probability of taking action \\(a_i\\) given local observation \\(o_i\\)
-- \\(\hat{A}_i\\): the advantage estimate for agent i — how much better was the action than expected
+- \(\theta_i\): the parameters of agent i's policy
+- \(\pi_i(a_i | o_i)\): agent i's policy — the probability of taking action \(a_i\) given local observation \(o_i\)
+- \(\hat{A}_i\): the advantage estimate for agent i — how much better was the action than expected
 - The expectation is over trajectories sampled from the joint policy of all agents
 
-The problem is that \\(\hat{A}_i\\) is computed from agent i's value function \\(V_i(o_i)\\), which only depends on agent i's local observation. If agent i's advantage is estimated from \\(r + \gamma V_i(o_i') - V_i(o_i)\\), and the reward r partly results from what all other agents did, then the advantage function conflates the contributions of all agents. Agent i's gradient update receives credit (or blame) for outcomes that were driven by agent j's actions, not its own.
+The problem is that \(\hat{A}_i\) is computed from agent i's value function \(V_i(o_i)\), which only depends on agent i's local observation. If agent i's advantage is estimated from \(r + \gamma V_i(o_i') - V_i(o_i)\), and the reward r partly results from what all other agents did, then the advantage function conflates the contributions of all agents. Agent i's gradient update receives credit (or blame) for outcomes that were driven by agent j's actions, not its own.
 
 This is not merely a theoretical concern. Empirical results in the MARL literature consistently show that independent PPO with per-agent value functions fails on cooperative tasks that require careful division of labor.
 
@@ -52,7 +52,7 @@ Centralized Training, Decentralized Execution resolves the cooperative MARL prob
 
 **During training**: The critic (value function) observes the full **joint state** — the concatenation of all agents' observations, actions, and positions. The joint state is available in simulation because the training environment has access to all information. Crucially, the joint state transition is Markov even when individual agents' observations are not. A single satellite cannot predict where debris will move without knowing what the other satellites are observing; but the collective state of all five satellites and all tracked debris objects evolves according to known orbital mechanics. The centralized critic, seeing the full joint state, eliminates the non-stationarity problem from the value function's perspective: the value target is no longer a moving target contaminated by other agents' unseen updates.
 
-**During execution**: Each agent's actor policy uses only its own **local observation** \\(o_i\\). The centralized critic is discarded at test time; it was a training crutch, not a deployment requirement. Each satellite's policy network takes as input only what that satellite's sensors can measure and outputs actions for that satellite alone. No communication between satellites is required at runtime.
+**During execution**: Each agent's actor policy uses only its own **local observation** \(o_i\). The centralized critic is discarded at test time; it was a training crutch, not a deployment requirement. Each satellite's policy network takes as input only what that satellite's sensors can measure and outputs actions for that satellite alone. No communication between satellites is required at runtime.
 
 This separation is critical for real SSA deployment. In operations, each satellite in a coalition may be in a communication blackout, may have high-latency ground links, or may be operating in an electronically contested environment where inter-satellite communication is denied. The CTDE-trained policy works correctly under all of these conditions because it was designed to function with only local information at execution time.
 
@@ -68,50 +68,50 @@ MAPPO is the simplest and most effective CTDE algorithm. Yu et al. (2022) showed
 
 MAPPO has two components:
 
-**One centralized critic** \\(V_\phi(s_\text{global})\\): takes the concatenation of all agents' observations as input and outputs a single scalar value estimate. This is the joint state value — the expected discounted return from the current joint state onward when all agents follow their current policies.
+**One centralized critic** \(V_\phi(s_\text{global})\): takes the concatenation of all agents' observations as input and outputs a single scalar value estimate. This is the joint state value — the expected discounted return from the current joint state onward when all agents follow their current policies.
 
-**N decentralized actor policies** \\(\pi_{\theta_i}(a_i | o_i)\\): each takes only agent i's local observation as input and outputs a distribution over agent i's actions. Each actor has its own separate parameters \\(\theta_i\\).
+**N decentralized actor policies** \(\pi_{\theta_i}(a_i | o_i)\): each takes only agent i's local observation as input and outputs a distribution over agent i's actions. Each actor has its own separate parameters \(\theta_i\).
 
 ### Advantage estimation
 
 The advantage for agent i is computed using the centralized critic:
 
-\\[ A_i(s_\text{global}, a_i) = r + \gamma V_\phi(s'_\text{global}) - V_\phi(s_\text{global}) \\]
+\[ A_i(s_\text{global}, a_i) = r + \gamma V_\phi(s'_\text{global}) - V_\phi(s_\text{global}) \]
 
 **Decoding:**
-- \\(A_i\\): the advantage for agent i — how much better was agent i's action than the value predicted by the joint state value function
-- \\(s_\text{global}\\): the full joint state at the current step (all agents' observations concatenated)
-- \\(s'_\text{global}\\): the full joint state at the next step
-- \\(r\\): the shared team reward
-- \\(\gamma\\): the discount factor
+- \(A_i\): the advantage for agent i — how much better was agent i's action than the value predicted by the joint state value function
+- \(s_\text{global}\): the full joint state at the current step (all agents' observations concatenated)
+- \(s'_\text{global}\): the full joint state at the next step
+- \(r\): the shared team reward
+- \(\gamma\): the discount factor
 - The advantage uses the centralized critic for both the target and the baseline, so it accounts for all agents' contributions to the joint outcome
 
 In practice, Generalized Advantage Estimation (GAE) is used instead of the single-step advantage above. GAE reduces variance by blending multi-step returns:
 
-\\[ \hat{A}_i^{\text{GAE}} = \sum_{t=0}^{T} (\gamma \lambda)^t \delta_{t+k} \\]
+\[ \hat{A}_i^{\text{GAE}} = \sum_{t=0}^{T} (\gamma \lambda)^t \delta_{t+k} \]
 
-\\[ \delta_t = r_t + \gamma V_\phi(s'_{\text{global},t}) - V_\phi(s_{\text{global},t}) \\]
+\[ \delta_t = r_t + \gamma V_\phi(s'_{\text{global},t}) - V_\phi(s_{\text{global},t}) \]
 
 **Decoding:**
-- \\(\lambda \in [0, 1]\\): the GAE parameter controlling the bias-variance tradeoff (\\(\lambda = 0\\) is pure TD; \\(\lambda = 1\\) is pure Monte Carlo)
-- \\(\delta_t\\): the TD residual at step t, computed with the centralized critic
-- The sum discounts future TD residuals by \\((\gamma \lambda)^t\\), giving a smooth interpolation between low-variance/high-bias and high-variance/low-bias advantage estimates
+- \(\lambda \in [0, 1]\): the GAE parameter controlling the bias-variance tradeoff (\(\lambda = 0\) is pure TD; \(\lambda = 1\) is pure Monte Carlo)
+- \(\delta_t\): the TD residual at step t, computed with the centralized critic
+- The sum discounts future TD residuals by \((\gamma \lambda)^t\), giving a smooth interpolation between low-variance/high-bias and high-variance/low-bias advantage estimates
 
-Because \\(\delta_t\\) uses the centralized critic — which sees the full joint state — the advantage estimate for agent i correctly accounts for the joint outcome, not just agent i's local observation. This is what prevents the credit assignment confusion that plagues independent PPO.
+Because \(\delta_t\) uses the centralized critic — which sees the full joint state — the advantage estimate for agent i correctly accounts for the joint outcome, not just agent i's local observation. This is what prevents the credit assignment confusion that plagues independent PPO.
 
 ### Actor update
 
 Each actor is updated with the PPO clipped surrogate objective:
 
-\\[ L_i^{\text{clip}}(\theta_i) = \mathbb{E}_t \left[ \min\left( r_t(\theta_i) \hat{A}_i, \; \text{clip}(r_t(\theta_i), 1-\epsilon, 1+\epsilon) \hat{A}_i \right) \right] \\]
+\[ L_i^{\text{clip}}(\theta_i) = \mathbb{E}_t \left[ \min\left( r_t(\theta_i) \hat{A}_i, \; \text{clip}(r_t(\theta_i), 1-\epsilon, 1+\epsilon) \hat{A}_i \right) \right] \]
 
-\\[ r_t(\theta_i) = \frac{\pi_{\theta_i}(a_i | o_i)}{\pi_{\theta_i^{\text{old}}}(a_i | o_i)} \\]
+\[ r_t(\theta_i) = \frac{\pi_{\theta_i}(a_i | o_i)}{\pi_{\theta_i^{\text{old}}}(a_i | o_i)} \]
 
 **Decoding:**
-- \\(r_t(\theta_i)\\): the probability ratio — how much more or less likely is action \\(a_i\\) under the new policy versus the old policy that collected the data
-- \\(\epsilon\\): the clipping threshold (typically 0.1 or 0.2) — the policy cannot move more than this fraction away from the old policy in a single update step
-- \\(\hat{A}_i\\): the advantage from the centralized critic via GAE
-- The \\(\min\\) with the clipped ratio prevents destructively large policy updates while still taking steps in the direction of positive advantage
+- \(r_t(\theta_i)\): the probability ratio — how much more or less likely is action \(a_i\) under the new policy versus the old policy that collected the data
+- \(\epsilon\): the clipping threshold (typically 0.1 or 0.2) — the policy cannot move more than this fraction away from the old policy in a single update step
+- \(\hat{A}_i\): the advantage from the centralized critic via GAE
+- The \(\min\) with the clipped ratio prevents destructively large policy updates while still taking steps in the direction of positive advantage
 
 Each actor is updated independently with this objective, using the same advantage estimates from the shared centralized critic. The N actors do not share parameters unless domain knowledge suggests a symmetric role structure.
 
@@ -434,23 +434,23 @@ MAPPO is an actor-critic method: it maintains both a policy (actor) and a value 
 
 ### The core challenge: decentralized argmax
 
-In single-agent Q-learning, the optimal action is \\(\text{argmax}_a Q(s, a)\\). In multi-agent settings, finding the optimal joint action requires \\(\text{argmax}_{a_1, \ldots, a_N} Q_\text{joint}(s, a_1, \ldots, a_N)\\). This is intractable for large N because the joint action space grows exponentially: with N=5 agents and 20 actions each, there are \\(20^5 = 3.2 \times 10^6\\) joint actions to evaluate.
+In single-agent Q-learning, the optimal action is \(\text{argmax}_a Q(s, a)\). In multi-agent settings, finding the optimal joint action requires \(\text{argmax}_{a_1, \ldots, a_N} Q_\text{joint}(s, a_1, \ldots, a_N)\). This is intractable for large N because the joint action space grows exponentially: with N=5 agents and 20 actions each, there are \(20^5 = 3.2 \times 10^6\) joint actions to evaluate.
 
 QMIX solves this by learning factored Q-functions that respect a **monotonicity constraint**:
 
-\\[ \frac{\partial Q_\text{total}}{\partial Q_i} \geq 0 \quad \forall i \\]
+\[ \frac{\partial Q_\text{total}}{\partial Q_i} \geq 0 \quad \forall i \]
 
 **Decoding:**
-- \\(Q_i(o_i, a_i)\\): the individual Q-function for agent i, depending only on agent i's local observation and action
-- \\(Q_\text{total}(s_\text{global}, \mathbf{a})\\): the joint Q-function that combines all individual Q-values
-- \\(\frac{\partial Q_\text{total}}{\partial Q_i} \geq 0\\): the monotonicity constraint — \\(Q_\text{total}\\) is a non-decreasing function of each \\(Q_i\\)
+- \(Q_i(o_i, a_i)\): the individual Q-function for agent i, depending only on agent i's local observation and action
+- \(Q_\text{total}(s_\text{global}, \mathbf{a})\): the joint Q-function that combines all individual Q-values
+- \(\frac{\partial Q_\text{total}}{\partial Q_i} \geq 0\): the monotonicity constraint — \(Q_\text{total}\) is a non-decreasing function of each \(Q_i\)
 
 The monotonicity constraint has a critical consequence: the argmax over the joint action decomposes into N independent argmaxes:
 
-\\[ \text{argmax}_\mathbf{a} \, Q_\text{total}(s_\text{global}, \mathbf{a}) = \bigl( \text{argmax}_{a_1} Q_1(o_1, a_1), \; \ldots, \; \text{argmax}_{a_N} Q_N(o_N, a_N) \bigr) \\]
+\[ \text{argmax}_\mathbf{a} \, Q_\text{total}(s_\text{global}, \mathbf{a}) = \bigl( \text{argmax}_{a_1} Q_1(o_1, a_1), \; \ldots, \; \text{argmax}_{a_N} Q_N(o_N, a_N) \bigr) \]
 
 **Decoding:**
-- Because \\(Q_\text{total}\\) is non-decreasing in each \\(Q_i\\), increasing \\(Q_i\\) by choosing a better action \\(a_i\\) can only increase or leave unchanged \\(Q_\text{total}\\)
+- Because \(Q_\text{total}\) is non-decreasing in each \(Q_i\), increasing \(Q_i\) by choosing a better action \(a_i\) can only increase or leave unchanged \(Q_\text{total}\)
 - Therefore each agent can independently maximize its own Q-function without needing to coordinate with the others at execution time
 - This is the Individual-Global-Max (IGM) principle: the joint argmax equals the element-wise argmax when monotonicity holds
 
@@ -458,9 +458,9 @@ The result: each satellite independently picks the slot that maximizes its own l
 
 ### The mixing network architecture
 
-QMIX enforces monotonicity through a **mixing network** — a small neural network that takes the individual Q-values \\(Q_1, \ldots, Q_N\\) as inputs and outputs \\(Q_\text{total}\\). Monotonicity is enforced by constraining all weights in the mixing network to be non-negative.
+QMIX enforces monotonicity through a **mixing network** — a small neural network that takes the individual Q-values \(Q_1, \ldots, Q_N\) as inputs and outputs \(Q_\text{total}\). Monotonicity is enforced by constraining all weights in the mixing network to be non-negative.
 
-The key insight: the weights are not fixed. QMIX uses **hypernetworks** — separate networks that take the global state \\(s_\text{global}\\) as input and generate the mixing network's weights. The hypernetwork outputs are passed through absolute value to guarantee non-negativity.
+The key insight: the weights are not fixed. QMIX uses **hypernetworks** — separate networks that take the global state \(s_\text{global}\) as input and generate the mixing network's weights. The hypernetwork outputs are passed through absolute value to guarantee non-negativity.
 
 ```python
 import torch

@@ -137,17 +137,17 @@ For a 2D vector [a, b], the Pythagorean theorem gives the length: √(a² + b²)
 
 For a vector of any length [v₁, v₂, ..., vₙ], the same idea extends:
 
-\\[ \|\mathbf{v}\|_2 = \sqrt{v_1^2 + v_2^2 + \ldots + v_n^2} = \sqrt{\sum_{i=1}^{n} v_i^2} \\]
+\[ \|\mathbf{v}\|_2 = \sqrt{v_1^2 + v_2^2 + \ldots + v_n^2} = \sqrt{\sum_{i=1}^{n} v_i^2} \]
 
 **Decoding each symbol:**
 
-**\\(\|\mathbf{v}\|_2\\)**: The "L2 norm" or "Euclidean norm" of vector v. The subscript 2 distinguishes it from other norms (L1, L∞) we will cover shortly. The double vertical bars mean "length of." The bold v indicates a vector.
+**\(\|\mathbf{v}\|_2\)**: The "L2 norm" or "Euclidean norm" of vector v. The subscript 2 distinguishes it from other norms (L1, L∞) we will cover shortly. The double vertical bars mean "length of." The bold v indicates a vector.
 
-**\\(\sqrt{\ldots}\\)**: Square root.
+**\(\sqrt{\ldots}\)**: Square root.
 
-**\\(v_i^2\\)**: The i-th component of the vector, squared.
+**\(v_i^2\)**: The i-th component of the vector, squared.
 
-**\\(\sum_{i=1}^{n}\\)**: Sum all n components.
+**\(\sum_{i=1}^{n}\)**: Sum all n components.
 
 **In plain English**: "Square every component, add them all up, take the square root." This is the Euclidean distance from the origin to the point represented by the vector.
 
@@ -198,7 +198,7 @@ The L2 norm is the most common, but it is not the only way to measure vector len
 
 ### The L1 norm
 
-\\[ \|\mathbf{v}\|_1 = |v_1| + |v_2| + \ldots + |v_n| = \sum_{i=1}^{n} |v_i| \\]
+\[ \|\mathbf{v}\|_1 = |v_1| + |v_2| + \ldots + |v_n| = \sum_{i=1}^{n} |v_i| \]
 
 **Decoding:** The L1 norm is simply the sum of the absolute values of all components. The subscript 1 indicates this is the "1-norm." Unlike L2, it does not square the components — large and small components are treated more equally.
 
@@ -206,7 +206,7 @@ The L1 norm is used in **LASSO regularization** (L1 penalty on weights). Because
 
 ### The L∞ norm (maximum norm)
 
-\\[ \|\mathbf{v}\|_\infty = \max(|v_1|, |v_2|, \ldots, |v_n|) \\]
+\[ \|\mathbf{v}\|_\infty = \max(|v_1|, |v_2|, \ldots, |v_n|) \]
 
 **Decoding:** The L∞ norm is the largest absolute component. The subscript ∞ reflects that this is the limit of the p-norm as p → ∞. It answers the question: "what is the single worst-case component?"
 
@@ -271,11 +271,11 @@ A **unit vector** has norm 1. It represents a pure direction — no magnitude in
 
 To normalize a vector (convert it to a unit vector), divide every component by the vector's norm:
 
-\\[ \hat{\mathbf{v}} = \frac{\mathbf{v}}{\|\mathbf{v}\|_2} \\]
+\[ \hat{\mathbf{v}} = \frac{\mathbf{v}}{\|\mathbf{v}\|_2} \]
 
 **Decoding:** The hat symbol ˆ (called "hat" notation) over a vector conventionally indicates a unit vector. The formula divides the entire vector by its scalar norm. Every component is scaled by the same factor, so the direction is preserved while the length becomes exactly 1.
 
-**Verification:** \\(\|\hat{\mathbf{v}}\|_2 = \|\mathbf{v}\|_2 / \|\mathbf{v}\|_2 = 1\\). Correct.
+**Verification:** \(\|\hat{\mathbf{v}}\|_2 = \|\mathbf{v}\|_2 / \|\mathbf{v}\|_2 = 1\). Correct.
 
 ### When normalization is essential
 
@@ -379,21 +379,21 @@ The **projection** of vector **v** onto vector **w** is the component of **v** t
 
 The formula:
 
-\\[ \text{proj}_{\mathbf{w}}(\mathbf{v}) = \frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2} \cdot \mathbf{w} \\]
+\[ \text{proj}_{\mathbf{w}}(\mathbf{v}) = \frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2} \cdot \mathbf{w} \]
 
 **Decoding:**
 
-**\\(\mathbf{v} \cdot \mathbf{w}\\)**: The dot product of v and w.
+**\(\mathbf{v} \cdot \mathbf{w}\)**: The dot product of v and w.
 
-**\\(\|\mathbf{w}\|^2\\)**: The squared norm of w. This normalizes so that scaling w does not change the projection result.
+**\(\|\mathbf{w}\|^2\)**: The squared norm of w. This normalizes so that scaling w does not change the projection result.
 
-**\\(\frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2}\\)**: A scalar — the "amount" of v in the w direction.
+**\(\frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2}\)**: A scalar — the "amount" of v in the w direction.
 
-**\\(\frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2} \cdot \mathbf{w}\\)**: That scalar times the direction vector **w**, giving the projected vector (in the direction of **w**, with the appropriate magnitude).
+**\(\frac{\mathbf{v} \cdot \mathbf{w}}{\|\mathbf{w}\|^2} \cdot \mathbf{w}\)**: That scalar times the direction vector **w**, giving the projected vector (in the direction of **w**, with the appropriate magnitude).
 
-The equivalent formulation using the unit vector \\(\hat{\mathbf{w}}\\) is cleaner:
+The equivalent formulation using the unit vector \(\hat{\mathbf{w}}\) is cleaner:
 
-\\[ \text{proj}_{\hat{\mathbf{w}}}(\mathbf{v}) = (\mathbf{v} \cdot \hat{\mathbf{w}}) \cdot \hat{\mathbf{w}} \\]
+\[ \text{proj}_{\hat{\mathbf{w}}}(\mathbf{v}) = (\mathbf{v} \cdot \hat{\mathbf{w}}) \cdot \hat{\mathbf{w}} \]
 
 ### SSA application: radial approach component
 
@@ -483,15 +483,15 @@ The **dot product** of two vectors of the same length is computed by:
 
 For vectors **v** = [v₁, v₂, ..., vₙ] and **w** = [w₁, w₂, ..., wₙ]:
 
-\\[ \mathbf{v} \cdot \mathbf{w} = v_1 w_1 + v_2 w_2 + \ldots + v_n w_n = \sum_{i=1}^{n} v_i w_i \\]
+\[ \mathbf{v} \cdot \mathbf{w} = v_1 w_1 + v_2 w_2 + \ldots + v_n w_n = \sum_{i=1}^{n} v_i w_i \]
 
 **Decoding:**
 
-**\\(\mathbf{v} \cdot \mathbf{w}\\)**: "The dot product of v and w." The bold letters indicate vectors. The centered dot is the dot product operation (not regular multiplication, which would give a vector).
+**\(\mathbf{v} \cdot \mathbf{w}\)**: "The dot product of v and w." The bold letters indicate vectors. The centered dot is the dot product operation (not regular multiplication, which would give a vector).
 
-**\\(v_i w_i\\)**: Component i of v times component i of w. Subscripts connect corresponding components.
+**\(v_i w_i\)**: Component i of v times component i of w. Subscripts connect corresponding components.
 
-**\\(\sum_{i=1}^{n} v_i w_i\\)**: Add up all those pairwise products.
+**\(\sum_{i=1}^{n} v_i w_i\)**: Add up all those pairwise products.
 
 Let us compute it step by step for two small vectors:
 
@@ -546,15 +546,15 @@ The arithmetic definition is straightforward. But what does the dot product actu
 
 The dot product has a geometric interpretation:
 
-\\[ \mathbf{v} \cdot \mathbf{w} = \|\mathbf{v}\| \cdot \|\mathbf{w}\| \cdot \cos(\theta) \\]
+\[ \mathbf{v} \cdot \mathbf{w} = \|\mathbf{v}\| \cdot \|\mathbf{w}\| \cdot \cos(\theta) \]
 
-where \\(\theta\\) (the Greek letter theta) is the angle between the two vectors.
+where \(\theta\) (the Greek letter theta) is the angle between the two vectors.
 
 **Decoding:**
 
-**\\(\|\mathbf{v}\|\\)**: The norm (length) of v.
-**\\(\|\mathbf{w}\|\\)**: The norm (length) of w.
-**\\(\cos(\theta)\\)**: The cosine of the angle between them.
+**\(\|\mathbf{v}\|\)**: The norm (length) of v.
+**\(\|\mathbf{w}\|\)**: The norm (length) of w.
+**\(\cos(\theta)\)**: The cosine of the angle between them.
 
 You do not need to remember the details of cosine, but you need to know these key facts:
 - cos(0°) = 1: vectors pointing in exactly the same direction
@@ -664,7 +664,7 @@ Here is the connection to machine learning that makes the dot product so importa
 
 Suppose you want to score how much an observation "favors" a particular action. For example, you are operating a sensor, and based on the current observation vector (describing the state of the space environment), you want to score each possible pointing action.
 
-You define a **weight vector** \\(\mathbf{w}\\) for each action. The weight vector describes what kind of observation the action is best suited for. The score for taking that action given observation \\(\mathbf{o}\\) is the dot product \\(\mathbf{w} \cdot \mathbf{o}\\).
+You define a **weight vector** \(\mathbf{w}\) for each action. The weight vector describes what kind of observation the action is best suited for. The score for taking that action given observation \(\mathbf{o}\) is the dot product \(\mathbf{w} \cdot \mathbf{o}\).
 
 If the observation looks like what the weight vector describes (same direction, high alignment), the score is high. If the observation is perpendicular or opposite to the weight vector, the score is low or negative.
 

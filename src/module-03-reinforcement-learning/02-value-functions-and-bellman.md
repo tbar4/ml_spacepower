@@ -27,12 +27,12 @@ Q(s, a) tells you how good each action is in state s, on average, under your cur
 
 In a sense, Q is a finer-grained version of V. If you know all the Q values in a state, you can compute V by averaging over the actions according to the policy:
 
-\\[ V^\pi(s) = \sum_a \pi(a \mid s) \cdot Q^\pi(s, a) \\]
+\[ V^\pi(s) = \sum_a \pi(a \mid s) \cdot Q^\pi(s, a) \]
 
 **Decoding:**
-- \\(V^\pi(s)\\): the value of state s under policy π. The superscript π says "this value depends on which policy you are following."
-- \\(\pi(a \mid s)\\): the probability of taking action a in state s under policy π
-- \\(Q^\pi(s, a)\\): the Q value of taking action a in state s, then following π
+- \(V^\pi(s)\): the value of state s under policy π. The superscript π says "this value depends on which policy you are following."
+- \(\pi(a \mid s)\): the probability of taking action a in state s under policy π
+- \(Q^\pi(s, a)\): the Q value of taking action a in state s, then following π
 
 This is just the expectation formula from Module 1, lesson 1. V is the expected Q over the policy's action distribution.
 
@@ -42,13 +42,13 @@ Before going further, here is a reference table for all the value-related concep
 
 | Concept | Symbol | What it means | Used in |
 |---------|--------|---------------|---------|
-| Policy value | \\(V^\pi(s)\\) | Expected return following π from state s | Policy evaluation, Actor-Critic |
-| Optimal value | \\(V^*(s)\\) | Best possible expected return from state s, over all policies | Value iteration |
-| Action-value | \\(Q^\pi(s, a)\\) | Expected return taking action a then following π | Q-learning, DQN |
-| Optimal Q | \\(Q^*(s, a)\\) | Best possible Q value for (s, a) | Q-learning target |
-| Advantage | \\(A^\pi(s, a) = Q^\pi(s, a) - V^\pi(s)\\) | How much better is action a compared to the average action in state s | A3C, PPO |
+| Policy value | \(V^\pi(s)\) | Expected return following π from state s | Policy evaluation, Actor-Critic |
+| Optimal value | \(V^*(s)\) | Best possible expected return from state s, over all policies | Value iteration |
+| Action-value | \(Q^\pi(s, a)\) | Expected return taking action a then following π | Q-learning, DQN |
+| Optimal Q | \(Q^*(s, a)\) | Best possible Q value for (s, a) | Q-learning target |
+| Advantage | \(A^\pi(s, a) = Q^\pi(s, a) - V^\pi(s)\) | How much better is action a compared to the average action in state s | A3C, PPO |
 
-The advantage function \\(A^\pi(s, a)\\) deserves a note. It answers: "if I take action a instead of whatever my policy normally does, how much better or worse will I do?" A positive advantage means action a is better than average; a negative advantage means it is worse. PPO and A3C use the advantage rather than Q directly because it has lower variance — subtracting the baseline V(s) cancels out the part of the return that has nothing to do with the specific action choice.
+The advantage function \(A^\pi(s, a)\) deserves a note. It answers: "if I take action a instead of whatever my policy normally does, how much better or worse will I do?" A positive advantage means action a is better than average; a negative advantage means it is worse. PPO and A3C use the advantage rather than Q directly because it has lower variance — subtracting the baseline V(s) cancels out the part of the return that has nothing to do with the specific action choice.
 
 ## Building intuition with a tiny example
 
@@ -124,17 +124,17 @@ Here is the key observation. The value of a state can be decomposed into two par
 
 Formally, for the state-value function:
 
-\\[ V^\pi(s) = \sum_a \pi(a \mid s) \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma V^\pi(s') \right] \\]
+\[ V^\pi(s) = \sum_a \pi(a \mid s) \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma V^\pi(s') \right] \]
 
 This is dense. Let us decode it carefully.
 
-**\\(V^\pi(s)\\)**: the value of state s under policy π.
+**\(V^\pi(s)\)**: the value of state s under policy π.
 
-**\\(\sum_a \pi(a \mid s)\\)**: average over actions, weighted by the policy's probability of taking each one. This is the "expected over actions" piece.
+**\(\sum_a \pi(a \mid s)\)**: average over actions, weighted by the policy's probability of taking each one. This is the "expected over actions" piece.
 
-**\\(\sum_{s'} P(s' \mid s, a)\\)**: average over possible next states, weighted by the transition probability. This is the "expected over next states" piece.
+**\(\sum_{s'} P(s' \mid s, a)\)**: average over possible next states, weighted by the transition probability. This is the "expected over next states" piece.
 
-**\\(R(s, a, s') + \gamma V^\pi(s')\\)**: the contribution from each (action, next-state) combination. The immediate reward, plus the discounted value of the state we end up in.
+**\(R(s, a, s') + \gamma V^\pi(s')\)**: the contribution from each (action, next-state) combination. The immediate reward, plus the discounted value of the state we end up in.
 
 **Reading in plain English**:
 
@@ -144,7 +144,7 @@ The recursion is: V appears on both sides. The value of s depends on the values 
 
 For the Q function, the Bellman equation is similar but slightly different:
 
-\\[ Q^\pi(s, a) = \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma \sum_{a'} \pi(a' \mid s') \cdot Q^\pi(s', a') \right] \\]
+\[ Q^\pi(s, a) = \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma \sum_{a'} \pi(a' \mid s') \cdot Q^\pi(s', a') \right] \]
 
 Reading: "the Q value of (s, a) is the expected reward plus the discounted expected Q value of (s', a'), where a' is sampled from the policy."
 
@@ -223,16 +223,16 @@ The iterative value computation above is conceptually clean, but how does it con
 
 The Bellman equation tells us exactly what V(s) should equal:
 
-\\[ V^\pi(s) = \mathbb{E}\left[ R(s, a, s') + \gamma V^\pi(s') \right] \\]
+\[ V^\pi(s) = \mathbb{E}\left[ R(s, a, s') + \gamma V^\pi(s') \right] \]
 
-If our current estimate of V is not correct, the two sides will not match. The **TD error** \\(\delta\\) measures this mismatch for a single observed transition \\((s, a, r, s')\\):
+If our current estimate of V is not correct, the two sides will not match. The **TD error** \(\delta\) measures this mismatch for a single observed transition \((s, a, r, s')\):
 
-\\[ \delta = r + \gamma V(s') - V(s) \\]
+\[ \delta = r + \gamma V(s') - V(s) \]
 
 **Decoding each piece:**
-- \\(r + \gamma V(s')\\): the **TD target** — what V(s) should be, based on the actual reward we received and our current estimate of the next state's value
-- \\(V(s)\\): our current estimate of V(s)
-- \\(\delta = \text{target} - \text{estimate}\\): how wrong we are
+- \(r + \gamma V(s')\): the **TD target** — what V(s) should be, based on the actual reward we received and our current estimate of the next state's value
+- \(V(s)\): our current estimate of V(s)
+- \(\delta = \text{target} - \text{estimate}\): how wrong we are
 
 The sign of δ tells us which direction to update:
 
@@ -318,17 +318,17 @@ This is the core of Q-learning and DQN: use the Bellman equation to generate tra
 
 ## Bootstrapping: using our own estimates to update our estimates
 
-The TD update above uses \\(V(s')\\) — our current estimate of the next state's value — to update \\(V(s)\\). This is called **bootstrapping**: we use our own possibly-incorrect estimates to generate new estimates.
+The TD update above uses \(V(s')\) — our current estimate of the next state's value — to update \(V(s)\). This is called **bootstrapping**: we use our own possibly-incorrect estimates to generate new estimates.
 
 This is philosophically strange. If our estimates are wrong, won't updating with wrong estimates just produce more wrong estimates? Yes — but the key insight is that bootstrapped estimates converge because the Bellman equation is a contraction. Each iteration brings us closer to the true values. The process is self-correcting over many updates.
 
 ### The alternative: Monte Carlo
 
-The alternative to bootstrapping is **Monte Carlo estimation**: run an episode to completion, observe the actual total return \\(G_t = R_{t+1} + \gamma R_{t+2} + \ldots\\), and use that as the update target.
+The alternative to bootstrapping is **Monte Carlo estimation**: run an episode to completion, observe the actual total return \(G_t = R_{t+1} + \gamma R_{t+2} + \ldots\), and use that as the update target.
 
-\\[ V(s_t) \leftarrow V(s_t) + \alpha \left[ G_t - V(s_t) \right] \\]
+\[ V(s_t) \leftarrow V(s_t) + \alpha \left[ G_t - V(s_t) \right] \]
 
-Monte Carlo does not use \\(V(s')\\) at all — the target is the actual return, which involves no estimates.
+Monte Carlo does not use \(V(s')\) at all — the target is the actual return, which involves no estimates.
 
 ### The bias-variance tradeoff
 
@@ -345,11 +345,11 @@ In SSA problems, episodes can be long (a telescope tracking problem might run fo
 
 ### n-step returns: the middle ground
 
-The \\(n\\)-step return is a principled interpolation between 1-step TD and Monte Carlo:
+The \(n\)-step return is a principled interpolation between 1-step TD and Monte Carlo:
 
-\\[ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) \\]
+\[ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) \]
 
-**Decoding:** Take the actual rewards for the next \\(n\\) steps, then bootstrap with V at step \\(n\\). Setting \\(n=1\\) gives standard TD. Setting \\(n=T\\) (the episode length) gives Monte Carlo.
+**Decoding:** Take the actual rewards for the next \(n\) steps, then bootstrap with V at step \(n\). Setting \(n=1\) gives standard TD. Setting \(n=T\) (the episode length) gives Monte Carlo.
 
 Higher n reduces bias (we rely on fewer bootstrapped estimates) but increases variance (more actual random returns are included). The optimal n depends on the problem and is often treated as a hyperparameter. PPO and A3C typically use n between 5 and 20.
 
@@ -409,25 +409,25 @@ fn main() {
 }
 ```
 
-`.fold(v_final, |g, &r| r + gamma * g)` iterates in reverse: start with \\(G = V_\text{final}\\), then for each reward (from last to first) apply \\(G \leftarrow r + \gamma G\\). This is the same backward accumulation as the Python `reversed(rewards)` loop, in one expression.
+`.fold(v_final, |g, &r| r + gamma * g)` iterates in reverse: start with \(G = V_\text{final}\), then for each reward (from last to first) apply \(G \leftarrow r + \gamma G\). This is the same backward accumulation as the Python `reversed(rewards)` loop, in one expression.
 
 ## The optimal value function
 
 So far we have talked about the value function for a specific policy: V^π and Q^π. But often we want the value of the **best possible** policy. That is the **optimal value function**, denoted V* and Q*:
 
-\\[ V^*(s) = \max_\pi V^\pi(s) \\]
+\[ V^*(s) = \max_\pi V^\pi(s) \]
 
 In words: the maximum value achievable in state s by any policy.
 
 For Q*:
 
-\\[ Q^*(s, a) = \max_\pi Q^\pi(s, a) \\]
+\[ Q^*(s, a) = \max_\pi Q^\pi(s, a) \]
 
 The corresponding Bellman equations look slightly different. The optimal policy in any state takes the action that maximizes Q*, so the "average over actions" gets replaced by "max over actions":
 
-\\[ V^*(s) = \max_a \sum_{s'} P(s' \mid s, a) [R(s, a, s') + \gamma V^*(s')] \\]
+\[ V^*(s) = \max_a \sum_{s'} P(s' \mid s, a) [R(s, a, s') + \gamma V^*(s')] \]
 
-\\[ Q^*(s, a) = \sum_{s'} P(s' \mid s, a) [R(s, a, s') + \gamma \max_{a'} Q^*(s', a')] \\]
+\[ Q^*(s, a) = \sum_{s'} P(s' \mid s, a) [R(s, a, s') + \gamma \max_{a'} Q^*(s', a')] \]
 
 These are called the **Bellman optimality equations**. They define the optimal value functions self-referentially. Solving them gives you the optimal policy automatically: in each state, take the action that maximizes Q*.
 

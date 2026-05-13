@@ -31,13 +31,13 @@ When a routine conjunction warning comes in (probability 0.70), you are barely s
 
 **Surprise is inversely related to probability.** Common events are unsurprising. Rare events are surprising.
 
-We can make this precise. The mathematical definition of surprise for an event with probability \\(p\\) is:
+We can make this precise. The mathematical definition of surprise for an event with probability \(p\) is:
 
-\\[ \text{surprise}(p) = -\log(p) \\]
+\[ \text{surprise}(p) = -\log(p) \]
 
 Let us compute surprise for each alert type and see if it matches our intuition:
 
-| Alert type                    | Probability | \\(-\log(p)\\) (natural log) |
+| Alert type                    | Probability | \(-\log(p)\) (natural log) |
 |-------------------------------|-------------|-------------------------------|
 | Routine conjunction warning   | 0.70        | 0.357 (not very surprising)   |
 | Debris cloud update           | 0.20        | 1.609 (somewhat surprising)   |
@@ -54,13 +54,13 @@ Rare events (low probability) get high surprise scores. Common events (high prob
 
 ## Bits vs. nats: two choices of logarithm base
 
-The surprise formula \\(-\log(p)\\) leaves one choice open: which base of logarithm? This choice determines the unit of information.
+The surprise formula \(-\log(p)\) leaves one choice open: which base of logarithm? This choice determines the unit of information.
 
-**Bits (base 2):** If you use \\(\log_2\\), surprise is measured in **bits**. This is the unit from classical information theory and digital communication. A fair coin flip carries exactly 1 bit of information: \\(-\log_2(0.5) = 1\\). A message drawn uniformly from an alphabet of 8 symbols carries 3 bits per symbol: \\(-\log_2(1/8) = 3\\). Bits are the natural unit when you think about how many binary digits you need to encode something.
+**Bits (base 2):** If you use \(\log_2\), surprise is measured in **bits**. This is the unit from classical information theory and digital communication. A fair coin flip carries exactly 1 bit of information: \(-\log_2(0.5) = 1\). A message drawn uniformly from an alphabet of 8 symbols carries 3 bits per symbol: \(-\log_2(1/8) = 3\). Bits are the natural unit when you think about how many binary digits you need to encode something.
 
-**Nats (natural log):** If you use \\(\ln\\) (the natural logarithm, base \\(e\\)), surprise is measured in **nats**. This is the unit used in machine learning, statistics, and physics. The reason ML uses nats is practical: gradient computation is cleaner with natural logarithm because \\(\frac{d}{dx}\ln(x) = 1/x\\), without any prefactor. When you compute \\(\nabla_\theta \ln \pi_\theta(a|s)\\) in the policy gradient theorem, you want that clean derivative.
+**Nats (natural log):** If you use \(\ln\) (the natural logarithm, base \(e\)), surprise is measured in **nats**. This is the unit used in machine learning, statistics, and physics. The reason ML uses nats is practical: gradient computation is cleaner with natural logarithm because \(\frac{d}{dx}\ln(x) = 1/x\), without any prefactor. When you compute \(\nabla_\theta \ln \pi_\theta(a|s)\) in the policy gradient theorem, you want that clean derivative.
 
-**The conversion:** 1 nat = \\(\log_2(e) \approx 1.4427\\) bits. A fair coin flip in nats: \\(-\ln(0.5) = \ln(2) \approx 0.693\\) nats. Multiplying by 1.4427 gives 1 bit, as expected.
+**The conversion:** 1 nat = \(\log_2(e) \approx 1.4427\) bits. A fair coin flip in nats: \(-\ln(0.5) = \ln(2) \approx 0.693\) nats. Multiplying by 1.4427 gives 1 bit, as expected.
 
 **Which should you use?** Always use the same base consistently within a calculation. When reading papers: if entropy values are around 0.69 for a fair coin, they are in nats. If entropy values are 1.0 for a fair coin, they are in bits. In PyTorch: `torch.log` is natural log (nats); `torch.log2` gives bits.
 
@@ -100,11 +100,11 @@ You do not know which alert will come next. But you know the probabilities. The 
 
 Using the expectation formula from lesson 1:
 
-\\[ \text{average surprise} = \sum_{\text{all types}} P(\text{type}) \times \text{surprise}(\text{type}) \\]
+\[ \text{average surprise} = \sum_{\text{all types}} P(\text{type}) \times \text{surprise}(\text{type}) \]
 
 Let us compute it:
 
-| Alert type                    | Prob \\(p\\) | Surprise \\(-\log(p)\\) | Contribution \\(p \times (-\log p)\\) |
+| Alert type                    | Prob \(p\) | Surprise \(-\log(p)\) | Contribution \(p \times (-\log p)\) |
 |-------------------------------|------------|-------------------------|---------------------------------------|
 | Routine conjunction           | 0.70       | 0.357                   | 0.250                                 |
 | Debris cloud                  | 0.20       | 1.609                   | 0.322                                 |
@@ -122,25 +122,25 @@ The average surprise is 0.852. This quantity is the **entropy** of the alert dis
 
 Entropy of a distribution P is written:
 
-\\[ H(P) = -\sum_{x} P(x) \log P(x) \\]
+\[ H(P) = -\sum_{x} P(x) \log P(x) \]
 
 **Decoding each symbol:**
 
-**\\(H(P)\\)**: The entropy of distribution P. H stands for "Hartley" (an early information theorist), and P is the distribution. The parentheses just mean "the entropy of P."
+**\(H(P)\)**: The entropy of distribution P. H stands for "Hartley" (an early information theorist), and P is the distribution. The parentheses just mean "the entropy of P."
 
-**\\(-\\)**: The negative sign. Without it, the expression would be negative (since log of a probability < 1 is negative). The negative sign makes entropy positive.
+**\(-\)**: The negative sign. Without it, the expression would be negative (since log of a probability < 1 is negative). The negative sign makes entropy positive.
 
-**\\(\sum_{x}\\)**: Sum over all possible outcomes x. In our alert example, x ranges over the four alert types.
+**\(\sum_{x}\)**: Sum over all possible outcomes x. In our alert example, x ranges over the four alert types.
 
-**\\(P(x)\\)**: The probability of outcome x under distribution P.
+**\(P(x)\)**: The probability of outcome x under distribution P.
 
-**\\(\log P(x)\\)**: The logarithm of that probability.
+**\(\log P(x)\)**: The logarithm of that probability.
 
-**\\(P(x) \log P(x)\\)**: Probability times log-probability. Note that this is different from the surprise calculation: surprise is \\(-\log P(x)\\), but the contribution to entropy is \\(P(x) \times (-\log P(x))\\), the surprise weighted by how often it occurs.
+**\(P(x) \log P(x)\)**: Probability times log-probability. Note that this is different from the surprise calculation: surprise is \(-\log P(x)\), but the contribution to entropy is \(P(x) \times (-\log P(x))\), the surprise weighted by how often it occurs.
 
 **Reading in English**: "For each possible outcome, multiply its probability by its log-probability, sum all those products, and negate the result."
 
-This is just the expectation of surprise: \\(H(P) = \mathbb{E}[-\log P(X)]\\).
+This is just the expectation of surprise: \(H(P) = \mathbb{E}[-\log P(X)]\).
 
 ---
 
@@ -148,7 +148,7 @@ This is just the expectation of surprise: \\(H(P) = \mathbb{E}[-\log P(X)]\\).
 
 **Minimum entropy** (zero) occurs when one outcome has probability 1 and all others have probability 0. A completely determined distribution. A deterministic policy has zero entropy; you know exactly which action it will take.
 
-**Maximum entropy** occurs when the distribution is uniform: all outcomes equally likely. For four outcomes, maximum entropy would be \\(-4 \times (0.25 \times \log 0.25) = \log 4 \approx 1.386\\). A uniform policy over actions is maximally uncertain; you have no idea which action the agent will take.
+**Maximum entropy** occurs when the distribution is uniform: all outcomes equally likely. For four outcomes, maximum entropy would be \(-4 \times (0.25 \times \log 0.25) = \log 4 \approx 1.386\). A uniform policy over actions is maximally uncertain; you have no idea which action the agent will take.
 
 Your alert distribution (entropy ≈ 0.852) is between these extremes, closer to the minimum. You are not completely surprised on average, because most alerts are routine.
 
@@ -186,7 +186,7 @@ print(f"Exponential(rate=10) entropy: {exp_dist.entropy().item():.4f} nats")
 print(f"  (This is the max-entropy distribution for inter-arrival times with mean=0.1 hr)")
 ```
 
-In RL, the maximum entropy principle motivates **entropy regularization**: adding \\(\alpha H(\pi)\\) to the reward to encourage exploration. The agent is pushed toward the maximum entropy policy that still achieves high expected reward — uncertain unless it has a good reason to be certain.
+In RL, the maximum entropy principle motivates **entropy regularization**: adding \(\alpha H(\pi)\) to the reward to encourage exploration. The agent is pushed toward the maximum entropy policy that still achieves high expected reward — uncertain unless it has a good reason to be certain.
 
 ---
 
@@ -194,7 +194,7 @@ In RL, the maximum entropy principle motivates **entropy regularization**: addin
 
 Now suppose a new analyst joins your team. Based on their prior experience at a different space ops center, they have a different model of alert probabilities:
 
-| Alert type                    | True probability \\(P\\) | Analyst's model \\(Q\\) |
+| Alert type                    | True probability \(P\) | Analyst's model \(Q\) |
 |-------------------------------|--------------------------|--------------------------|
 | Routine conjunction           | 0.70                     | 0.40                     |
 | Debris cloud                  | 0.20                     | 0.30                     |
@@ -205,22 +205,22 @@ The analyst thinks adversarial maneuvers are much more common than they actually
 
 When alerts actually arrive (following the true distribution P), how surprised will the analyst be on average?
 
-The analyst's surprise when alert type x occurs is \\(-\log Q(x)\\), because they are using their model Q to form expectations. The actual frequency of each alert type follows P. So the analyst's average surprise is:
+The analyst's surprise when alert type x occurs is \(-\log Q(x)\), because they are using their model Q to form expectations. The actual frequency of each alert type follows P. So the analyst's average surprise is:
 
-\\[ \sum_{x} P(x) \times (-\log Q(x)) \\]
+\[ \sum_{x} P(x) \times (-\log Q(x)) \]
 
 This is the **cross-entropy** of P and Q:
 
-\\[ H(P, Q) = -\sum_{x} P(x) \log Q(x) \\]
+\[ H(P, Q) = -\sum_{x} P(x) \log Q(x) \]
 
 Let us compute it for your analyst:
 
-| Alert type           | True prob \\(P(x)\\) | Analyst surprise \\(-\log Q(x)\\) | Contribution |
+| Alert type           | True prob \(P(x)\) | Analyst surprise \(-\log Q(x)\) | Contribution |
 |----------------------|----------------------|-----------------------------------|--------------|
-| Routine conjunction  | 0.70                 | \\(-\log(0.40)\\) = 0.916         | 0.641        |
-| Debris cloud         | 0.20                 | \\(-\log(0.30)\\) = 1.204         | 0.241        |
-| Uncontrolled reentry | 0.08                 | \\(-\log(0.20)\\) = 1.609         | 0.129        |
-| Adversarial maneuver | 0.02                 | \\(-\log(0.10)\\) = 2.303         | 0.046        |
+| Routine conjunction  | 0.70                 | \(-\log(0.40)\) = 0.916         | 0.641        |
+| Debris cloud         | 0.20                 | \(-\log(0.30)\) = 1.204         | 0.241        |
+| Uncontrolled reentry | 0.08                 | \(-\log(0.20)\) = 1.609         | 0.129        |
+| Adversarial maneuver | 0.02                 | \(-\log(0.10)\) = 2.303         | 0.046        |
 | **Total**            |                      |                                   | **1.057**    |
 
 The analyst's average surprise is 1.057, compared to 0.852 for someone who knows the true distribution. The analyst experiences more surprise than necessary because their model is wrong.
@@ -233,21 +233,21 @@ Notice: when Q = P (the analyst's model matches reality perfectly), cross-entrop
 
 The most common loss function in ML is a special case of cross-entropy for two-class (binary) problems: **binary cross-entropy (BCE)**.
 
-When there are only two outcomes — conjunction risk above threshold (positive) or below (negative) — every true label is a degenerate distribution: either 100% probability on the positive class, or 100% on the negative class. The neural network outputs a scalar \\(p \in (0, 1)\\) predicting the probability of the positive class.
+When there are only two outcomes — conjunction risk above threshold (positive) or below (negative) — every true label is a degenerate distribution: either 100% probability on the positive class, or 100% on the negative class. The neural network outputs a scalar \(p \in (0, 1)\) predicting the probability of the positive class.
 
-The BCE loss for a single example with true label \\(y \in \{0, 1\}\\) and predicted probability \\(\hat{p}\\) is:
+The BCE loss for a single example with true label \(y \in \{0, 1\}\) and predicted probability \(\hat{p}\) is:
 
-\\[ L_{\text{BCE}} = -\left[y \log \hat{p} + (1 - y) \log(1 - \hat{p})\right] \\]
+\[ L_{\text{BCE}} = -\left[y \log \hat{p} + (1 - y) \log(1 - \hat{p})\right] \]
 
 **Decoding:**
 
-**\\(y \log \hat{p}\\)**: When \\(y = 1\\) (positive class), this term is \\(\log \hat{p}\\) — the log-probability the model assigned to the correct class. We want this large (close to 0), which means we want \\(\hat{p}\\) close to 1.
+**\(y \log \hat{p}\)**: When \(y = 1\) (positive class), this term is \(\log \hat{p}\) — the log-probability the model assigned to the correct class. We want this large (close to 0), which means we want \(\hat{p}\) close to 1.
 
-**\\((1 - y) \log(1 - \hat{p})\\)**: When \\(y = 0\\) (negative class), this term is \\(\log(1 - \hat{p})\\) — the log-probability of the negative class. We want \\(\hat{p}\\) close to 0.
+**\((1 - y) \log(1 - \hat{p})\)**: When \(y = 0\) (negative class), this term is \(\log(1 - \hat{p})\) — the log-probability of the negative class. We want \(\hat{p}\) close to 0.
 
-**Why only one term is active at a time**: when \\(y = 1\\), the \\((1-y)\\) factor zeroes out the second term. When \\(y = 0\\), the \\(y\\) factor zeroes out the first. You are always computing the cross-entropy between the degenerate true distribution and the model's prediction.
+**Why only one term is active at a time**: when \(y = 1\), the \((1-y)\) factor zeroes out the second term. When \(y = 0\), the \(y\) factor zeroes out the first. You are always computing the cross-entropy between the degenerate true distribution and the model's prediction.
 
-**Why this is cross-entropy:** The true label \\(y = 1\\) represents a degenerate distribution \\(P = [0, 1]\\) over {negative, positive}. The model's output represents \\(Q = [1-\hat{p}, \hat{p}]\\). The cross-entropy is \\(H(P, Q) = -[0 \cdot \log(1-\hat{p}) + 1 \cdot \log \hat{p}] = -\log \hat{p}\\), which is the BCE formula with \\(y = 1\\). The full two-term formula handles both cases compactly.
+**Why this is cross-entropy:** The true label \(y = 1\) represents a degenerate distribution \(P = [0, 1]\) over {negative, positive}. The model's output represents \(Q = [1-\hat{p}, \hat{p}]\). The cross-entropy is \(H(P, Q) = -[0 \cdot \log(1-\hat{p}) + 1 \cdot \log \hat{p}] = -\log \hat{p}\), which is the BCE formula with \(y = 1\). The full two-term formula handles both cases compactly.
 
 In SSA terms: a conjunction-risk binary classifier predicts whether a given RSO pair poses a collision risk above the 1-in-10,000 threshold. The BCE loss is the natural training objective — it penalizes the model proportionally to how surprised it would be by the true label, given its prediction.
 
@@ -289,48 +289,48 @@ print(f"\nMax difference: {(bce_manual - bce_torch).abs().max().item():.2e}")
 
 The extra surprise caused by using model Q instead of the true distribution P is:
 
-\\[ \text{KL}(P \| Q) = H(P, Q) - H(P) \\]
+\[ \text{KL}(P \| Q) = H(P, Q) - H(P) \]
 
 Or expanded:
 
-\\[ \text{KL}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)} \\]
+\[ \text{KL}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)} \]
 
 For your analyst: KL = 1.057 − 0.852 = **0.205**. The analyst experiences 0.205 extra units of surprise per alert because their model is miscalibrated.
 
 **Decoding the expanded formula:**
 
-**\\(\text{KL}(P \| Q)\\)**: The KL divergence from P to Q. The double bars and the order matter. \\(\text{KL}(P \| Q)\\) asks: "if reality is P, how much extra surprise does using model Q cause?"
+**\(\text{KL}(P \| Q)\)**: The KL divergence from P to Q. The double bars and the order matter. \(\text{KL}(P \| Q)\) asks: "if reality is P, how much extra surprise does using model Q cause?"
 
-**\\(\sum_x\\)**: Sum over all outcomes.
+**\(\sum_x\)**: Sum over all outcomes.
 
-**\\(P(x)\\)**: Weight by the actual frequency (what really happens).
+**\(P(x)\)**: Weight by the actual frequency (what really happens).
 
-**\\(\log \frac{P(x)}{Q(x)}\\)**: The log-ratio. When \\(Q(x) = P(x)\\), this is \\(\log 1 = 0\\): no extra surprise for that outcome. When \\(Q(x) < P(x)\\), you underestimated how often x occurs, and your surprise for that outcome is higher than it should be.
+**\(\log \frac{P(x)}{Q(x)}\)**: The log-ratio. When \(Q(x) = P(x)\), this is \(\log 1 = 0\): no extra surprise for that outcome. When \(Q(x) < P(x)\), you underestimated how often x occurs, and your surprise for that outcome is higher than it should be.
 
 **Key properties:**
 
 - KL divergence is always ≥ 0. It equals 0 only when P and Q are identical.
-- **KL divergence is asymmetric**: \\(\text{KL}(P \| Q) \neq \text{KL}(Q \| P)\\) in general. "How surprised is the analyst when reality is P and model is Q" is a different question from "how surprised is the analyst when reality is Q and model is P."
+- **KL divergence is asymmetric**: \(\text{KL}(P \| Q) \neq \text{KL}(Q \| P)\) in general. "How surprised is the analyst when reality is P and model is Q" is a different question from "how surprised is the analyst when reality is Q and model is P."
 
 ---
 
 ## Forward vs. reverse KL: mode-covering and mode-seeking
 
-The asymmetry of KL divergence is not just a mathematical curiosity — it has profound practical consequences for how an approximating distribution \\(Q\\) behaves when fitted to a target \\(P\\).
+The asymmetry of KL divergence is not just a mathematical curiosity — it has profound practical consequences for how an approximating distribution \(Q\) behaves when fitted to a target \(P\).
 
 ### Forward KL: KL(P || Q) — mode-covering
 
-\\(\text{KL}(P \| Q) = \sum_x P(x) \log \frac{P(x)}{Q(x)}\\)
+\(\text{KL}(P \| Q) = \sum_x P(x) \log \frac{P(x)}{Q(x)}\)
 
-This averages the log-ratio **weighted by P**. Wherever \\(P(x) > 0\\), any terms with \\(Q(x) \approx 0\\) contribute enormous positive values (since \\(\log P/Q \to \infty\\)). To minimize \\(\text{KL}(P \| Q)\\), the approximation \\(Q\\) **must cover all modes of P** — it cannot afford to assign zero probability to any region where P is significant.
+This averages the log-ratio **weighted by P**. Wherever \(P(x) > 0\), any terms with \(Q(x) \approx 0\) contribute enormous positive values (since \(\log P/Q \to \infty\)). To minimize \(\text{KL}(P \| Q)\), the approximation \(Q\) **must cover all modes of P** — it cannot afford to assign zero probability to any region where P is significant.
 
 The result: minimizing forward KL produces a Q that is **spread out** (over-dispersed relative to any single mode of P). If P is bimodal, Q tries to cover both modes, which may mean Q is high between the modes even where P is low. This is the "mode-covering" (or zero-avoiding) behavior.
 
 ### Reverse KL: KL(Q || P) — mode-seeking
 
-\\(\text{KL}(Q \| P) = \sum_x Q(x) \log \frac{Q(x)}{P(x)}\\)
+\(\text{KL}(Q \| P) = \sum_x Q(x) \log \frac{Q(x)}{P(x)}\)
 
-This averages the log-ratio **weighted by Q**. Now, wherever \\(P(x) \approx 0\\), having \\(Q(x) > 0\\) contributes large positive values (since \\(\log Q/P \to \infty\\)). To minimize \\(\text{KL}(Q \| P)\\), the approximation Q **avoids placing mass where P is small**. Q concentrates on regions where P is large — one mode at a time.
+This averages the log-ratio **weighted by Q**. Now, wherever \(P(x) \approx 0\), having \(Q(x) > 0\) contributes large positive values (since \(\log Q/P \to \infty\)). To minimize \(\text{KL}(Q \| P)\), the approximation Q **avoids placing mass where P is small**. Q concentrates on regions where P is large — one mode at a time.
 
 The result: minimizing reverse KL produces a Q that is **concentrated** (under-dispersed, hugging one mode of P). If P is bimodal, Q typically collapses onto whichever mode it found first. This is the "mode-seeking" (or zero-forcing) behavior.
 
@@ -338,11 +338,11 @@ The result: minimizing reverse KL produces a Q that is **concentrated** (under-d
 
 PPO (Proximal Policy Optimization) uses **forward KL** as its trust-region constraint — or equivalently, a clipped surrogate that approximates it. The constraint is:
 
-\\[ \text{KL}(\pi_\text{old} \| \pi_\text{new}) \leq \delta \\]
+\[ \text{KL}(\pi_\text{old} \| \pi_\text{new}) \leq \delta \]
 
-With forward KL, the old policy \\(\pi_\text{old}\\) plays the role of P. The constraint penalizes any region where \\(\pi_\text{new}\\) assigns near-zero probability to actions that \\(\pi_\text{old}\\) would take. This means the new policy **must still cover all actions the old policy would consider**, preventing catastrophic collapse in any direction of the action space.
+With forward KL, the old policy \(\pi_\text{old}\) plays the role of P. The constraint penalizes any region where \(\pi_\text{new}\) assigns near-zero probability to actions that \(\pi_\text{old}\) would take. This means the new policy **must still cover all actions the old policy would consider**, preventing catastrophic collapse in any direction of the action space.
 
-If PPO used reverse KL instead (\\(\text{KL}(\pi_\text{new} \| \pi_\text{old}) \leq \delta\\)), the new policy could freely collapse toward a single action as long as it matched \\(\pi_\text{old}\\)'s top action well. Forward KL is the right choice for policy stability because it enforces broad coverage, not just fidelity at the mode.
+If PPO used reverse KL instead (\(\text{KL}(\pi_\text{new} \| \pi_\text{old}) \leq \delta\)), the new policy could freely collapse toward a single action as long as it matched \(\pi_\text{old}\)'s top action well. Forward KL is the right choice for policy stability because it enforces broad coverage, not just fidelity at the mode.
 
 ### Visual demonstration: fitting a bimodal distribution
 
@@ -499,9 +499,9 @@ When training a neural network policy, you want to update the policy to improve 
 
 PPO and TRPO solve this by adding a constraint: the new policy should not diverge too far from the old policy, as measured by KL divergence. Specifically, they constrain:
 
-\\[ \text{KL}(\pi_\text{old} \| \pi_\text{new}) \leq \delta \\]
+\[ \text{KL}(\pi_\text{old} \| \pi_\text{new}) \leq \delta \]
 
-where \\(\delta\\) is a small threshold (like 0.01). This says: after the update, the average extra surprise under the old policy's expectations should not exceed \\(\delta\\). This keeps updates stable and prevents the policy from collapsing after a lucky or unlucky batch of experience.
+where \(\delta\) is a small threshold (like 0.01). This says: after the update, the average extra surprise under the old policy's expectations should not exceed \(\delta\). This keeps updates stable and prevents the policy from collapsing after a lucky or unlucky batch of experience.
 
 The choice of **forward KL** (old || new) rather than reverse KL (new || old) is deliberate. Forward KL forces the new policy to still cover all actions the old policy would take — preventing catastrophic forgetting of any action direction. Reverse KL would allow the new policy to collapse to a single action as long as that action matched the old policy's mode. In a satellite collision avoidance context, you never want to entirely rule out a class of avoidance maneuvers just because they were infrequent in the last training batch.
 
@@ -517,19 +517,19 @@ Now that you know what KL divergence measures, this constraint makes intuitive s
 
 **Pitfall 3: Cross-entropy is not KL divergence.** Cross-entropy includes the entropy of P. When P is fixed (as in supervised learning), minimizing cross-entropy and minimizing KL divergence are equivalent — but the numerical values are different, and it matters when comparing across different tasks.
 
-**Pitfall 4: log(0) is undefined.** If any probability is exactly 0, the entropy computation \\(0 \cdot \log(0)\\) requires the convention \\(0 \log 0 = 0\\) (by continuity). PyTorch's Categorical handles this, but manual computations with `torch.log` on zero-probability tensors will give `-inf`. Add a small epsilon or use `torch.nan_to_num`.
+**Pitfall 4: log(0) is undefined.** If any probability is exactly 0, the entropy computation \(0 \cdot \log(0)\) requires the convention \(0 \log 0 = 0\) (by continuity). PyTorch's Categorical handles this, but manual computations with `torch.log` on zero-probability tensors will give `-inf`. Add a small epsilon or use `torch.nan_to_num`.
 
-**Pitfall 5: Using reverse KL where forward KL is appropriate.** For policy constraints and trust regions, forward KL \\(\text{KL}(\pi_\text{old} \| \pi_\text{new})\\) is almost always correct. Reverse KL allows mode-seeking collapse, which is usually bad for policy stability.
+**Pitfall 5: Using reverse KL where forward KL is appropriate.** For policy constraints and trust regions, forward KL \(\text{KL}(\pi_\text{old} \| \pi_\text{new})\) is almost always correct. Reverse KL allows mode-seeking collapse, which is usually bad for policy stability.
 
 ---
 
 ## Key Takeaways
 
-- **Surprise** is \\(-\log p\\): rare events are surprising, common events are not. The choice of log base determines the unit — log base 2 gives bits (information theory), natural log gives nats (ML). They differ by a factor of \\(\log_2(e) \approx 1.443\\). PyTorch uses nats.
-- **Entropy** \\(H(P) = \mathbb{E}_P[-\log P(X)]\\) is average surprise: high entropy means a spread-out, uncertain distribution; zero entropy means a deterministic one. The **maximum entropy principle** says to use the highest-entropy distribution consistent with your known constraints — for known mean inter-arrival rate, that is the Exponential distribution.
-- **Binary cross-entropy** \\(-[y \log \hat{p} + (1-y)\log(1-\hat{p})]\\) is the natural loss for binary classifiers (like a conjunction-risk predictor). It is cross-entropy between the degenerate true label distribution and the model's prediction, penalizing the model in proportion to how surprised it would be by the correct answer.
-- **KL divergence** \\(\text{KL}(P \| Q) = H(P, Q) - H(P)\\) measures extra surprise from using the wrong model. It is always ≥ 0, asymmetric, and not a metric. Minimizing \\(\text{KL}(P \| Q)\\) over Q is equivalent to minimizing cross-entropy H(P, Q) when P is fixed — which is exactly what supervised learning does.
-- **Forward KL** \\(\text{KL}(P \| Q)\\) produces mode-covering behavior (Q must cover all modes of P); **reverse KL** \\(\text{KL}(Q \| P)\\) produces mode-seeking behavior (Q collapses onto one mode). PPO uses forward KL for its trust-region constraint, ensuring the new policy cannot completely abandon any action direction the old policy used.
+- **Surprise** is \(-\log p\): rare events are surprising, common events are not. The choice of log base determines the unit — log base 2 gives bits (information theory), natural log gives nats (ML). They differ by a factor of \(\log_2(e) \approx 1.443\). PyTorch uses nats.
+- **Entropy** \(H(P) = \mathbb{E}_P[-\log P(X)]\) is average surprise: high entropy means a spread-out, uncertain distribution; zero entropy means a deterministic one. The **maximum entropy principle** says to use the highest-entropy distribution consistent with your known constraints — for known mean inter-arrival rate, that is the Exponential distribution.
+- **Binary cross-entropy** \(-[y \log \hat{p} + (1-y)\log(1-\hat{p})]\) is the natural loss for binary classifiers (like a conjunction-risk predictor). It is cross-entropy between the degenerate true label distribution and the model's prediction, penalizing the model in proportion to how surprised it would be by the correct answer.
+- **KL divergence** \(\text{KL}(P \| Q) = H(P, Q) - H(P)\) measures extra surprise from using the wrong model. It is always ≥ 0, asymmetric, and not a metric. Minimizing \(\text{KL}(P \| Q)\) over Q is equivalent to minimizing cross-entropy H(P, Q) when P is fixed — which is exactly what supervised learning does.
+- **Forward KL** \(\text{KL}(P \| Q)\) produces mode-covering behavior (Q must cover all modes of P); **reverse KL** \(\text{KL}(Q \| P)\) produces mode-seeking behavior (Q collapses onto one mode). PPO uses forward KL for its trust-region constraint, ensuring the new policy cannot completely abandon any action direction the old policy used.
 - All three quantities — entropy, cross-entropy, KL — are faces of the same idea: **measuring information under mismatched models**. Every place they appear in ML (training loss, exploration bonus, policy constraint) is an instance of that one idea applied to a specific problem.
 
 ---

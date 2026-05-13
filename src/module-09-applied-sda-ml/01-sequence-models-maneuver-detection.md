@@ -72,7 +72,7 @@ Extract the following from each TLE epoch, then compute time-normalized rates be
 
 **Mean motion rate: Δn/Δt (rev/min/day)**
 
-Mean motion \\(n\\) is the orbital angular rate in revolutions per minute. It is inversely related to semi-major axis: higher orbit means lower mean motion. A prograde burn raises the orbit and decreases mean motion; a retrograde burn lowers the orbit and increases it. The rate Δn/Δt is the primary maneuver signal for in-plane burns.
+Mean motion \(n\) is the orbital angular rate in revolutions per minute. It is inversely related to semi-major axis: higher orbit means lower mean motion. A prograde burn raises the orbit and decreases mean motion; a retrograde burn lowers the orbit and increases it. The rate Δn/Δt is the primary maneuver signal for in-plane burns.
 
 ```python
 delta_n_per_day = (n_t2 - n_t1) / delta_t_days
@@ -90,7 +90,7 @@ Inclination changes require enormous delta-V (the vector must rotate the orbital
 
 RAAN (right ascension of the ascending node) drifts secularly due to J2 perturbations at a rate that depends on inclination and semi-major axis:
 
-\\[ \dot{\Omega}_{J2} = -\frac{3}{2} \frac{n J_2 R_E^2}{a^2 (1-e^2)^2} \cos i \\]
+\[ \dot{\Omega}_{J2} = -\frac{3}{2} \frac{n J_2 R_E^2}{a^2 (1-e^2)^2} \cos i \]
 
 At ISS altitude (approximately 400 km, 51.6° inclination), this drift is roughly −6.75°/day. This is not a maneuver signal — it is deterministic physics. If you use raw RAAN in your features, the secular drift dominates every other signal and your model learns nothing about maneuvers.
 

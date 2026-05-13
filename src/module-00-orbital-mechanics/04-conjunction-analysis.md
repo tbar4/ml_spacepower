@@ -70,7 +70,7 @@ The **conjunction plane** is the plane perpendicular to the relative velocity ve
 
 Each CDM provides a 3×3 position covariance (in RTN) for each object. The combined covariance for Pc computation is the sum:
 
-\\[ \mathbf{C}_\text{combined} = \mathbf{C}_1 + \mathbf{C}_2 \\]
+\[ \mathbf{C}_\text{combined} = \mathbf{C}_1 + \mathbf{C}_2 \]
 
 This assumes the two objects' position errors are independent — a reasonable approximation for objects in different orbits. After projecting onto the conjunction plane, the combined covariance becomes a 2×2 matrix describing the distribution of the relative position in the plane.
 
@@ -78,7 +78,7 @@ This assumes the two objects' position errors are independent — a reasonable a
 
 A collision occurs when the centers of the two objects are within the sum of their physical radii. This combined radius is called the **hard body radius (HBR)**:
 
-\\[ R_\text{HBR} = r_1 + r_2 \\]
+\[ R_\text{HBR} = r_1 + r_2 \]
 
 Typical values:
 - Active satellites: 2–10 m radius → 4–20 m HBR contribution
@@ -89,11 +89,11 @@ If no physical dimensions are known (common for debris), conservative estimates 
 
 ### The Foster/Chan Pc calculation
 
-The standard Pc method is due to Foster & Estes (1992) and Chan (1997). The calculation integrates the 2D Gaussian probability density function (representing the combined position uncertainty projected onto the conjunction plane) over the disk of radius \\(R_\text{HBR}\\) centered at the origin:
+The standard Pc method is due to Foster & Estes (1992) and Chan (1997). The calculation integrates the 2D Gaussian probability density function (representing the combined position uncertainty projected onto the conjunction plane) over the disk of radius \(R_\text{HBR}\) centered at the origin:
 
-\\[ P_c = \frac{1}{2\pi \sigma_1 \sigma_2} \int\!\!\!\int_{x^2 + y^2 \leq R_\text{HBR}^2} \exp\!\left(-\frac{x^2}{2\sigma_1^2} - \frac{y^2}{2\sigma_2^2}\right) dx\, dy \\]
+\[ P_c = \frac{1}{2\pi \sigma_1 \sigma_2} \int\!\!\!\int_{x^2 + y^2 \leq R_\text{HBR}^2} \exp\!\left(-\frac{x^2}{2\sigma_1^2} - \frac{y^2}{2\sigma_2^2}\right) dx\, dy \]
 
-where \\(\\sigma_1\\) and \\(\\sigma_2\\) are the semi-axes of the combined uncertainty ellipse in the conjunction plane (assuming the principal axes are aligned — the general case requires a full 2×2 covariance matrix).
+where \(\sigma_1\) and \(\sigma_2\) are the semi-axes of the combined uncertainty ellipse in the conjunction plane (assuming the principal axes are aligned — the general case requires a full 2×2 covariance matrix).
 
 In practice, this integral is computed numerically, often via series expansion. The key insight: Pc depends on two things — how large the combined uncertainty ellipse is relative to the HBR disk, and how the uncertainty is shaped relative to the encounter geometry.
 

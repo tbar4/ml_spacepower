@@ -61,15 +61,15 @@ In Module 5, an **information set** was defined structurally: a set of game tree
 
 Now we can give information sets a probabilistic interpretation: **an information set is the set of game tree nodes that are consistent with the current player's belief.**
 
-Formally, if player \\(i\\) has information set \\(I\\) at time \\(t\\), there exists a probability distribution \\(b_I\\) over the nodes in \\(I\\) such that:
+Formally, if player \(i\) has information set \(I\) at time \(t\), there exists a probability distribution \(b_I\) over the nodes in \(I\) such that:
 
-\\[ b_I(h) = P(\text{game is at node } h \mid \text{player } i\text{'s observations so far}) \\]
+\[ b_I(h) = P(\text{game is at node } h \mid \text{player } i\text{'s observations so far}) \]
 
 This is exactly the POMDP belief state, but embedded in a game tree rather than a single-agent MDP.
 
 **Decoding the connection:**
 
-In a POMDP, the belief \\(b(s) = P(s \mid \text{history})\\) is updated using Bayes' rule as new observations arrive.
+In a POMDP, the belief \(b(s) = P(s \mid \text{history})\) is updated using Bayes' rule as new observations arrive.
 
 In an imperfect-information game, each player maintains a belief over nodes within their current information set. As the game proceeds and new information arrives (observations of opponent actions, public chance outcomes), beliefs are updated using Bayes' rule in exactly the same way.
 
@@ -82,8 +82,8 @@ Let us formalize the ISR game as an extensive-form tree with information sets.
 **Players:** Defender (D), Challenger (C)
 
 **Chance move (before play begins):** Nature assigns the challenger a type:
-- \\(\theta_H\\) (high fuel, can reach conjunction orbit): probability \\(p\\)
-- \\(\theta_L\\) (low fuel, cannot reach conjunction orbit): probability \\(1 - p\\)
+- \(\theta_H\) (high fuel, can reach conjunction orbit): probability \(p\)
+- \(\theta_L\) (low fuel, cannot reach conjunction orbit): probability \(1 - p\)
 
 The challenger knows their type. The defender does not.
 
@@ -91,7 +91,7 @@ The challenger knows their type. The defender does not.
 
 **Defender's action:** After observing the challenger's action, allocate sensors to the challenger (Focus) or distribute sensors evenly (Spread).
 
-**Payoffs:** The defender wants to detect a conjunction-threatening maneuver. The challenger wants to reach the conjunction orbit undetected if they are type \\(\theta_H\\).
+**Payoffs:** The defender wants to detect a conjunction-threatening maneuver. The challenger wants to reach the conjunction orbit undetected if they are type \(\theta_H\).
 
 ```
                     [Nature]
@@ -106,15 +106,15 @@ The challenger knows their type. The defender does not.
 ```
 
 The defender's information sets are:
-- \\(I_M\\) = {node after (H, M), node after (L, M)}: both look identical to the defender, because the defender observes a maneuver but not the type.
-- \\(I_H\\) = {node after (H, H), node after (L, H)}: both look identical to the defender — no maneuver was seen.
+- \(I_M\) = {node after (H, M), node after (L, M)}: both look identical to the defender, because the defender observes a maneuver but not the type.
+- \(I_H\) = {node after (H, H), node after (L, H)}: both look identical to the defender — no maneuver was seen.
 
-At \\(I_M\\), the defender must use the same strategy (same probability of Focus vs. Spread) at both nodes, because those nodes are indistinguishable.
+At \(I_M\), the defender must use the same strategy (same probability of Focus vs. Spread) at both nodes, because those nodes are indistinguishable.
 
-The defender's belief at \\(I_M\\) is:
-\\[ b_{I_M}(H \mid M) = \frac{P(M \mid H) \cdot p}{P(M \mid H) \cdot p + P(M \mid L) \cdot (1-p)} \\]
+The defender's belief at \(I_M\) is:
+\[ b_{I_M}(H \mid M) = \frac{P(M \mid H) \cdot p}{P(M \mid H) \cdot p + P(M \mid L) \cdot (1-p)} \]
 
-**Decoding:** This is Bayes' rule. The defender has seen a maneuver (M) and is updating their belief about the challenger's type. \\(P(M \mid H)\\) is the probability the high-fuel challenger would maneuver (from the defender's perspective, this is the challenger's strategy). \\(P(M \mid L)\\) is the probability the low-fuel challenger would maneuver. The prior is \\(p\\) for type H.
+**Decoding:** This is Bayes' rule. The defender has seen a maneuver (M) and is updating their belief about the challenger's type. \(P(M \mid H)\) is the probability the high-fuel challenger would maneuver (from the defender's perspective, this is the challenger's strategy). \(P(M \mid L)\) is the probability the low-fuel challenger would maneuver. The prior is \(p\) for type H.
 
 This is the key moment where game theory and POMDPs merge: the defender's belief system is a POMDP belief, but the observation being processed is an opponent's *strategic action*, not a physical measurement.
 
@@ -122,14 +122,14 @@ This is the key moment where game theory and POMDPs merge: the defender's belief
 
 **Definition:** The value of information is the expected improvement in a player's payoff from learning the value of a hidden variable, before making a decision.
 
-\\[ \text{VOI}(X) = \mathbb{E}\left[\max_a u(a, X)\right] - \max_a \mathbb{E}[u(a, X)] \\]
+\[ \text{VOI}(X) = \mathbb{E}\left[\max_a u(a, X)\right] - \max_a \mathbb{E}[u(a, X)] \]
 
 **Decoding:**
-- Left term: expected payoff when you *know* \\(X\\) before acting — you choose optimally for each realization of \\(X\\).
-- Right term: expected payoff when you must choose \\(a\\) before knowing \\(X\\) — you choose the action that maximizes expected payoff under the prior over \\(X\\).
+- Left term: expected payoff when you *know* \(X\) before acting — you choose optimally for each realization of \(X\).
+- Right term: expected payoff when you must choose \(a\) before knowing \(X\) — you choose the action that maximizes expected payoff under the prior over \(X\).
 - VOI is the difference. It is always non-negative: knowing more information never hurts (in a single-agent setting).
 
-**SSA example:** The defender must decide whether to Focus sensors on the challenger or Spread coverage. The hidden variable \\(X\\) is the challenger's type (H or L).
+**SSA example:** The defender must decide whether to Focus sensors on the challenger or Spread coverage. The hidden variable \(X\) is the challenger's type (H or L).
 
 Suppose payoffs are (simplified):
 - Focus + type H maneuver: +10 (detected a real threat)
@@ -137,7 +137,7 @@ Suppose payoffs are (simplified):
 - Spread + type H maneuver: -5 (threat happened but detection probability was lower)
 - Spread + type L maneuver: +1 (balanced coverage, no major threat anyway)
 
-With prior \\(p = P(\text{type H}) = 0.3\\):
+With prior \(p = P(\text{type H}) = 0.3\):
 
 ```python
 import numpy as np
@@ -193,15 +193,15 @@ This is level-k reasoning. In laboratory experiments, human subjects often behav
 
 **Second**, the chain does not converge to a stable strategy. Each level k generates a different response, and there is no terminal point.
 
-Nash equilibrium is the principled resolution: an equilibrium strategy is a level-\\(\infty\\) best response that is also its own best response. Both players playing equilibrium means neither player can profit by deviating — there is no level at which reasoning breaks down.
+Nash equilibrium is the principled resolution: an equilibrium strategy is a level-\(\infty\) best response that is also its own best response. Both players playing equilibrium means neither player can profit by deviating — there is no level at which reasoning breaks down.
 
 The connection to CFR (Module 5, lesson 3): CFR iteratively updates both players' strategies until neither can improve by deviating. It is the computational method for finding the equilibrium that level-k reasoning approximates but never reaches.
 
 ## Perfect Bayesian Equilibrium: the solution concept
 
 A **Perfect Bayesian Equilibrium (PBE)** of an imperfect-information game is a pair of:
-1. A strategy profile \\(\sigma\\): one strategy per player at every information set.
-2. A belief system \\(\mu\\): a probability distribution over game tree nodes, one distribution per information set.
+1. A strategy profile \(\sigma\): one strategy per player at every information set.
+2. A belief system \(\mu\): a probability distribution over game tree nodes, one distribution per information set.
 
 Subject to two requirements:
 - **Sequential rationality**: at every information set, each player's strategy is a best response to the other players' strategies, given their belief at that information set.
@@ -209,7 +209,7 @@ Subject to two requirements:
 
 **Decoding:** PBE combines equilibrium (Nash) with belief updating (Bayes). A strategy that is not a best response given the player's belief is eliminated. Beliefs that are inconsistent with Bayes' rule (given the strategy profile) are eliminated. What remains is a self-consistent system of strategies and beliefs.
 
-In the ISR game, a PBE has the form: "challenger maneuveres with probability \\(\sigma_H\\) if type H and \\(\sigma_L\\) if type L; defender uses Focus with probability \\(\sigma_F \mid M\\) if a maneuver is observed and \\(\sigma_F \mid H\\) if no maneuver is observed; defender's beliefs at each information set are derived from the challenger's strategy via Bayes' rule."
+In the ISR game, a PBE has the form: "challenger maneuveres with probability \(\sigma_H\) if type H and \(\sigma_L\) if type L; defender uses Focus with probability \(\sigma_F \mid M\) if a maneuver is observed and \(\sigma_F \mid H\) if no maneuver is observed; defender's beliefs at each information set are derived from the challenger's strategy via Bayes' rule."
 
 ## Full Python code: PBE computation via backward induction
 
@@ -400,11 +400,11 @@ CFR (from Module 5, lesson 3) is the algorithm that efficiently finds the Nash e
 
 The connection is direct:
 
-**Reach probabilities in CFR track beliefs.** At each information set \\(I\\), CFR maintains the counterfactual reach probability \\(\pi_{-i}(I)\\): the probability that play reaches \\(I\\) assuming all players *except* player \\(i\\) play according to the current strategy. This is the unnormalized belief over nodes in \\(I\\).
+**Reach probabilities in CFR track beliefs.** At each information set \(I\), CFR maintains the counterfactual reach probability \(\pi_{-i}(I)\): the probability that play reaches \(I\) assuming all players *except* player \(i\) play according to the current strategy. This is the unnormalized belief over nodes in \(I\).
 
-**Counterfactual values answer the POMDP question.** The counterfactual value \\(v_i^\sigma(I, a)\\) is the expected payoff if player \\(i\\) always took action \\(a\\) at information set \\(I\\) and all other players followed their current strategies. This is "what would my expected payoff be if I used this action, given the opponent's strategy" — exactly the question a rational agent with belief \\(b_I\\) asks when choosing an action.
+**Counterfactual values answer the POMDP question.** The counterfactual value \(v_i^\sigma(I, a)\) is the expected payoff if player \(i\) always took action \(a\) at information set \(I\) and all other players followed their current strategies. This is "what would my expected payoff be if I used this action, given the opponent's strategy" — exactly the question a rational agent with belief \(b_I\) asks when choosing an action.
 
-**Regret accumulation drives belief-consistent strategies.** When CFR increases the probability of action \\(a\\) because its regret is positive (it would have done better), it is essentially saying: "given the opponent strategies I have encountered, this action performs well across the distribution of information sets I have been in." The distribution over information sets encountered is the induced belief distribution.
+**Regret accumulation drives belief-consistent strategies.** When CFR increases the probability of action \(a\) because its regret is positive (it would have done better), it is essentially saying: "given the opponent strategies I have encountered, this action performs well across the distribution of information sets I have been in." The distribution over information sets encountered is the induced belief distribution.
 
 The advantage of CFR over the belief-state value iteration for POMDPs is computational: CFR operates on the *policy* space (strategies at information sets), not the *belief* space (distributions over states). The belief space is continuous; the strategy space is parameterized by a probability per action per information set, which is finite for finite games. CFR avoids the intractability of explicit belief-space planning.
 

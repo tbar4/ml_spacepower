@@ -31,9 +31,9 @@ PSRO makes this concrete for neural-network policies. The "restricted game" is a
 
 PSRO maintains two data structures:
 
-1. **Policy population**: a set of policies \\(\Pi_i = \{\pi_i^1, \pi_i^2, \ldots, \pi_i^k\}\\) for each player \\(i\\). Each policy is a neural network trained by RL.
+1. **Policy population**: a set of policies \(\Pi_i = \{\pi_i^1, \pi_i^2, \ldots, \pi_i^k\}\) for each player \(i\). Each policy is a neural network trained by RL.
 
-2. **Meta-game payoff matrix**: a matrix \\(M\\) where \\(M_{ab}\\) contains the payoffs when player 1 uses policy \\(\pi_1^a\\) and player 2 uses policy \\(\pi_2^b\\). Each entry is estimated by running the two policies against each other and averaging the outcomes.
+2. **Meta-game payoff matrix**: a matrix \(M\) where \(M_{ab}\) contains the payoffs when player 1 uses policy \(\pi_1^a\) and player 2 uses policy \(\pi_2^b\). Each entry is estimated by running the two policies against each other and averaging the outcomes.
 
 The PSRO loop:
 
@@ -64,13 +64,13 @@ After k iterations, player 1 has k policies and player 2 has k policies. The met
 
 Solving for Nash equilibrium in a 2-player zero-sum k×k matrix game is a linear program:
 
-\\[ \min_{\sigma \in \Delta^k} \max_{j \in [k]} \sum_{i=1}^{k} \sigma_i \cdot M_{ij} \\]
+\[ \min_{\sigma \in \Delta^k} \max_{j \in [k]} \sum_{i=1}^{k} \sigma_i \cdot M_{ij} \]
 
 **Decoding:**
-- \\(\sigma \in \Delta^k\\): the mixing weights over player 1's k policies; they must be non-negative and sum to 1 (a simplex)
-- \\(\Delta^k\\): the probability simplex over k strategies
-- \\(\max_{j \in [k]}\\): the best response of player 2, who picks the column that maximizes their payoff
-- \\(\sum_{i=1}^{k} \sigma_i \cdot M_{ij}\\): the expected payoff to player 2 when player 1 mixes with weights \\(\sigma\\)
+- \(\sigma \in \Delta^k\): the mixing weights over player 1's k policies; they must be non-negative and sum to 1 (a simplex)
+- \(\Delta^k\): the probability simplex over k strategies
+- \(\max_{j \in [k]}\): the best response of player 2, who picks the column that maximizes their payoff
+- \(\sum_{i=1}^{k} \sigma_i \cdot M_{ij}\): the expected payoff to player 2 when player 1 mixes with weights \(\sigma\)
 - The outer minimization: player 1 wants the mixture that minimizes the damage from player 2's best response
 
 For general-sum games, the meta-game Nash can be solved with support enumeration or the Lemke-Howson algorithm for small k. In practice, scipy's `linprog` handles zero-sum cases, and iterative solvers handle general-sum cases.
@@ -79,7 +79,7 @@ For general-sum games, the meta-game Nash can be solved with support enumeration
 
 The best response oracle for player i trains a new policy to maximize expected return against the current meta-Nash mixture of opponents.
 
-Concretely: at each episode of RL training, sample an opponent policy \\(\pi_{-i}^j\\) from the meta-Nash distribution \\(\sigma^*_{-i}\\), then run a full episode of the game with the trainee policy against \\(\pi_{-i}^j\\). The RL gradient update optimizes the trainee against this sampled opponent.
+Concretely: at each episode of RL training, sample an opponent policy \(\pi_{-i}^j\) from the meta-Nash distribution \(\sigma^*_{-i}\), then run a full episode of the game with the trainee policy against \(\pi_{-i}^j\). The RL gradient update optimizes the trainee against this sampled opponent.
 
 This is equivalent to training against a **fixed mixed strategy** over the opponent population — exactly what fictitious play's best response computes, but now the "actions" are full neural-network policies and the "best response" is a gradient-descent training run.
 
@@ -335,13 +335,13 @@ for w, p in zip(final_sigma1, final_pops[0]):
 
 ### Mixing strategies during RL training
 
-When training the oracle for iteration k+1, the oracle must play against the meta-Nash mixture \\(\sigma^*\\) over the k existing opponent policies. The implementation is simple: at the start of each training episode, sample a policy index j with probability \\(\sigma^*_j\\), then run the episode against opponent policy j. The RL training loop sees a distribution of opponents rather than a single fixed one.
+When training the oracle for iteration k+1, the oracle must play against the meta-Nash mixture \(\sigma^*\) over the k existing opponent policies. The implementation is simple: at the start of each training episode, sample a policy index j with probability \(\sigma^*_j\), then run the episode against opponent policy j. The RL training loop sees a distribution of opponents rather than a single fixed one.
 
 This is important for generalization: a policy trained against only the strongest opponent in the mixture might be brittle against the other opponents. Training against the full mixture produces a policy that is robust to all opponents in proportion to their Nash weight.
 
 ### Evaluating policy pairs: the payoff matrix
 
-Each entry \\(M_{ab}\\) of the meta-game matrix requires simulating the two policies against each other. In an orbital simulation, this might mean running 50-100 episodes of a 24-hour tasking scenario and averaging the coverage scores. The entries need not be exact; PSRO is robust to noise in the payoff estimates. Standard error in the mean of 50-100 episodes is typically small enough.
+Each entry \(M_{ab}\) of the meta-game matrix requires simulating the two policies against each other. In an orbital simulation, this might mean running 50-100 episodes of a 24-hour tasking scenario and averaging the coverage scores. The entries need not be exact; PSRO is robust to noise in the payoff estimates. Standard error in the mean of 50-100 episodes is typically small enough.
 
 One practical issue: as the population grows, the number of matrix entries grows quadratically. At iteration k, adding a new policy requires computing k+1 new entries (one row and one column). This is manageable for k up to a few hundred but becomes expensive for very large populations. **Reservoir sampling** addresses this: at each iteration, only evaluate the new policy against a random sample of the existing population rather than all of them, and impute missing entries.
 
@@ -358,7 +358,7 @@ A richer starting population means fewer PSRO iterations are needed to reach a g
 
 As the PSRO population grows, many policies in the population may have zero Nash weight — the meta-game solver assigns all weight to a subset of policies. Policies with zero weight contribute nothing to the mixture and should not be trained against.
 
-**Rectified PSRO** (also called \\(\alpha\\)-PSRO in some papers) modifies the oracle training to only play against policies that have positive Nash weight. This focuses training on the relevant part of the strategy space and tends to produce more diverse final populations.
+**Rectified PSRO** (also called \(\alpha\)-PSRO in some papers) modifies the oracle training to only play against policies that have positive Nash weight. This focuses training on the relevant part of the strategy space and tends to produce more diverse final populations.
 
 A related issue: the meta-game Nash may assign all weight to a single policy if one policy dominates all others in the current population. This is a degenerate case — the Nash reduces to a pure strategy. Rectified variants use additional exploration to force diversity in the population, ensuring that best-response oracles have something interesting to best-respond to.
 

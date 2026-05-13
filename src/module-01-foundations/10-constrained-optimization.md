@@ -10,7 +10,7 @@
 
 ## Where this fits
 
-Lesson 07 covered unconstrained gradient descent: minimize \\(f(x)\\) by following the negative gradient. But real-world optimization is almost always constrained. Maneuver a satellite to a new orbit with a fixed delta-v budget. Train a policy subject to a KL divergence bound. Find the minimum-fuel trajectory subject to orbital dynamics. Constrained optimization is the tool for all of these.
+Lesson 07 covered unconstrained gradient descent: minimize \(f(x)\) by following the negative gradient. But real-world optimization is almost always constrained. Maneuver a satellite to a new orbit with a fixed delta-v budget. Train a policy subject to a KL divergence bound. Find the minimum-fuel trajectory subject to orbital dynamics. Constrained optimization is the tool for all of these.
 
 The machinery developed here — Lagrange multipliers, the KKT conditions, the Lagrangian dual — appears in three specific places downstream. PPO's trust region (Module 03) is a constrained optimization problem in which the Lagrange multiplier becomes an automatically adapted learning rate. The SVM dual formulation (Module 04) converts a hard quadratic program into a tractable dual problem. Natural policy gradients and PSRO meta-game computation (Module 06) rely on convex optimization solvers. Understanding the Lagrangian and the dual is the common thread behind all of these.
 
@@ -20,29 +20,29 @@ The machinery developed here — Lagrange multipliers, the KKT conditions, the L
 
 The general constrained optimization problem is:
 
-\\[
+\[
 \min_{x} \; f(x) \quad \text{subject to} \quad g_i(x) \leq 0, \; i = 1, \ldots, m \quad \text{and} \quad h_j(x) = 0, \; j = 1, \ldots, p
-\\]
+\]
 
 **Decoding:**
 
-**\\(f(x)\\)**: The objective function — the quantity you want to minimize. In an orbit maneuver, this might be \\(\|\Delta v\|\\), the total change in velocity (and hence the fuel consumed).
+**\(f(x)\)**: The objective function — the quantity you want to minimize. In an orbit maneuver, this might be \(\|\Delta v\|\), the total change in velocity (and hence the fuel consumed).
 
-**\\(g_i(x) \leq 0\\)**: Inequality constraints. These define a region you must stay inside. Each \\(g_i\\) describes a boundary that \\(x\\) cannot cross. Rewriting "perigee altitude must stay above 200 km" as \\(g(x) = 200 - r_p(x) \leq 0\\) puts it in this standard form.
+**\(g_i(x) \leq 0\)**: Inequality constraints. These define a region you must stay inside. Each \(g_i\) describes a boundary that \(x\) cannot cross. Rewriting "perigee altitude must stay above 200 km" as \(g(x) = 200 - r_p(x) \leq 0\) puts it in this standard form.
 
-**\\(h_j(x) = 0\\)**: Equality constraints. These are surfaces (not regions) that \\(x\\) must lie on exactly. The vis-viva equation relating orbital speed to distance is an equality constraint — you cannot just satisfy it approximately; the physics demands exact equality.
+**\(h_j(x) = 0\)**: Equality constraints. These are surfaces (not regions) that \(x\) must lie on exactly. The vis-viva equation relating orbital speed to distance is an equality constraint — you cannot just satisfy it approximately; the physics demands exact equality.
 
-**The feasible set** is the set of all \\(x\\) that satisfy every constraint simultaneously. The constrained minimum is the point in the feasible set where \\(f\\) is smallest.
+**The feasible set** is the set of all \(x\) that satisfy every constraint simultaneously. The constrained minimum is the point in the feasible set where \(f\) is smallest.
 
-**Geometric intuition:** imagine the objective \\(f\\) as a bowl-shaped surface. The unconstrained minimum is the bottom of the bowl. Now impose a wall (an inequality constraint). If the bottom of the bowl is outside the wall, you must press the bowl against the wall, and the constrained minimum is the point where the bowl just touches the wall from the inside.
+**Geometric intuition:** imagine the objective \(f\) as a bowl-shaped surface. The unconstrained minimum is the bottom of the bowl. Now impose a wall (an inequality constraint). If the bottom of the bowl is outside the wall, you must press the bowl against the wall, and the constrained minimum is the point where the bowl just touches the wall from the inside.
 
 ### SSA example: orbit raising with budget constraints
 
 A satellite needs to transfer from a 400 km circular parking orbit to a 1200 km target orbit. The mission constraints are:
 
-- **Minimize:** total delta-v \\(\|\Delta v\|\\) (fuel consumption proxy)
-- **Equality constraint:** the final orbit must achieve the target semi-major axis \\(a = 1200 + 6371 = 7571\\) km (Earth's radius plus altitude)
-- **Inequality constraint:** at no point during the transfer should the perigee drop below 180 km (atmospheric drag limit), i.e., \\(r_p \geq 6371 + 180 = 6551\\) km
+- **Minimize:** total delta-v \(\|\Delta v\|\) (fuel consumption proxy)
+- **Equality constraint:** the final orbit must achieve the target semi-major axis \(a = 1200 + 6371 = 7571\) km (Earth's radius plus altitude)
+- **Inequality constraint:** at no point during the transfer should the perigee drop below 180 km (atmospheric drag limit), i.e., \(r_p \geq 6371 + 180 = 6551\) km
 - **Inequality constraint:** the maneuver must complete within 30 days
 
 The unconstrained minimum (burn freely in any direction for any duration) might involve a trajectory that temporarily dips into the atmosphere. The constraints force a solution that achieves the target orbit while respecting the physical and operational bounds.
@@ -53,59 +53,59 @@ The unconstrained minimum (burn freely in any direction for any duration) might 
 
 ### The key idea
 
-At the constrained optimum, the gradient of the objective is parallel to the gradient of the constraint. If \\(\nabla f\\) pointed in a direction that is not parallel to \\(\nabla h\\), you could move slightly along the constraint surface (keeping \\(h(x) = 0\\)) and reduce \\(f\\). So at the minimum, you are stuck: any feasible direction is neutral for \\(f\\), which means \\(\nabla f\\) and \\(\nabla h\\) must point in the same or opposite direction.
+At the constrained optimum, the gradient of the objective is parallel to the gradient of the constraint. If \(\nabla f\) pointed in a direction that is not parallel to \(\nabla h\), you could move slightly along the constraint surface (keeping \(h(x) = 0\)) and reduce \(f\). So at the minimum, you are stuck: any feasible direction is neutral for \(f\), which means \(\nabla f\) and \(\nabla h\) must point in the same or opposite direction.
 
-Formally, there exists a scalar \\(\lambda\\) such that \\(\nabla f = -\lambda \nabla h\\) at the optimum.
+Formally, there exists a scalar \(\lambda\) such that \(\nabla f = -\lambda \nabla h\) at the optimum.
 
 ### The Lagrangian
 
 Rather than solving the constrained problem directly, we form the **Lagrangian**:
 
-\\[
+\[
 \mathcal{L}(x, \lambda) = f(x) + \lambda \, h(x)
-\\]
+\]
 
 **Decoding:**
 
-**\\(\lambda\\)**: The **Lagrange multiplier**. It is a new scalar variable (or a vector of scalars, one per equality constraint). It plays the role of a price: how much would the optimal value of \\(f\\) improve if we relaxed the constraint slightly? A large positive \\(\lambda\\) means the constraint is expensive — the optimum would improve a lot if the constraint were loosened.
+**\(\lambda\)**: The **Lagrange multiplier**. It is a new scalar variable (or a vector of scalars, one per equality constraint). It plays the role of a price: how much would the optimal value of \(f\) improve if we relaxed the constraint slightly? A large positive \(\lambda\) means the constraint is expensive — the optimum would improve a lot if the constraint were loosened.
 
-**\\(\lambda \, h(x)\\)**: The constraint is folded into the objective. At any point where \\(h(x) \neq 0\\), this term adds a penalty proportional to how much the constraint is violated.
+**\(\lambda \, h(x)\)**: The constraint is folded into the objective. At any point where \(h(x) \neq 0\), this term adds a penalty proportional to how much the constraint is violated.
 
 ### First-order conditions
 
-To find the constrained optimum, take the gradient of the Lagrangian with respect to both \\(x\\) and \\(\lambda\\) and set both to zero:
+To find the constrained optimum, take the gradient of the Lagrangian with respect to both \(x\) and \(\lambda\) and set both to zero:
 
-\\[
+\[
 \nabla_x \mathcal{L} = \nabla f(x) + \lambda \nabla h(x) = 0
-\\]
+\]
 
-\\[
+\[
 \frac{\partial \mathcal{L}}{\partial \lambda} = h(x) = 0
-\\]
+\]
 
 **Decoding:**
 
-The first equation says \\(\nabla f = -\lambda \nabla h\\): the gradients are antiparallel (scaled versions of each other), which is exactly the geometric condition above.
+The first equation says \(\nabla f = -\lambda \nabla h\): the gradients are antiparallel (scaled versions of each other), which is exactly the geometric condition above.
 
-The second equation simply recovers the equality constraint \\(h(x) = 0\\): taking the derivative with respect to \\(\lambda\\) and setting it to zero forces the constraint to be satisfied.
+The second equation simply recovers the equality constraint \(h(x) = 0\): taking the derivative with respect to \(\lambda\) and setting it to zero forces the constraint to be satisfied.
 
 ### Worked example: orbit-raising delta-v
 
-Consider a simplified Hohmann transfer. A satellite in a circular orbit of radius \\(r_1\\) applies a burn \\(\Delta v\\) to enter an elliptical transfer orbit, then a second burn at apoapsis to circularize at \\(r_2\\). For the first burn only (starting from circular velocity):
+Consider a simplified Hohmann transfer. A satellite in a circular orbit of radius \(r_1\) applies a burn \(\Delta v\) to enter an elliptical transfer orbit, then a second burn at apoapsis to circularize at \(r_2\). For the first burn only (starting from circular velocity):
 
-**Objective:** minimize \\(f(\Delta v) = |\Delta v|\\)
+**Objective:** minimize \(f(\Delta v) = |\Delta v|\)
 
 **Constraint:** the vis-viva equation requires that after the burn, the specific orbital energy satisfies:
 
-\\[
+\[
 h(\Delta v) = \frac{(v_c + \Delta v)^2}{2} - \frac{\mu}{r_1} - \varepsilon^* = 0
-\\]
+\]
 
-where \\(v_c = \sqrt{\mu / r_1}\\) is the circular speed, \\(\mu\\) is Earth's gravitational parameter, and \\(\varepsilon^*\\) is the specific energy needed for the transfer orbit. The equality constraint is exactly the vis-viva equation: the burn must produce precisely the right energy.
+where \(v_c = \sqrt{\mu / r_1}\) is the circular speed, \(\mu\) is Earth's gravitational parameter, and \(\varepsilon^*\) is the specific energy needed for the transfer orbit. The equality constraint is exactly the vis-viva equation: the burn must produce precisely the right energy.
 
-Lagrangian: \\(\mathcal{L}(\Delta v, \lambda) = |\Delta v| + \lambda \left[\frac{(v_c + \Delta v)^2}{2} - \frac{\mu}{r_1} - \varepsilon^*\right]\\)
+Lagrangian: \(\mathcal{L}(\Delta v, \lambda) = |\Delta v| + \lambda \left[\frac{(v_c + \Delta v)^2}{2} - \frac{\mu}{r_1} - \varepsilon^*\right]\)
 
-Taking \\(\partial \mathcal{L} / \partial (\Delta v) = 0\\) gives \\(1 + \lambda(v_c + \Delta v) = 0\\), so \\(\lambda = -1 / (v_c + \Delta v)\\). The energy equation pins down the value of \\(\Delta v\\), and \\(\lambda\\) tells you the sensitivity: relaxing the energy requirement by one unit reduces the required \\(\Delta v\\) by \\(1/(v_c + \Delta v)\\).
+Taking \(\partial \mathcal{L} / \partial (\Delta v) = 0\) gives \(1 + \lambda(v_c + \Delta v) = 0\), so \(\lambda = -1 / (v_c + \Delta v)\). The energy equation pins down the value of \(\Delta v\), and \(\lambda\) tells you the sensitivity: relaxing the energy requirement by one unit reduces the required \(\Delta v\) by \(1/(v_c + \Delta v)\).
 
 ### Code: equality-constrained 2D example
 
@@ -165,61 +165,61 @@ print(f"Scipy constraint satisfied: h(x*) = {result.x[0] + result.x[1] - 4.0:.2e
 print(f"Lagrange multiplier: λ* = {result.v[0][0]:.4f}")  # v holds KKT multipliers
 ```
 
-The Lagrange multiplier \\(\lambda = 1.0\\) has a concrete interpretation here: relaxing the budget constraint by 0.001 km/s (from 4.000 to 4.001) would reduce the optimal fuel cost by approximately 0.001.
+The Lagrange multiplier \(\lambda = 1.0\) has a concrete interpretation here: relaxing the budget constraint by 0.001 km/s (from 4.000 to 4.001) would reduce the optimal fuel cost by approximately 0.001.
 
 ---
 
 ## Lagrange multipliers for inequality constraints: KKT conditions
 
-Equality constraints pin you to a surface. Inequality constraints \\(g(x) \leq 0\\) give you a region. The generalization requires more care because the constraint may or may not be active at the solution.
+Equality constraints pin you to a surface. Inequality constraints \(g(x) \leq 0\) give you a region. The generalization requires more care because the constraint may or may not be active at the solution.
 
 ### The Lagrangian for inequality constraints
 
-\\[
+\[
 \mathcal{L}(x, \lambda) = f(x) + \lambda \, g(x), \quad \lambda \geq 0
-\\]
+\]
 
-The dual feasibility condition \\(\lambda \geq 0\\) is essential: the Lagrange multiplier for an inequality constraint must be non-negative. Intuitively, the constraint \\(g(x) \leq 0\\) pushes inward (into the feasible region), so the multiplier must have the right sign to oppose that push.
+The dual feasibility condition \(\lambda \geq 0\) is essential: the Lagrange multiplier for an inequality constraint must be non-negative. Intuitively, the constraint \(g(x) \leq 0\) pushes inward (into the feasible region), so the multiplier must have the right sign to oppose that push.
 
 ### The KKT conditions
 
 The **Karush-Kuhn-Tucker (KKT) conditions** are the first-order necessary conditions for a constrained optimum with inequality constraints. For the problem with both types of constraints:
 
-\\[
+\[
 \min_x f(x) \quad \text{s.t.} \quad g_i(x) \leq 0, \; h_j(x) = 0
-\\]
+\]
 
 the KKT conditions are:
 
-1. **Stationarity:** \\(\nabla_x f(x^*) + \sum_i \lambda_i \nabla_x g_i(x^*) + \sum_j \nu_j \nabla_x h_j(x^*) = 0\\)
-2. **Primal feasibility:** \\(g_i(x^*) \leq 0\\) and \\(h_j(x^*) = 0\\)
-3. **Dual feasibility:** \\(\lambda_i \geq 0\\)
-4. **Complementary slackness:** \\(\lambda_i \, g_i(x^*) = 0\\) for all \\(i\\)
+1. **Stationarity:** \(\nabla_x f(x^*) + \sum_i \lambda_i \nabla_x g_i(x^*) + \sum_j \nu_j \nabla_x h_j(x^*) = 0\)
+2. **Primal feasibility:** \(g_i(x^*) \leq 0\) and \(h_j(x^*) = 0\)
+3. **Dual feasibility:** \(\lambda_i \geq 0\)
+4. **Complementary slackness:** \(\lambda_i \, g_i(x^*) = 0\) for all \(i\)
 
 **Decoding each condition:**
 
-**Stationarity** says that at the optimal point, no direction in the feasible set can further reduce \\(f\\). The gradient of the objective is balanced by the weighted gradients of the active constraints. This is the same geometric condition as before, extended to multiple constraints.
+**Stationarity** says that at the optimal point, no direction in the feasible set can further reduce \(f\). The gradient of the objective is balanced by the weighted gradients of the active constraints. This is the same geometric condition as before, extended to multiple constraints.
 
 **Primal feasibility** says the solution must actually satisfy the original constraints — you did not gain a better objective by cheating and going outside the feasible set.
 
-**Dual feasibility** (\\(\lambda_i \geq 0\\)) says the multipliers are non-negative. If \\(g_i\\) is an upper-bound constraint, the multiplier must pull the objective in the direction that tightens the constraint, not loosens it.
+**Dual feasibility** (\(\lambda_i \geq 0\)) says the multipliers are non-negative. If \(g_i\) is an upper-bound constraint, the multiplier must pull the objective in the direction that tightens the constraint, not loosens it.
 
-**Complementary slackness** is the critical new condition. Either \\(\lambda_i = 0\\) (the constraint is inactive — it is not binding at the solution and does not affect it) or \\(g_i(x^*) = 0\\) (the constraint is active — the solution lies exactly on the constraint boundary). Both cannot be nonzero simultaneously.
+**Complementary slackness** is the critical new condition. Either \(\lambda_i = 0\) (the constraint is inactive — it is not binding at the solution and does not affect it) or \(g_i(x^*) = 0\) (the constraint is active — the solution lies exactly on the constraint boundary). Both cannot be nonzero simultaneously.
 
-This captures the intuition precisely: if you are not against a wall (the constraint is inactive, \\(g_i < 0\\)), it does not affect your solution and its multiplier is zero. If you are against the wall (the constraint is active, \\(g_i = 0\\)), the multiplier is potentially nonzero and tells you the cost of the constraint.
+This captures the intuition precisely: if you are not against a wall (the constraint is inactive, \(g_i < 0\)), it does not affect your solution and its multiplier is zero. If you are against the wall (the constraint is active, \(g_i = 0\)), the multiplier is potentially nonzero and tells you the cost of the constraint.
 
 ### SSA example: power-constrained communications
 
-A satellite must transmit telemetry to a ground station. The transmitter has a variable power level \\(P\\) (Watts). Minimize power consumption subject to the signal-to-noise ratio (SNR) meeting the minimum threshold:
+A satellite must transmit telemetry to a ground station. The transmitter has a variable power level \(P\) (Watts). Minimize power consumption subject to the signal-to-noise ratio (SNR) meeting the minimum threshold:
 
-- **Objective:** \\(f(P) = P\\) (minimize transmit power)
-- **Constraint:** \\(g(P) = \text{SNR}_\text{min} - \text{SNR}(P) \leq 0\\) (SNR must exceed 10 dB threshold)
+- **Objective:** \(f(P) = P\) (minimize transmit power)
+- **Constraint:** \(g(P) = \text{SNR}_\text{min} - \text{SNR}(P) \leq 0\) (SNR must exceed 10 dB threshold)
 
-where \\(\text{SNR}(P) = P \cdot G / (k T B)\\) (linear SNR, with fixed antenna gain \\(G\\), noise temperature \\(T\\), Boltzmann constant \\(k\\), bandwidth \\(B\\)).
+where \(\text{SNR}(P) = P \cdot G / (k T B)\) (linear SNR, with fixed antenna gain \(G\), noise temperature \(T\), Boltzmann constant \(k\), bandwidth \(B\)).
 
-At the optimal solution: the constraint is active (\\(\lambda > 0\\), \\(g(P^*) = 0\\)). The satellite transmits at exactly the minimum power that hits 10 dB SNR — not more. The multiplier \\(\lambda > 0\\) tells you how much extra power you would need if the SNR requirement were raised.
+At the optimal solution: the constraint is active (\(\lambda > 0\), \(g(P^*) = 0\)). The satellite transmits at exactly the minimum power that hits 10 dB SNR — not more. The multiplier \(\lambda > 0\) tells you how much extra power you would need if the SNR requirement were raised.
 
-If the satellite has a more efficient antenna that already achieves 15 dB at the minimum feasible power, the constraint is inactive (\\(g(P^*) < 0\\)) and \\(\lambda = 0\\) — you can reduce power freely until some other constraint becomes binding.
+If the satellite has a more efficient antenna that already achieves 15 dB at the minimum feasible power, the constraint is inactive (\(g(P^*) < 0\)) and \(\lambda = 0\) — you can reduce power freely until some other constraint becomes binding.
 
 ### Code: 2D inequality-constrained optimization
 
@@ -272,7 +272,7 @@ for name, val in [("g1", g1), ("g2", g2), ("g3", g3)]:
 # Active constraints have nonzero multipliers, inactive have multiplier = 0
 ```
 
-The output will show which constraints are binding at the solution. Any constraint reported as active (\\(g_i \approx 0\\)) corresponds to a nonzero KKT multiplier; inactive constraints have \\(\lambda_i = 0\\), confirming complementary slackness.
+The output will show which constraints are binding at the solution. Any constraint reported as active (\(g_i \approx 0\)) corresponds to a nonzero KKT multiplier; inactive constraints have \(\lambda_i = 0\), confirming complementary slackness.
 
 ---
 
@@ -284,47 +284,47 @@ Given the primal constrained problem, we can derive a paired **dual problem** th
 
 Define the **Lagrangian dual function**:
 
-\\[
+\[
 D(\lambda) = \min_{x} \; \mathcal{L}(x, \lambda) = \min_{x} \left[ f(x) + \sum_i \lambda_i g_i(x) \right]
-\\]
+\]
 
-For each fixed \\(\lambda \geq 0\\), \\(D(\lambda)\\) is the minimum of the Lagrangian over all \\(x\\) (unconstrained). The **dual problem** is:
+For each fixed \(\lambda \geq 0\), \(D(\lambda)\) is the minimum of the Lagrangian over all \(x\) (unconstrained). The **dual problem** is:
 
-\\[
+\[
 \max_{\lambda \geq 0} \; D(\lambda)
-\\]
+\]
 
 **Decoding:**
 
-\\(D(\lambda)\\) is the best lower bound on \\(f\\) you can get by penalizing constraint violations with weights \\(\lambda\\). You want to find the tightest such lower bound, which is what the dual maximization does.
+\(D(\lambda)\) is the best lower bound on \(f\) you can get by penalizing constraint violations with weights \(\lambda\). You want to find the tightest such lower bound, which is what the dual maximization does.
 
 ### Weak and strong duality
 
-**Weak duality** always holds: \\(D(\lambda) \leq f(x^*)\\) for any \\(\lambda \geq 0\\). The dual gives a lower bound on the primal optimum. This is true regardless of the problem structure.
+**Weak duality** always holds: \(D(\lambda) \leq f(x^*)\) for any \(\lambda \geq 0\). The dual gives a lower bound on the primal optimum. This is true regardless of the problem structure.
 
-**Strong duality**: when \\(f\\) and all \\(g_i\\) are convex and a regularity condition (Slater's condition) holds — there exists a strictly feasible point — the duality gap is zero:
+**Strong duality**: when \(f\) and all \(g_i\) are convex and a regularity condition (Slater's condition) holds — there exists a strictly feasible point — the duality gap is zero:
 
-\\[
+\[
 D(\lambda^*) = f(x^*)
-\\]
+\]
 
 The dual achieves the same optimal value as the primal. Solving the dual is equivalent to solving the primal.
 
-**The duality gap** is \\(f(x^*) - D(\lambda^*)\\). Under strong duality, it is zero. In non-convex problems, there may be a positive gap — the dual bound is loose.
+**The duality gap** is \(f(x^*) - D(\lambda^*)\). Under strong duality, it is zero. In non-convex problems, there may be a positive gap — the dual bound is loose.
 
 **Why this matters for machine learning:**
 
-The dual is often much easier to solve than the primal. The SVM dual, for example, converts a problem in the weight space (potentially infinite-dimensional via kernels) into a finite-dimensional quadratic program over training examples. PPO's trust-region constraint is handled by moving it into the Lagrangian and treating the multiplier \\(\lambda\\) as an adaptive penalty coefficient:
+The dual is often much easier to solve than the primal. The SVM dual, for example, converts a problem in the weight space (potentially infinite-dimensional via kernels) into a finite-dimensional quadratic program over training examples. PPO's trust-region constraint is handled by moving it into the Lagrangian and treating the multiplier \(\lambda\) as an adaptive penalty coefficient:
 
-\\[
+\[
 \mathcal{L}_\text{PPO}(\theta) = \mathbb{E}\left[\hat{A} \cdot r_t(\theta)\right] - \lambda \cdot \text{KL}(\pi_\text{old} \| \pi_\theta)
-\\]
+\]
 
-Instead of solving the constrained problem (hard), PPO approximately solves the unconstrained Lagrangian for a fixed \\(\lambda\\), then updates \\(\lambda\\) based on whether the KL constraint was satisfied. This is dual ascent — a first-order method on the dual problem.
+Instead of solving the constrained problem (hard), PPO approximately solves the unconstrained Lagrangian for a fixed \(\lambda\), then updates \(\lambda\) based on whether the KL constraint was satisfied. This is dual ascent — a first-order method on the dual problem.
 
 ### SSA framing
 
-The primal orbit optimization problem is: "find the minimum-fuel maneuver sequence that satisfies all dynamics constraints, altitude limits, and timing requirements." The dual asks: "find the right penalty weights \\(\lambda_i\\) such that minimizing the penalized cost — fuel plus weighted constraint violations — gives the same answer as solving the primal directly." Under strong duality (the problem is convex), these two answers are identical.
+The primal orbit optimization problem is: "find the minimum-fuel maneuver sequence that satisfies all dynamics constraints, altitude limits, and timing requirements." The dual asks: "find the right penalty weights \(\lambda_i\) such that minimizing the penalized cost — fuel plus weighted constraint violations — gives the same answer as solving the primal directly." Under strong duality (the problem is convex), these two answers are identical.
 
 ---
 
@@ -332,41 +332,41 @@ The primal orbit optimization problem is: "find the minimum-fuel maneuver sequen
 
 ### What is convexity?
 
-A function \\(f: \mathbb{R}^n \to \mathbb{R}\\) is **convex** if for any two points \\(x, y\\) and any \\(t \in [0, 1]\\):
+A function \(f: \mathbb{R}^n \to \mathbb{R}\) is **convex** if for any two points \(x, y\) and any \(t \in [0, 1]\):
 
-\\[
+\[
 f(tx + (1-t)y) \leq t \, f(x) + (1-t) f(y)
-\\]
+\]
 
 **Decoding:**
 
-The left side is the function value at a point on the line segment between \\(x\\) and \\(y\\). The right side is the corresponding point on the chord (the straight line from \\(f(x)\\) to \\(f(y)\\)). Convexity says the function lies below the chord everywhere — the graph of \\(f\\) is "cup-shaped."
+The left side is the function value at a point on the line segment between \(x\) and \(y\). The right side is the corresponding point on the chord (the straight line from \(f(x)\) to \(f(y)\)). Convexity says the function lies below the chord everywhere — the graph of \(f\) is "cup-shaped."
 
-Equivalently (for twice-differentiable functions), \\(f\\) is convex if and only if its Hessian \\(\nabla^2 f(x)\\) is positive semi-definite at every \\(x\\): all eigenvalues of the Hessian are \\(\geq 0\\).
+Equivalently (for twice-differentiable functions), \(f\) is convex if and only if its Hessian \(\nabla^2 f(x)\) is positive semi-definite at every \(x\): all eigenvalues of the Hessian are \(\geq 0\).
 
-A set \\(\mathcal{C}\\) is **convex** if for any two points in \\(\mathcal{C}\\), the entire line segment between them is also in \\(\mathcal{C}\\). The intersection of convex sets is convex. The feasible set of a problem with convex inequality constraints \\(g_i(x) \leq 0\\) and linear equality constraints \\(h_j(x) = 0\\) is convex.
+A set \(\mathcal{C}\) is **convex** if for any two points in \(\mathcal{C}\), the entire line segment between them is also in \(\mathcal{C}\). The intersection of convex sets is convex. The feasible set of a problem with convex inequality constraints \(g_i(x) \leq 0\) and linear equality constraints \(h_j(x) = 0\) is convex.
 
 ### Convex vs. non-convex functions in ML
 
 | Function | Convex? | Reason |
 |---|---|---|
-| Squared error \\(\|y - \hat{y}\|^2\\) | Yes | Hessian = \\(2I\\), positive definite |
+| Squared error \(\|y - \hat{y}\|^2\) | Yes | Hessian = \(2I\), positive definite |
 | Cross-entropy loss (softmax output) | Yes | Composition of convex and log-sum-exp |
-| L2 regularization \\(\lambda\|w\|^2\\) | Yes | Positive definite Hessian |
-| KL divergence \\(\text{KL}(p \| q)\\) as a function of \\(q\\) | Yes | Follows from convexity of \\(-\log\\) |
-| Neural network loss (in \\(W\\)) | No | Product of weight matrices; non-convex in general |
+| L2 regularization \(\lambda\|w\|^2\) | Yes | Positive definite Hessian |
+| KL divergence \(\text{KL}(p \| q)\) as a function of \(q\) | Yes | Follows from convexity of \(-\log\) |
+| Neural network loss (in \(W\)) | No | Product of weight matrices; non-convex in general |
 | Log-likelihood of GMM | No | Mixture model; local maxima exist |
-| Product of two parameters \\(w_1 \cdot w_2\\) | No | Cross-term; indefinite Hessian |
+| Product of two parameters \(w_1 \cdot w_2\) | No | Cross-term; indefinite Hessian |
 
 ### Key theorem: convex problems have no bad local minima
 
-For a convex objective \\(f\\) minimized over a convex feasible set, any local minimum is a global minimum. If gradient descent finds a stationary point, it is the global optimum. There is no need to worry about getting stuck.
+For a convex objective \(f\) minimized over a convex feasible set, any local minimum is a global minimum. If gradient descent finds a stationary point, it is the global optimum. There is no need to worry about getting stuck.
 
 This is why convexity is so valuable: the optimization problem is fully solved once you find any critical point. For non-convex problems (neural networks, GMMs, policy optimization), gradient descent may converge to a local minimum that is not globally optimal.
 
 ### SSA framing: why orbit optimization is tractable
 
-Orbital mechanics constraints — energy conservation, angular momentum, vis-viva equation — are generally convex (or bilinear) in the velocity increments \\(\Delta v_i\\). The fuel cost \\(\sum_i \|\Delta v_i\|\\) is convex (sum of norms). This means the orbit transfer optimization problem, despite involving continuous dynamics and multiple burns, can often be posed as a convex program and solved to global optimality. This is why trajectory optimization tools used in satellite operations work reliably: they are not searching a non-convex landscape.
+Orbital mechanics constraints — energy conservation, angular momentum, vis-viva equation — are generally convex (or bilinear) in the velocity increments \(\Delta v_i\). The fuel cost \(\sum_i \|\Delta v_i\|\) is convex (sum of norms). This means the orbit transfer optimization problem, despite involving continuous dynamics and multiple burns, can often be posed as a convex program and solved to global optimality. This is why trajectory optimization tools used in satellite operations work reliably: they are not searching a non-convex landscape.
 
 ### Code: checking convexity via the Hessian
 
@@ -431,17 +431,17 @@ The abstract machinery of Lagrange multipliers and convexity appears in concrete
 
 Proximal Policy Optimization solves a constrained policy update:
 
-\\[
+\[
 \max_\theta \; \mathbb{E}\left[\hat{A}(s,a) \cdot \frac{\pi_\theta(a|s)}{\pi_{\theta_\text{old}}(a|s)}\right] \quad \text{subject to} \quad \text{KL}(\pi_{\theta_\text{old}} \| \pi_\theta) \leq \varepsilon
-\\]
+\]
 
 The Lagrangian is:
 
-\\[
+\[
 \mathcal{L}(\theta, \lambda) = \mathbb{E}\left[\hat{A} \cdot r_t(\theta)\right] - \lambda \left[\text{KL}(\pi_{\theta_\text{old}} \| \pi_\theta) - \varepsilon\right]
-\\]
+\]
 
-The dual variable \\(\lambda\\) is the Lagrange multiplier for the KL constraint. In practice, PPO adapts \\(\lambda\\) after each update: if the KL exceeded \\(\varepsilon\\), increase \\(\lambda\\) (making the constraint more expensive); if the KL is well below \\(\varepsilon\\), decrease \\(\lambda\\). This is dual ascent on the KL constraint.
+The dual variable \(\lambda\) is the Lagrange multiplier for the KL constraint. In practice, PPO adapts \(\lambda\) after each update: if the KL exceeded \(\varepsilon\), increase \(\lambda\) (making the constraint more expensive); if the KL is well below \(\varepsilon\), decrease \(\lambda\). This is dual ascent on the KL constraint.
 
 ```python
 # Sketch: dual ascent structure for PPO-style KL penalty
@@ -508,19 +508,19 @@ fn main() {
 }
 ```
 
-No external crates needed — the update rule is pure arithmetic. The `.max(0.0)` enforces dual feasibility (\\(\lambda \geq 0\\)).
+No external crates needed — the update rule is pure arithmetic. The `.max(0.0)` enforces dual feasibility (\(\lambda \geq 0\)).
 
 ### Weight decay as a Lagrangian
 
-L2 regularization adds a penalty \\(\lambda \|w\|^2\\) to the training loss. This is exactly the Lagrangian for the constrained problem:
+L2 regularization adds a penalty \(\lambda \|w\|^2\) to the training loss. This is exactly the Lagrangian for the constrained problem:
 
-\\[
+\[
 \min_w \; \mathcal{L}(w) \quad \text{subject to} \quad \|w\|^2 \leq C
-\\]
+\]
 
-The regularization coefficient \\(\lambda\\) is the Lagrange multiplier for the weight norm constraint. Choosing \\(\lambda = 0.01\\) is equivalent to choosing a constraint budget \\(C\\) such that the KKT condition holds at the minimum with that \\(\lambda\\).
+The regularization coefficient \(\lambda\) is the Lagrange multiplier for the weight norm constraint. Choosing \(\lambda = 0.01\) is equivalent to choosing a constraint budget \(C\) such that the KKT condition holds at the minimum with that \(\lambda\).
 
-This is not merely a mathematical curiosity: it means L2 regularization does not add arbitrary noise — it enforces a budget on the total parameter energy. The multiplier \\(\lambda\\) controls how tight that budget is.
+This is not merely a mathematical curiosity: it means L2 regularization does not add arbitrary noise — it enforces a budget on the total parameter energy. The multiplier \(\lambda\) controls how tight that budget is.
 
 ```python
 import torch
@@ -587,11 +587,11 @@ No external crates needed. The projection divides by the current norm and scales
 
 When the fuel cost is approximated as proportional to the total delta-v, and the orbital dynamics are linearized (Clohessy-Wiltshire equations for relative motion, for example), the orbit transfer problem becomes a linear program:
 
-\\[
+\[
 \min_{\Delta v} \; c^\top \Delta v \quad \text{subject to} \quad A \Delta v = b, \quad \Delta v_\text{min} \leq \Delta v \leq \Delta v_\text{max}
-\\]
+\]
 
-where \\(c\\) encodes fuel costs, \\(A \Delta v = b\\) enforces the target orbital state, and the bounds enforce actuator limits.
+where \(c\) encodes fuel costs, \(A \Delta v = b\) enforces the target orbital state, and the bounds enforce actuator limits.
 
 ```python
 from scipy.optimize import linprog
@@ -657,17 +657,17 @@ The key question is whether the feasible set and objective are jointly convex. I
 
 ## Key Takeaways
 
-- **Constrained optimization adds feasibility requirements to the minimization problem.** Equality constraints \\(h(x) = 0\\) pin \\(x\\) to a surface; inequality constraints \\(g(x) \leq 0\\) define a feasible region. The unconstrained minimum may lie outside the feasible set, requiring the solution to be pushed to the constraint boundary.
+- **Constrained optimization adds feasibility requirements to the minimization problem.** Equality constraints \(h(x) = 0\) pin \(x\) to a surface; inequality constraints \(g(x) \leq 0\) define a feasible region. The unconstrained minimum may lie outside the feasible set, requiring the solution to be pushed to the constraint boundary.
 
-- **The Lagrange multiplier is the price of the constraint.** The multiplier \\(\lambda\\) for a constraint \\(h(x) = 0\\) measures how much the optimal objective value would improve if the constraint were relaxed by one unit. A large \\(\lambda\\) means the constraint is expensive; \\(\lambda = 0\\) means the constraint is not binding at the solution.
+- **The Lagrange multiplier is the price of the constraint.** The multiplier \(\lambda\) for a constraint \(h(x) = 0\) measures how much the optimal objective value would improve if the constraint were relaxed by one unit. A large \(\lambda\) means the constraint is expensive; \(\lambda = 0\) means the constraint is not binding at the solution.
 
-- **KKT conditions generalize Lagrange multipliers to inequality constraints.** The four conditions — stationarity, primal feasibility, dual feasibility (\\(\lambda \geq 0\\)), and complementary slackness (\\(\lambda g(x) = 0\\)) — together characterize every constrained optimum. They replace the simple "gradient is zero" condition of unconstrained optimization.
+- **KKT conditions generalize Lagrange multipliers to inequality constraints.** The four conditions — stationarity, primal feasibility, dual feasibility (\(\lambda \geq 0\)), and complementary slackness (\(\lambda g(x) = 0\)) — together characterize every constrained optimum. They replace the simple "gradient is zero" condition of unconstrained optimization.
 
-- **Complementary slackness is the key new condition.** Either the constraint is active (\\(g(x) = 0\\), the solution is on the boundary) or the multiplier is zero (\\(\lambda = 0\\), the constraint is not influencing the solution). Both cannot be simultaneously nonzero, which is a powerful diagnostic: you can look at a solution and immediately determine which constraints matter.
+- **Complementary slackness is the key new condition.** Either the constraint is active (\(g(x) = 0\), the solution is on the boundary) or the multiplier is zero (\(\lambda = 0\), the constraint is not influencing the solution). Both cannot be simultaneously nonzero, which is a powerful diagnostic: you can look at a solution and immediately determine which constraints matter.
 
-- **Strong duality means the dual problem has the same answer as the primal.** When the objective and constraints are convex, solving the Lagrangian dual \\(\max_{\lambda \geq 0} \min_x \mathcal{L}(x, \lambda)\\) gives exactly the same optimal value as the primal. PPO's adaptive penalty coefficient is dual ascent on the KL constraint, and L2 regularization is the Lagrangian for a weight-norm constraint.
+- **Strong duality means the dual problem has the same answer as the primal.** When the objective and constraints are convex, solving the Lagrangian dual \(\max_{\lambda \geq 0} \min_x \mathcal{L}(x, \lambda)\) gives exactly the same optimal value as the primal. PPO's adaptive penalty coefficient is dual ascent on the KL constraint, and L2 regularization is the Lagrangian for a weight-norm constraint.
 
-- **Convexity guarantees that any local minimum is global.** For convex \\(f\\) over a convex feasible set, gradient descent converges to the global optimum. Orbital mechanics constraints are often convex in velocity increments, making trajectory optimization tractable. Neural network losses are non-convex, so training finds local minima — but the tools of convex analysis (Hessian eigenvalues, duality gaps) remain useful for diagnosing convergence and designing regularization.
+- **Convexity guarantees that any local minimum is global.** For convex \(f\) over a convex feasible set, gradient descent converges to the global optimum. Orbital mechanics constraints are often convex in velocity increments, making trajectory optimization tractable. Neural network losses are non-convex, so training finds local minima — but the tools of convex analysis (Hessian eigenvalues, duality gaps) remain useful for diagnosing convergence and designing regularization.
 
 ---
 

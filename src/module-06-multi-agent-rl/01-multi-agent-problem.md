@@ -70,15 +70,15 @@ This is the non-stationarity problem made concrete. The fundamental issue: the t
 
 Formally, consider the Bellman update for Q-learning:
 
-\\[ Q(s, a) \leftarrow r + \gamma \max_{a'} Q(s', a') \\]
+\[ Q(s, a) \leftarrow r + \gamma \max_{a'} Q(s', a') \]
 
 **Decoding:**
-- \\(Q(s, a)\\): the estimated value of taking action \\(a\\) in state \\(s\\)
-- \\(r\\): the immediate reward received
-- \\(\gamma\\): the discount factor
-- \\(\max_{a'} Q(s', a')\\): the best estimated future value from the next state
+- \(Q(s, a)\): the estimated value of taking action \(a\) in state \(s\)
+- \(r\): the immediate reward received
+- \(\gamma\): the discount factor
+- \(\max_{a'} Q(s', a')\): the best estimated future value from the next state
 
-This update assumes that the best future value \\(\max_{a'} Q(s', a')\\) does not depend on time — that the value function is converging toward a stationary target. When another agent is simultaneously updating their policy, \\(s'\\) itself is a function of both agents' policies, and the target keeps moving. The standard convergence theorem for Q-learning requires a stationary MDP; multi-agent RL violates this requirement.
+This update assumes that the best future value \(\max_{a'} Q(s', a')\) does not depend on time — that the value function is converging toward a stationary target. When another agent is simultaneously updating their policy, \(s'\) itself is a function of both agents' policies, and the target keeps moving. The standard convergence theorem for Q-learning requires a stationary MDP; multi-agent RL violates this requirement.
 
 ## The solution concepts landscape
 

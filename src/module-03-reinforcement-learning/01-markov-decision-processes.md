@@ -154,7 +154,7 @@ For SSA, most telescope scheduling problems are naturally discrete (which satell
 
 The state you give the agent is one of the most consequential design decisions in an RL problem. Get it wrong and no amount of algorithm sophistication will compensate. The state must satisfy the **Markov property**: the next state must be predictable (statistically) from the current state and action alone, without needing to know the history.
 
-**The Markov property stated precisely**: the state \\(s_t\\) contains enough information about the history that \\(P(s_{t+1} \mid s_0, a_0, s_1, a_1, \ldots, s_t, a_t) = P(s_{t+1} \mid s_t, a_t)\\). The full history adds no predictive value beyond the current state.
+**The Markov property stated precisely**: the state \(s_t\) contains enough information about the history that \(P(s_{t+1} \mid s_0, a_0, s_1, a_1, \ldots, s_t, a_t) = P(s_{t+1} \mid s_t, a_t)\). The full history adds no predictive value beyond the current state.
 
 Violating the Markov property does not cause the algorithm to crash — it causes the agent to learn a suboptimal policy because it cannot distinguish situations that look the same but have different futures.
 
@@ -241,15 +241,15 @@ The tradeoff between B and C is also real: C requires computing conjunction risk
 
 The **transition function** describes how the state changes when an action is taken. Specifically:
 
-\\[ P(s' \mid s, a) \\]
+\[ P(s' \mid s, a) \]
 
-is the probability of ending up in state \\(s'\\) after taking action \\(a\\) in state \\(s\\).
+is the probability of ending up in state \(s'\) after taking action \(a\) in state \(s\).
 
 **Decoding:**
-- \\(s\\) is the current state
-- \\(a\\) is the action you took
-- \\(s'\\) is the next state (the prime mark indicates "next")
-- \\(P(s' \mid s, a)\\) reads as "probability of \\(s'\\) given \\(s\\) and \\(a\\)"
+- \(s\) is the current state
+- \(a\) is the action you took
+- \(s'\) is the next state (the prime mark indicates "next")
+- \(P(s' \mid s, a)\) reads as "probability of \(s'\) given \(s\) and \(a\)"
 
 For our telescope problem, the transition is partly stochastic (random) and partly deterministic:
 - Time advances by 1 hour deterministically (so all `time_to_next_conjunction` values decrease by 1)
@@ -264,9 +264,9 @@ In practice, the Markov property is satisfied or approximately satisfied by care
 
 The **reward function** describes the immediate feedback the agent receives:
 
-\\[ R(s, a, s') \\]
+\[ R(s, a, s') \]
 
-is the reward received when taking action \\(a\\) in state \\(s\\) and transitioning to state \\(s'\\).
+is the reward received when taking action \(a\) in state \(s\) and transitioning to state \(s'\).
 
 For our telescope problem:
 - +10 reward if the satellite you observed turned out to have a conjunction event
@@ -407,9 +407,9 @@ Reward design is as much art as science. The telescope reward above still has fa
 
 ### 5. Discount factor (γ)
 
-The **discount factor** \\(\gamma\\) (Greek lowercase gamma) is a number between 0 and 1 that says how much to value future rewards versus immediate rewards.
+The **discount factor** \(\gamma\) (Greek lowercase gamma) is a number between 0 and 1 that says how much to value future rewards versus immediate rewards.
 
-A reward received \\(t\\) steps in the future is worth \\(\gamma^t\\) times as much as an immediate reward.
+A reward received \(t\) steps in the future is worth \(\gamma^t\) times as much as an immediate reward.
 
 | t (steps in future) | γ = 0.9 | γ = 0.99 | γ = 1.0 |
 |---------------------|---------|----------|---------|
@@ -442,43 +442,43 @@ Putting it all together, an MDP describes the following loop:
 5. Repeat until the episode ends (or forever, if there is no end)
 ```
 
-The subscript t (often called a "timestep") indexes time. \\(s_t\\) is the state at time t. \\(a_t\\) is the action chosen at time t. \\(r_t\\) is the reward received at time t.
+The subscript t (often called a "timestep") indexes time. \(s_t\) is the state at time t. \(a_t\) is the action chosen at time t. \(r_t\) is the reward received at time t.
 
 ## What the agent is trying to do
 
 The agent's goal is to maximize the expected sum of discounted future rewards:
 
-\\[ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \\]
+\[ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \]
 
 This sum, called the **return** (or the **discounted return** or **cumulative reward**), is what the agent ultimately cares about.
 
 **Decoding:**
-- \\(G_t\\): the return starting from time t (G is conventional notation for "gain")
-- \\(R_{t+1}\\): the reward received at time t+1 (immediate reward from the action taken at time t)
-- \\(\gamma R_{t+2}\\): the reward at time t+2, discounted by one step
-- \\(\gamma^2 R_{t+3}\\): the reward at time t+3, discounted by two steps
+- \(G_t\): the return starting from time t (G is conventional notation for "gain")
+- \(R_{t+1}\): the reward received at time t+1 (immediate reward from the action taken at time t)
+- \(\gamma R_{t+2}\): the reward at time t+2, discounted by one step
+- \(\gamma^2 R_{t+3}\): the reward at time t+3, discounted by two steps
 - And so on
 
 In compact form:
 
-\\[ G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \\]
+\[ G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \]
 
-The agent wants to choose actions that maximize the expected value of \\(G_t\\). Note the word "expected": the future is uncertain (because of the stochastic transitions and possibly stochastic rewards), so we are talking about the expectation (lesson 1 of Module 1) over all possible futures.
+The agent wants to choose actions that maximize the expected value of \(G_t\). Note the word "expected": the future is uncertain (because of the stochastic transitions and possibly stochastic rewards), so we are talking about the expectation (lesson 1 of Module 1) over all possible futures.
 
 ## Policies
 
-A **policy** is the agent's strategy: a rule for selecting actions given states. It is denoted \\(\pi\\) (Greek lowercase pi).
+A **policy** is the agent's strategy: a rule for selecting actions given states. It is denoted \(\pi\) (Greek lowercase pi).
 
 A policy can be:
-- **Deterministic**: \\(\pi(s) = a\\) means "in state s, always take action a"
-- **Stochastic**: \\(\pi(a \mid s)\\) is the probability of taking action a in state s
+- **Deterministic**: \(\pi(s) = a\) means "in state s, always take action a"
+- **Stochastic**: \(\pi(a \mid s)\) is the probability of taking action a in state s
 
 Almost everything in this curriculum uses stochastic policies, because they:
 - Naturally support exploration (trying actions to learn about them)
 - Are needed for game theory (in mixed-strategy equilibria)
 - Are needed for partial observability (sometimes randomization is genuinely the best strategy)
 
-The notation \\(\pi(a \mid s)\\) is conditional probability notation from Module 1, lesson 2: probability of \\(a\\) given \\(s\\). A policy is just a probability distribution over actions, conditional on the state.
+The notation \(\pi(a \mid s)\) is conditional probability notation from Module 1, lesson 2: probability of \(a\) given \(s\). A policy is just a probability distribution over actions, conditional on the state.
 
 ## A simple worked example
 
@@ -486,38 +486,38 @@ Let us hand-trace one episode of a tiny MDP to make all this concrete.
 
 **The MDP**: A 2-state, 2-action MDP.
 
-States: \\(s_0\\), \\(s_1\\)
-Actions: \\(a_0\\), \\(a_1\\)
+States: \(s_0\), \(s_1\)
+Actions: \(a_0\), \(a_1\)
 Transitions:
-- From \\(s_0\\) taking \\(a_0\\): go to \\(s_0\\) with prob 0.8, \\(s_1\\) with prob 0.2
-- From \\(s_0\\) taking \\(a_1\\): go to \\(s_1\\) with prob 1.0
-- From \\(s_1\\) taking \\(a_0\\): go to \\(s_0\\) with prob 0.5, \\(s_1\\) with prob 0.5
-- From \\(s_1\\) taking \\(a_1\\): go to \\(s_1\\) with prob 1.0
+- From \(s_0\) taking \(a_0\): go to \(s_0\) with prob 0.8, \(s_1\) with prob 0.2
+- From \(s_0\) taking \(a_1\): go to \(s_1\) with prob 1.0
+- From \(s_1\) taking \(a_0\): go to \(s_0\) with prob 0.5, \(s_1\) with prob 0.5
+- From \(s_1\) taking \(a_1\): go to \(s_1\) with prob 1.0
 
 Rewards:
-- Reward in \\(s_0\\): 1.0
-- Reward in \\(s_1\\): 5.0
+- Reward in \(s_0\): 1.0
+- Reward in \(s_1\): 5.0
 
 Discount: γ = 0.9
 
-**Policy**: Always take action \\(a_1\\) (a deterministic policy).
+**Policy**: Always take action \(a_1\) (a deterministic policy).
 
 **Sample episode**:
-- Start in \\(s_0\\). Reward at time 0: 1.0. (Sometimes we do not collect reward at the start; this varies by convention. Let us say we get the reward for being in the state.)
-- Take \\(a_1\\). Transition to \\(s_1\\) with probability 1. New state: \\(s_1\\). Reward at time 1: 5.0.
-- Take \\(a_1\\). Transition to \\(s_1\\). Reward at time 2: 5.0.
-- Take \\(a_1\\). Transition to \\(s_1\\). Reward at time 3: 5.0.
-- ... and so on. The agent stays in \\(s_1\\) forever.
+- Start in \(s_0\). Reward at time 0: 1.0. (Sometimes we do not collect reward at the start; this varies by convention. Let us say we get the reward for being in the state.)
+- Take \(a_1\). Transition to \(s_1\) with probability 1. New state: \(s_1\). Reward at time 1: 5.0.
+- Take \(a_1\). Transition to \(s_1\). Reward at time 2: 5.0.
+- Take \(a_1\). Transition to \(s_1\). Reward at time 3: 5.0.
+- ... and so on. The agent stays in \(s_1\) forever.
 
 **Return from time 0**:
-\\[ G_0 = 1.0 + 0.9 \cdot 5.0 + 0.9^2 \cdot 5.0 + 0.9^3 \cdot 5.0 + \ldots \\]
-\\[ = 1.0 + 5.0 \cdot (0.9 + 0.81 + 0.729 + \ldots) \\]
-\\[ = 1.0 + 5.0 \cdot \frac{0.9}{1 - 0.9} \\]
-\\[ = 1.0 + 5.0 \cdot 9 = 1.0 + 45.0 = 46.0 \\]
+\[ G_0 = 1.0 + 0.9 \cdot 5.0 + 0.9^2 \cdot 5.0 + 0.9^3 \cdot 5.0 + \ldots \]
+\[ = 1.0 + 5.0 \cdot (0.9 + 0.81 + 0.729 + \ldots) \]
+\[ = 1.0 + 5.0 \cdot \frac{0.9}{1 - 0.9} \]
+\[ = 1.0 + 5.0 \cdot 9 = 1.0 + 45.0 = 46.0 \]
 
-(The infinite sum \\(0.9 + 0.81 + 0.729 + \ldots\\) is a geometric series with sum \\(\frac{0.9}{1 - 0.9} = 9\\). You do not need to derive this; just take it on faith.)
+(The infinite sum \(0.9 + 0.81 + 0.729 + \ldots\) is a geometric series with sum \(\frac{0.9}{1 - 0.9} = 9\). You do not need to derive this; just take it on faith.)
 
-So under this policy, starting from \\(s_0\\), the agent expects total discounted rewards of 46.0.
+So under this policy, starting from \(s_0\), the agent expects total discounted rewards of 46.0.
 
 ## Code: representing this MDP in Python
 

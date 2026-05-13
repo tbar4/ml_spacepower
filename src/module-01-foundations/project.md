@@ -20,7 +20,7 @@ We are using a simplified version: linear motion, position-only uncertainty, iso
 
 ## Setup
 
-Two satellites at time \\(t = 0\\), both with known nominal positions and velocities. Each has uncertainty in its initial position, modeled as an isotropic 3D Gaussian (the same standard deviation in each axis, no correlations between axes). Velocities are assumed known exactly. (This is the unrealistic part; in reality, velocity uncertainty matters a lot. We'll fix this in a later module when we have proper covariance propagation.)
+Two satellites at time \(t = 0\), both with known nominal positions and velocities. Each has uncertainty in its initial position, modeled as an isotropic 3D Gaussian (the same standard deviation in each axis, no correlations between axes). Velocities are assumed known exactly. (This is the unrealistic part; in reality, velocity uncertainty matters a lot. We'll fix this in a later module when we have proper covariance propagation.)
 
 ```
 Satellite A:
@@ -103,7 +103,7 @@ fn main() {
 
 ### Step 2: Compute the nominal minimum distance
 
-Before adding noise, do the deterministic version. This is a sanity check and gives you something to compare your Monte Carlo estimate against. Propagate linearly: \\(\mathbf{r}(t) = \mathbf{r}_0 + \mathbf{v} \cdot t\\). For each \\(t\\), compute \\(|\mathbf{r}_A(t) - \mathbf{r}_B(t)|\\). Find the minimum over the time window.
+Before adding noise, do the deterministic version. This is a sanity check and gives you something to compare your Monte Carlo estimate against. Propagate linearly: \(\mathbf{r}(t) = \mathbf{r}_0 + \mathbf{v} \cdot t\). For each \(t\), compute \(|\mathbf{r}_A(t) - \mathbf{r}_B(t)|\). Find the minimum over the time window.
 
 Hint: PyTorch broadcasting will let you do this without a loop. `t.unsqueeze(1)` gives shape `(T, 1)`, and `v.unsqueeze(0)` gives shape `(1, 3)`, and their product broadcasts to `(T, 3)`.
 
@@ -111,15 +111,15 @@ You should find a nominal minimum distance of about 0.5 km (the cross-track offs
 
 ### Step 3: Add uncertainty and sample
 
-Now the Monte Carlo part. For each of \\(N\\) trials:
+Now the Monte Carlo part. For each of \(N\) trials:
 
-1. Sample a perturbation \\(\delta_A \sim \mathcal{N}(0, \sigma^2 I)\\) and add it to \\(\mathbf{r}_0^A\\).
-2. Sample \\(\delta_B \sim \mathcal{N}(0, \sigma^2 I)\\) and add it to \\(\mathbf{r}_0^B\\).
+1. Sample a perturbation \(\delta_A \sim \mathcal{N}(0, \sigma^2 I)\) and add it to \(\mathbf{r}_0^A\).
+2. Sample \(\delta_B \sim \mathcal{N}(0, \sigma^2 I)\) and add it to \(\mathbf{r}_0^B\).
 3. Propagate both linearly over the time window.
 4. Find the minimum distance over the window.
 5. Record whether that minimum was below the safety threshold.
 
-The probability of conjunction \\(P_c\\) is then the fraction of trials with a min-distance below threshold.
+The probability of conjunction \(P_c\) is then the fraction of trials with a min-distance below threshold.
 
 ```python
 def estimate_pc(N, sigma=0.10, threshold=1.0):
@@ -214,11 +214,11 @@ fn main() {
 
 `(0..3).map(|_| normal.sample(rng)).collect::<Array1<f64>>()` builds a length-3 array from the Normal sampler. `Normal::new(0.0, sigma)` takes mean and standard deviation; it returns a `Result` because negative sigma would be invalid, hence `.unwrap()`. The `rng` is threaded through so the caller controls seeding.
 
-If the broadcasting is making your head hurt, write it with a `for` loop first, get correct numbers, then refactor to vectorized form. Vectorized PyTorch will be 10 to 100 times faster, which matters when we crank \\(N\\) up.
+If the broadcasting is making your head hurt, write it with a `for` loop first, get correct numbers, then refactor to vectorized form. Vectorized PyTorch will be 10 to 100 times faster, which matters when we crank \(N\) up.
 
 ### Step 4: Convergence study
 
-Run the estimator with \\(N \in \{100, 1\,000, 10\,000, 100\,000\}\\), repeating 10 times for each \\(N\\). Plot or print the mean and standard deviation of \\(P_c\\) across the 10 runs. You should see the standard deviation shrink as roughly \\(1/\sqrt{N}\\), exactly as lesson 3 promised.
+Run the estimator with \(N \in \{100, 1\,000, 10\,000, 100\,000\}\), repeating 10 times for each \(N\). Plot or print the mean and standard deviation of \(P_c\) across the 10 runs. You should see the standard deviation shrink as roughly \(1/\sqrt{N}\), exactly as lesson 3 promised.
 
 ```python
 import torch
@@ -292,25 +292,25 @@ fn main() {
 
 Each seed creates a fresh `StdRng` so the 10 runs are independent but reproducible — re-running the program gives the same numbers. The std should shrink roughly by a factor of √10 each time N increases by 10×, confirming lesson 3's convergence guarantee.
 
-Your absolute \\(P_c\\) value will depend on your scenario and threshold. The point is the convergence behavior, not any specific number.
+Your absolute \(P_c\) value will depend on your scenario and threshold. The point is the convergence behavior, not any specific number.
 
 ### Step 5: Sensitivity analysis
 
-This is the part that previews gradients without using them yet. We want to know: how sensitive is \\(P_c\\) to the uncertainty level \\(\sigma\\)?
+This is the part that previews gradients without using them yet. We want to know: how sensitive is \(P_c\) to the uncertainty level \(\sigma\)?
 
-Compute \\(P_c\\) for \\(\sigma \in \{0.05, 0.10, 0.20, 0.50, 1.00\}\\) km, all with \\(N = 50\,000\\). In this geometry you should see \\(P_c\\) **decrease** as \\(\sigma\\) grows. The reason: the nominal minimum distance (0.5 km) is already below the 1.0 km threshold, so the baseline scenario is almost always a conjunction. Wider uncertainty scatters samples further from the nominal, pushing more of them above threshold and lowering \\(P_c\\).
+Compute \(P_c\) for \(\sigma \in \{0.05, 0.10, 0.20, 0.50, 1.00\}\) km, all with \(N = 50\,000\). In this geometry you should see \(P_c\) **decrease** as \(\sigma\) grows. The reason: the nominal minimum distance (0.5 km) is already below the 1.0 km threshold, so the baseline scenario is almost always a conjunction. Wider uncertainty scatters samples further from the nominal, pushing more of them above threshold and lowering \(P_c\).
 
-The direction flips if you move the nominal above threshold. Change `r0_B[1]` from 0.5 to 1.5 (a 1.5 km cross-track offset, giving a nominal miss of 1.5 km, safely outside the 1.0 km threshold) and rerun. Now \\(P_c\\) increases with \\(\sigma\\): uncertainty is occasionally bridging the gap into the danger zone.
+The direction flips if you move the nominal above threshold. Change `r0_B[1]` from 0.5 to 1.5 (a 1.5 km cross-track offset, giving a nominal miss of 1.5 km, safely outside the 1.0 km threshold) and rerun. Now \(P_c\) increases with \(\sigma\): uncertainty is occasionally bridging the gap into the danger zone.
 
-The lesson: "more uncertainty means more Pc" is not a law. The direction of \\(dP_c/d\sigma\\) depends on which side of the threshold the nominal sits. This matters operationally: a maneuver that nudges the nominal further from the threshold can either increase or decrease the sensitivity of Pc to state uncertainty, depending on the geometry. This is, conceptually, a finite-difference approximation to \\(dP_c/d\sigma\\): you're seeing how the output changes as the input parameter changes. If you wrote the entire pipeline in PyTorch with `requires_grad=True` on \\(\sigma\\), you could get this gradient analytically with `.backward()`. We're doing it the slow way for now, but the fact that "sensitivity of an output to an input" is exactly what gradients give you is the bridge to module 2.
+The lesson: "more uncertainty means more Pc" is not a law. The direction of \(dP_c/d\sigma\) depends on which side of the threshold the nominal sits. This matters operationally: a maneuver that nudges the nominal further from the threshold can either increase or decrease the sensitivity of Pc to state uncertainty, depending on the geometry. This is, conceptually, a finite-difference approximation to \(dP_c/d\sigma\): you're seeing how the output changes as the input parameter changes. If you wrote the entire pipeline in PyTorch with `requires_grad=True` on \(\sigma\), you could get this gradient analytically with `.backward()`. We're doing it the slow way for now, but the fact that "sensitivity of an output to an input" is exactly what gradients give you is the bridge to module 2.
 
 ### Step 6: Reflect
 
 At the end of your script (or in a comment block), write down answers to:
 
-1. How does the standard deviation of your \\(P_c\\) estimates scale with \\(N\\)?
-2. What's the smallest \\(N\\) at which you'd trust the answer to two decimal places?
-3. If \\(P_c\\) for the nominal scenario is, say, 0.04, and you have a "decision threshold" of 0.001 (the value above which JSpOC might issue a maneuver recommendation), how many samples do you need before your estimator's noise is small compared to that threshold? (Hint: the standard error needs to be much smaller than 0.001.)
+1. How does the standard deviation of your \(P_c\) estimates scale with \(N\)?
+2. What's the smallest \(N\) at which you'd trust the answer to two decimal places?
+3. If \(P_c\) for the nominal scenario is, say, 0.04, and you have a "decision threshold" of 0.001 (the value above which JSpOC might issue a maneuver recommendation), how many samples do you need before your estimator's noise is small compared to that threshold? (Hint: the standard error needs to be much smaller than 0.001.)
 4. What's missing from this model that you'd want to add to make it realistic? (Velocity uncertainty? Correlated position uncertainty? Nonlinear dynamics? Time-varying covariance?)
 
 These questions are not graded; they are the things you should be able to answer after doing the project, and they are the things that distinguish "I ran the code" from "I understood the code."
@@ -319,8 +319,8 @@ These questions are not graded; they are the things you should be able to answer
 
 Pick one or two if you want extra reps:
 
-- **Different geometries.** Modify the scenario so the nominal trajectories cross exactly (head-on with no offset). What does \\(P_c\\) do as a function of \\(\sigma\\) here, vs. the near-miss case?
-- **Velocity uncertainty.** Add Gaussian noise to the initial velocities too. Does this change the convergence rate of your estimator? (Spoiler: no, it's still \\(1/\sqrt{N}\\). What changes is the **variance** of individual trial outcomes, which affects the multiplicative constant.)
+- **Different geometries.** Modify the scenario so the nominal trajectories cross exactly (head-on with no offset). What does \(P_c\) do as a function of \(\sigma\) here, vs. the near-miss case?
+- **Velocity uncertainty.** Add Gaussian noise to the initial velocities too. Does this change the convergence rate of your estimator? (Spoiler: no, it's still \(1/\sqrt{N}\). What changes is the **variance** of individual trial outcomes, which affects the multiplicative constant.)
 - **A baseline comparison.** Implement a "delta-r" approximation: assume the relative position vector at the nominal time of closest approach is Gaussian, and use the standard analytic formula for probability of falling inside a sphere of radius `threshold` around the origin. Compare to your Monte Carlo estimate. They should agree to within Monte Carlo noise. This is a useful sanity check.
 
 ## What you should hand yourself afterward

@@ -26,7 +26,7 @@ In a fog-of-war game, there is no such answer. You observe your own assets — s
 
 Formally, your information set at time t is:
 
-\\[ \mathcal{I}_t = \{ s \in \mathcal{S} \mid s \text{ is consistent with all observations } o_0, o_1, \ldots, o_t \} \\]
+\[ \mathcal{I}_t = \{ s \in \mathcal{S} \mid s \text{ is consistent with all observations } o_0, o_1, \ldots, o_t \} \]
 
 **Decoding:** S is the full state space. A state s is in your information set if every observation you have received so far would have been possible if the world had been in state s.
 
@@ -59,7 +59,7 @@ For an SSA scenario with 5 adversary satellites whose positions are unknown:
 
 Sampling a determinization means drawing from the probability distribution over possible hidden states given your observations:
 
-\\[ d \sim P(s \mid \mathcal{I}_t) \\]
+\[ d \sim P(s \mid \mathcal{I}_t) \]
 
 **Decoding:** This is a sample from the posterior over game states given your information set. In Module 7, this posterior is maintained as a particle filter; each particle is effectively a determinization.
 
@@ -71,7 +71,7 @@ IS-MCTS samples many determinizations and runs MCTS on each, then aggregates the
 
 The outer loop of IS-MCTS is a simple iteration over sampled determinizations. Within each determinization, standard neural-guided MCTS runs one simulation on the concrete state. The key insight is that aggregating value estimates across many determinizations computes an approximation to the expected value of each action under uncertainty:
 
-\\[ \hat{V}(a) \approx \mathbb{E}_{s \sim P(s \mid \mathcal{I}_t)}[V(s, a)] \\]
+\[ \hat{V}(a) \approx \mathbb{E}_{s \sim P(s \mid \mathcal{I}_t)}[V(s, a)] \]
 
 **Decoding:** For each action a, the average value across determinizations estimates what outcome you can expect from taking action a, averaged over all consistent hypotheses about the hidden state. The action with the highest such expected value is selected.
 
@@ -122,14 +122,14 @@ The `action_visit_counts` and `action_total_values` dictionaries aggregate stati
 
 Within each determinization's MCTS simulation, the standard PUCT formula from Lesson 3 applies. For a node representing state s, the score for child action a is:
 
-\\[ \text{PUCT}(s, a) = \frac{W(s, a)}{N(s, a)} + c \cdot p(a \mid s) \cdot \frac{\sqrt{N(s)}}{1 + N(s, a)} \\]
+\[ \text{PUCT}(s, a) = \frac{W(s, a)}{N(s, a)} + c \cdot p(a \mid s) \cdot \frac{\sqrt{N(s)}}{1 + N(s, a)} \]
 
 **Decoding:**
-- \\(W(s, a) / N(s, a)\\): empirical average value from simulations that took action a from state s (exploitation)
-- \\(p(a \mid s)\\): prior probability from the neural network's policy head
-- \\(c \cdot p(a \mid s) \cdot \sqrt{N(s)} / (1 + N(s, a))\\): exploration bonus, weighted by the prior and shrinking as action a accumulates visits
+- \(W(s, a) / N(s, a)\): empirical average value from simulations that took action a from state s (exploitation)
+- \(p(a \mid s)\): prior probability from the neural network's policy head
+- \(c \cdot p(a \mid s) \cdot \sqrt{N(s)} / (1 + N(s, a))\): exploration bonus, weighted by the prior and shrinking as action a accumulates visits
 
-One subtlety in IS-MCTS: the visit count \\(N(s, a)\\) accumulated at an inner node spans **all determinizations that passed through a state equivalent to s and considered action a**. Since each determinization may produce a different concrete state at interior nodes (the hidden information resolves differently in each), the IS-MCTS implementation must identify "equivalent" states carefully — typically by the information available to the acting player, not the full state.
+One subtlety in IS-MCTS: the visit count \(N(s, a)\) accumulated at an inner node spans **all determinizations that passed through a state equivalent to s and considered action a**. Since each determinization may produce a different concrete state at interior nodes (the hidden information resolves differently in each), the IS-MCTS implementation must identify "equivalent" states carefully — typically by the information available to the acting player, not the full state.
 
 For the SSA wargame, this means: two determinizations with different adversary satellite positions but identical own-satellite positions and identical sensor readings so far are mapped to the same information-set node for the purposes of sharing visit counts.
 
@@ -166,7 +166,7 @@ fn main() {
 }
 ```
 
-The PUCT exploration term \\(c \cdot p(a) \cdot \sqrt{N} / (1 + N(a))\\) differs from UCT's \\(\sqrt{\ln N / N(a)}\\): it is weighted by the policy prior, so a high-probability action retains a larger exploration bonus even after many visits. This allows the neural network's prior to guide early search without completely overriding the accumulated statistics.
+The PUCT exploration term \(c \cdot p(a) \cdot \sqrt{N} / (1 + N(a))\) differs from UCT's \(\sqrt{\ln N / N(a)}\): it is weighted by the policy prior, so a high-probability action retains a larger exploration bonus even after many visits. This allows the neural network's prior to guide early search without completely overriding the accumulated statistics.
 
 ```python
 import math
@@ -294,18 +294,18 @@ The quality of IS-MCTS decisions depends directly on the quality of the particle
 
 After AlphaZero-style training (Lesson 4), the neural network provides two things for each determinization:
 
-- **Policy head** \\(p(a \mid s)\\): a prior over actions that IS-MCTS uses in PUCT to focus search on promising actions first
-- **Value head** \\(V(s)\\): a direct value estimate that replaces random rollouts
+- **Policy head** \(p(a \mid s)\): a prior over actions that IS-MCTS uses in PUCT to focus search on promising actions first
+- **Value head** \(V(s)\): a direct value estimate that replaces random rollouts
 
 This dramatically reduces the number of simulations needed. Without a neural network, IS-MCTS requires enough simulations for random rollouts to average out their noise. With the value head replacing rollouts, each simulation returns a low-variance estimate, and 50-200 simulations often suffice where 2,000 or more would be needed for random-rollout IS-MCTS.
 
 The PUCT formula in the context of IS-MCTS:
 
-\\[ \text{PUCT}(s, a) = \underbrace{\frac{W(s,a)}{N(s,a)}}_{\text{exploitation: empirical value}} + c \cdot \underbrace{p(a \mid s)}_{\text{policy prior}} \cdot \underbrace{\frac{\sqrt{N(s)}}{1 + N(s,a)}}_{\text{exploration bonus}} \\]
+\[ \text{PUCT}(s, a) = \underbrace{\frac{W(s,a)}{N(s,a)}}_{\text{exploitation: empirical value}} + c \cdot \underbrace{p(a \mid s)}_{\text{policy prior}} \cdot \underbrace{\frac{\sqrt{N(s)}}{1 + N(s,a)}}_{\text{exploration bonus}} \]
 
-**Decoding:** When \\(N(s, a) = 0\\) (action never tried), the exploration term equals \\(c \cdot p(a \mid s) \cdot \sqrt{N(s)}\\) — pure prior. Actions the network considers likely are tried first. As \\(N(s, a)\\) grows, the empirical term dominates and the prior's influence fades. The network provides a smart starting point; the search overrides it when evidence accumulates.
+**Decoding:** When \(N(s, a) = 0\) (action never tried), the exploration term equals \(c \cdot p(a \mid s) \cdot \sqrt{N(s)}\) — pure prior. Actions the network considers likely are tried first. As \(N(s, a)\) grows, the empirical term dominates and the prior's influence fades. The network provides a smart starting point; the search overrides it when evidence accumulates.
 
-**SSA example:** The policy network has learned from self-play that tasking the wide-beam sensor is nearly always the right first action when adversary satellite position uncertainty is high (particle spread > 50 km). It assigns \\(p(\text{wide-beam}) \approx 0.72\\) and \\(p(\text{narrow-beam}) \approx 0.18\\). IS-MCTS therefore spends roughly four times more simulations exploring wide-beam follow-on sequences than narrow-beam ones, even with only 50 total simulations. Without the prior, all actions would receive roughly equal initial exploration, spreading the budget too thin to produce reliable estimates.
+**SSA example:** The policy network has learned from self-play that tasking the wide-beam sensor is nearly always the right first action when adversary satellite position uncertainty is high (particle spread > 50 km). It assigns \(p(\text{wide-beam}) \approx 0.72\) and \(p(\text{narrow-beam}) \approx 0.18\). IS-MCTS therefore spends roughly four times more simulations exploring wide-beam follow-on sequences than narrow-beam ones, even with only 50 total simulations. Without the prior, all actions would receive roughly equal initial exploration, spreading the budget too thin to produce reliable estimates.
 
 ---
 

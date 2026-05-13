@@ -23,16 +23,16 @@ If an action has high accumulated regret (you would have done much better by pla
 
 Specifically, the regret for action a at iteration t is:
 
-\\[ R^t(a) = \sum_{\tau=1}^{t} \left( u^\tau(a) - u^\tau(\sigma^\tau) \right) \\]
+\[ R^t(a) = \sum_{\tau=1}^{t} \left( u^\tau(a) - u^\tau(\sigma^\tau) \right) \]
 
 **Decoding:**
-- \\(R^t(a)\\): cumulative regret for action a after t iterations
-- \\(u^\tau(a)\\): the payoff that would have been received from playing action a at iteration τ
-- \\(u^\tau(\sigma^\tau)\\): the payoff actually received from playing the chosen strategy
+- \(R^t(a)\): cumulative regret for action a after t iterations
+- \(u^\tau(a)\): the payoff that would have been received from playing action a at iteration τ
+- \(u^\tau(\sigma^\tau)\): the payoff actually received from playing the chosen strategy
 
 Each iteration, you update your strategy using **regret matching**:
 
-\\[ \sigma^{t+1}(a) = \frac{\max(0, R^t(a))}{\sum_{a'} \max(0, R^t(a'))} \\]
+\[ \sigma^{t+1}(a) = \frac{\max(0, R^t(a))}{\sum_{a'} \max(0, R^t(a'))} \]
 
 In English: the probability of action a is proportional to its positive regret, and zero if its regret is negative or zero. If all regrets are negative, the strategy is uniform.
 
@@ -44,25 +44,25 @@ For extensive-form games, regret is computed per information set. The regret for
 
 The technical definition uses counterfactual values:
 
-\\[ v_i^\sigma(I) = \sum_{h \in I} \pi_{-i}^\sigma(h) \cdot v_i^\sigma(h) \\]
+\[ v_i^\sigma(I) = \sum_{h \in I} \pi_{-i}^\sigma(h) \cdot v_i^\sigma(h) \]
 
 **Decoding:**
-- \\(v_i^\sigma(I)\\): counterfactual value of information set I for player i
-- \\(h \in I\\): histories (nodes) in the information set
-- \\(\pi_{-i}^\sigma(h)\\): counterfactual reach probability (everyone except player i played to reach h)
-- \\(v_i^\sigma(h)\\): expected utility from history h under strategy σ
+- \(v_i^\sigma(I)\): counterfactual value of information set I for player i
+- \(h \in I\): histories (nodes) in the information set
+- \(\pi_{-i}^\sigma(h)\): counterfactual reach probability (everyone except player i played to reach h)
+- \(v_i^\sigma(h)\): expected utility from history h under strategy σ
 
 This is "the expected payoff from this information set, weighted by how often we get to it through other players' play."
 
 The counterfactual value of taking specific action a at information set I:
 
-\\[ v_i^\sigma(I, a) = \sum_{h \in I} \pi_{-i}^\sigma(h) \cdot v_i^{\sigma_{I \to a}}(h \cdot a) \\]
+\[ v_i^\sigma(I, a) = \sum_{h \in I} \pi_{-i}^\sigma(h) \cdot v_i^{\sigma_{I \to a}}(h \cdot a) \]
 
 This is the value if we always took action a at I instead of using our current strategy.
 
 The counterfactual regret of action a at information set I:
 
-\\[ r_i^t(I, a) = v_i^\sigma(I, a) - v_i^\sigma(I) \\]
+\[ r_i^t(I, a) = v_i^\sigma(I, a) - v_i^\sigma(I) \]
 
 In English: how much more value would I have gotten by always playing a at I, compared to playing my current strategy?
 
@@ -165,7 +165,7 @@ After many iterations, the cumulative regrets stabilize and the average strategy
 
 The mathematical guarantee: regret matching produces strategies whose average regret converges to zero. By a theorem from online learning, the time-averaged strategy profile is then an ε-Nash equilibrium with ε that goes to zero as the number of iterations grows.
 
-The convergence rate is \\(O(1/\sqrt{T})\\) where T is the number of iterations. Like Monte Carlo, you need 4× more iterations to halve the error. Like Monte Carlo, this scaling is why naive CFR is impractical for large games.
+The convergence rate is \(O(1/\sqrt{T})\) where T is the number of iterations. Like Monte Carlo, you need 4× more iterations to halve the error. Like Monte Carlo, this scaling is why naive CFR is impractical for large games.
 
 ## The complete vanilla CFR implementation
 
@@ -277,22 +277,22 @@ One of CFR's key mathematical insights is that the total regret of a player can 
 
 Define the **immediate counterfactual regret** at iteration T as:
 
-\\[ R_i^{T,\text{imm}}(I, a) = \frac{1}{T} \sum_{t=1}^{T} \pi_{-i}^{\sigma^t}(I) \left( v_i^{\sigma^t}(I, a) - v_i^{\sigma^t}(I) \right) \\]
+\[ R_i^{T,\text{imm}}(I, a) = \frac{1}{T} \sum_{t=1}^{T} \pi_{-i}^{\sigma^t}(I) \left( v_i^{\sigma^t}(I, a) - v_i^{\sigma^t}(I) \right) \]
 
 **Decoding:**
-- \\(R_i^{T,\text{imm}}(I, a)\\): the average instantaneous counterfactual regret for action \\(a\\) at information set \\(I\\) over \\(T\\) iterations
-- \\(\pi_{-i}^{\sigma^t}(I)\\): at iteration \\(t\\), how often did the opponents' and chance's play lead to information set \\(I\\)?
-- \\(v_i^{\sigma^t}(I, a) - v_i^{\sigma^t}(I)\\): at iteration \\(t\\), how much would player \\(i\\) have gained by always playing \\(a\\) at \\(I\\) compared to their actual strategy?
+- \(R_i^{T,\text{imm}}(I, a)\): the average instantaneous counterfactual regret for action \(a\) at information set \(I\) over \(T\) iterations
+- \(\pi_{-i}^{\sigma^t}(I)\): at iteration \(t\), how often did the opponents' and chance's play lead to information set \(I\)?
+- \(v_i^{\sigma^t}(I, a) - v_i^{\sigma^t}(I)\): at iteration \(t\), how much would player \(i\) have gained by always playing \(a\) at \(I\) compared to their actual strategy?
 
 ### Why this decomposition makes CFR tractable
 
-The full regret of a player over a game is defined as the maximum gain they could have achieved over a sequence of iterations by committing to some fixed strategy profile \\(\sigma_i^*\\). This quantity is exponentially complex to compute directly: you would need to compare the actual play against all possible strategies simultaneously.
+The full regret of a player over a game is defined as the maximum gain they could have achieved over a sequence of iterations by committing to some fixed strategy profile \(\sigma_i^*\). This quantity is exponentially complex to compute directly: you would need to compare the actual play against all possible strategies simultaneously.
 
 The decomposition theorem (Theorem 3 in Zinkevich et al. 2007) states:
 
-\\[ R_i^T \leq \sum_{I \in \mathcal{I}_i} R_i^{T,+,\text{imm}}(I) \\]
+\[ R_i^T \leq \sum_{I \in \mathcal{I}_i} R_i^{T,+,\text{imm}}(I) \]
 
-where \\(R_i^{T,+,\text{imm}}(I) = \max_{a \in A(I)} R_i^{T,\text{imm}}(I, a)\\) is the positive part of the immediate regret at \\(I\\).
+where \(R_i^{T,+,\text{imm}}(I) = \max_{a \in A(I)} R_i^{T,\text{imm}}(I, a)\) is the positive part of the immediate regret at \(I\).
 
 **In plain English:** the player's total regret is upper bounded by the sum of the per-information-set immediate regrets. This means:
 - You never need to compare against all possible strategies globally.
@@ -309,14 +309,14 @@ In our Alice–Bob conjunction game, Alice's total regret is bounded by the sum 
 
 The convergence rate of CFR is:
 
-\\[ \epsilon(T) = \frac{C}{\sqrt{T}} \\]
+\[ \epsilon(T) = \frac{C}{\sqrt{T}} \]
 
-where \\(\epsilon(T)\\) is the **exploitability** of the average strategy after \\(T\\) iterations — the maximum gain any player could achieve by unilaterally deviating — and \\(C\\) is a constant that depends on the game structure.
+where \(\epsilon(T)\) is the **exploitability** of the average strategy after \(T\) iterations — the maximum gain any player could achieve by unilaterally deviating — and \(C\) is a constant that depends on the game structure.
 
 **Decoding:**
-- \\(T\\): number of CFR iterations
-- \\(\epsilon(T)\\): how "far" the average strategy is from a Nash equilibrium; a Nash equilibrium has \\(\epsilon = 0\\)
-- \\(C\\): roughly \\(\Delta \sqrt{|I_{\max}| \cdot |A_{\max}|}\\), where \\(\Delta\\) is the maximum payoff range, \\(|I_{\max}|\\) is the number of information sets, and \\(|A_{\max}|\\) is the maximum number of actions at any information set
+- \(T\): number of CFR iterations
+- \(\epsilon(T)\): how "far" the average strategy is from a Nash equilibrium; a Nash equilibrium has \(\epsilon = 0\)
+- \(C\): roughly \(\Delta \sqrt{|I_{\max}| \cdot |A_{\max}|}\), where \(\Delta\) is the maximum payoff range, \(|I_{\max}|\) is the number of information sets, and \(|A_{\max}|\) is the maximum number of actions at any information set
 
 ### What ε means in practice
 
@@ -328,25 +328,25 @@ For practical SSA applications, ε around 0.01 to 0.05 is usually sufficient. Fo
 
 ### How many iterations for 1% exploitability
 
-From \\(\epsilon = C/\sqrt{T}\\), solving for T:
+From \(\epsilon = C/\sqrt{T}\), solving for T:
 
-\\[ T = \left(\frac{C}{\epsilon}\right)^2 \\]
+\[ T = \left(\frac{C}{\epsilon}\right)^2 \]
 
-If \\(C = 1.0\\) (typical for small normalized games) and \\(\epsilon = 0.01\\):
+If \(C = 1.0\) (typical for small normalized games) and \(\epsilon = 0.01\):
 
-\\[ T = (1.0 / 0.01)^2 = 10{,}000 \text{ iterations} \\]
+\[ T = (1.0 / 0.01)^2 = 10{,}000 \text{ iterations} \]
 
-If \\(C = 5.0\\) (larger games with wider payoff ranges):
+If \(C = 5.0\) (larger games with wider payoff ranges):
 
-\\[ T = (5.0 / 0.01)^2 = 250{,}000 \text{ iterations} \\]
+\[ T = (5.0 / 0.01)^2 = 250{,}000 \text{ iterations} \]
 
 ### Comparison to gradient descent
 
-Gradient descent on the expected utility (as in policy gradient from Module 3) converges at rate \\(O(1/T)\\) in convex settings. CFR's \\(O(1/\sqrt{T})\\) is slower. Why use CFR at all?
+Gradient descent on the expected utility (as in policy gradient from Module 3) converges at rate \(O(1/T)\) in convex settings. CFR's \(O(1/\sqrt{T})\) is slower. Why use CFR at all?
 
 The crucial difference is the game-theoretic setting. Gradient ascent on expected utility is not a stable algorithm for multi-agent zero-sum games: the two players' gradients point in opposing directions. In practice, gradient ascent in zero-sum games **cycles** rather than converges. CFR's regret-matching update is specifically designed to handle this cycling and has provable convergence guarantees that gradient-based methods lack.
 
-Required iterations at ε = 0.01 (from \\(T = (C/\epsilon)^2\\)):
+Required iterations at ε = 0.01 (from \(T = (C/\epsilon)^2\)):
 
 | Game | C | Iterations |
 |------|---|------------|
@@ -360,15 +360,15 @@ Required iterations at ε = 0.01 (from \\(T = (C/\epsilon)^2\\)):
 
 Standard regret matching (RM) accumulates all regrets, including negative ones:
 
-\\[ R^{T+1}(a) = R^T(a) + r^T(a) \\]
+\[ R^{T+1}(a) = R^T(a) + r^T(a) \]
 
-where \\(r^T(a)\\) is the instantaneous regret at iteration \\(T\\).
+where \(r^T(a)\) is the instantaneous regret at iteration \(T\).
 
 **Regret matching+** (RM+, introduced in CFR+) floors regret at zero after each update:
 
-\\[ R^{T+1}(a) = \max\left(0, R^T(a) + r^T(a)\right) \\]
+\[ R^{T+1}(a) = \max\left(0, R^T(a) + r^T(a)\right) \]
 
-The strategy update is otherwise identical: \\(\sigma^{T+1}(a) \propto \max(0, R^T(a))\\).
+The strategy update is otherwise identical: \(\sigma^{T+1}(a) \propto \max(0, R^T(a))\).
 
 ### Why this speeds convergence empirically
 
@@ -434,14 +434,14 @@ This is the fundamental theorem connecting online learning to game theory (Theor
 
 **Decoding the self-play argument:**
 - Each player is minimizing their own average regret independently.
-- Player 1's regret-minimizing algorithm guarantees: \\(\bar{R}_1^T / T \to 0\\) as \\(T \to \infty\\).
-- Player 2's regret-minimizing algorithm guarantees: \\(\bar{R}_2^T / T \to 0\\) as \\(T \to \infty\\).
-- The Nash gap (exploitability) is bounded: \\(\epsilon^T \leq (\bar{R}_1^T + \bar{R}_2^T) / T\\).
+- Player 1's regret-minimizing algorithm guarantees: \(\bar{R}_1^T / T \to 0\) as \(T \to \infty\).
+- Player 2's regret-minimizing algorithm guarantees: \(\bar{R}_2^T / T \to 0\) as \(T \to \infty\).
+- The Nash gap (exploitability) is bounded: \(\epsilon^T \leq (\bar{R}_1^T + \bar{R}_2^T) / T\).
 - Since both average regrets go to zero, the exploitability goes to zero.
 
 ### Why this differs from gradient ascent on expected utility
 
-In gradient ascent, Player 1 updates: \\(\sigma_1^{t+1} = \sigma_1^t + \alpha \nabla_{\sigma_1} u_1(\sigma^t)\\).
+In gradient ascent, Player 1 updates: \(\sigma_1^{t+1} = \sigma_1^t + \alpha \nabla_{\sigma_1} u_1(\sigma^t)\).
 
 The problem: when Player 1 improves their strategy, Player 2's best response changes. Player 2 then adapts, which changes Player 1's best response. In zero-sum games, this creates a feedback loop with no natural fixed point: the gradient updates drive the strategies around in a cycle.
 
@@ -454,11 +454,11 @@ If you run both algorithms on Rock-Paper-Scissors for 5000 iterations, gradient 
 ## Key Takeaways
 
 - CFR decomposes the problem of minimizing a player's total game regret into a sum of **immediate counterfactual regrets** at individual information sets; this decomposition makes Nash equilibrium computation tractable via local regret-matching updates.
-- The convergence rate is \\(O(T^{-1/2})\\): each doubling of iterations halves the exploitability, similar to Monte Carlo integration; for 1% exploitability in a medium game, expect 250,000+ iterations.
+- The convergence rate is \(O(T^{-1/2})\): each doubling of iterations halves the exploitability, similar to Monte Carlo integration; for 1% exploitability in a medium game, expect 250,000+ iterations.
 - **Regret matching+** (RM+) floors accumulated regrets at zero after each update, preventing old negative regrets from slowing adaptation; in practice this yields 10× to 100× faster convergence than standard regret matching.
 - CFR finds Nash equilibrium through the self-play argument: when both players independently minimize their average regret, the joint average strategy profile converges to Nash — this is fundamentally different from gradient ascent, which cycles in zero-sum games.
 - The key data structures are the **cumulative regret table** and the **strategy sum table**, both indexed by information set; the regret table drives the current strategy, and the strategy sum's average is the Nash approximation returned at the end.
-- Vanilla CFR's memory and time costs grow linearly with the number of information sets; for games with \\(10^{14}\\) information sets (no-limit poker), variants like MCCFR (Lesson 4) and Deep CFR (Lesson 5) are required.
+- Vanilla CFR's memory and time costs grow linearly with the number of information sets; for games with \(10^{14}\) information sets (no-limit poker), variants like MCCFR (Lesson 4) and Deep CFR (Lesson 5) are required.
 
 ## Quiz
 

@@ -21,32 +21,32 @@ Q-learning's job is to estimate Q* from this interaction alone. It does this by 
 
 The Bellman optimality equation says:
 
-\\[ Q^*(s, a) = \mathbb{E}[R(s, a, s') + \gamma \max_{a'} Q^*(s', a')] \\]
+\[ Q^*(s, a) = \mathbb{E}[R(s, a, s') + \gamma \max_{a'} Q^*(s', a')] \]
 
 In words: the Q value of (s, a) equals the expected immediate reward plus the discounted Q value of the best next action.
 
 Suppose we have a current estimate Q(s, a). We take action a in state s, observe reward r and next state s'. Now we have one sample of the right-hand side of the Bellman equation:
 
-\\[ \text{sample} = r + \gamma \max_{a'} Q(s', a') \\]
+\[ \text{sample} = r + \gamma \max_{a'} Q(s', a') \]
 
 This is what the Q value "should be" according to this one piece of experience. Compare it to our current estimate Q(s, a). The difference is called the **TD error** (temporal difference error):
 
-\\[ \delta = r + \gamma \max_{a'} Q(s', a') - Q(s, a) \\]
+\[ \delta = r + \gamma \max_{a'} Q(s', a') - Q(s, a) \]
 
 **Decoding:**
-- \\(\delta\\) (Greek delta): standard notation for the TD error
-- \\(r + \gamma \max_{a'} Q(s', a')\\): the "target" (what Q should be, according to this sample)
-- \\(Q(s, a)\\): our current estimate
+- \(\delta\) (Greek delta): standard notation for the TD error
+- \(r + \gamma \max_{a'} Q(s', a')\): the "target" (what Q should be, according to this sample)
+- \(Q(s, a)\): our current estimate
 - The difference is positive if our current estimate is too low, negative if too high
 
 Q-learning updates the estimate by moving it a small step toward the target:
 
-\\[ Q(s, a) \leftarrow Q(s, a) + \alpha \cdot \delta \\]
+\[ Q(s, a) \leftarrow Q(s, a) + \alpha \cdot \delta \]
 
 **Decoding:**
-- \\(\leftarrow\\): assignment (overwrites the old value)
-- \\(\alpha\\) (Greek alpha): the **learning rate**, a small positive number (like 0.1)
-- \\(\alpha \cdot \delta\\): how much to adjust toward the target
+- \(\leftarrow\): assignment (overwrites the old value)
+- \(\alpha\) (Greek alpha): the **learning rate**, a small positive number (like 0.1)
+- \(\alpha \cdot \delta\): how much to adjust toward the target
 
 If we use a learning rate of 0.1, we move 10% of the way toward the new sample's target each time. Over many updates, the estimates converge to Q*.
 
@@ -111,13 +111,13 @@ Common values of ε:
 
 Starting at ε = 1.0 means the agent begins by acting completely randomly. This is often the right choice: early in training, Q-values are meaningless (usually initialized to zero), so there is nothing to exploit. As Q-values improve, exploration becomes less necessary and exploitation becomes more valuable.
 
-\\[ \varepsilon_t = \varepsilon_{\text{end}} + (\varepsilon_{\text{start}} - \varepsilon_{\text{end}}) \cdot e^{-t / T_{\text{decay}}} \\]
+\[ \varepsilon_t = \varepsilon_{\text{end}} + (\varepsilon_{\text{start}} - \varepsilon_{\text{end}}) \cdot e^{-t / T_{\text{decay}}} \]
 
 **Decoding:**
-- \\(\varepsilon_t\\): the exploration rate at step t
-- \\(\varepsilon_{\text{start}}\\): initial exploration rate (typically 1.0)
-- \\(\varepsilon_{\text{end}}\\): final exploration rate (typically 0.05)
-- \\(T_{\text{decay}}\\): the decay timescale in steps — controls how fast exploration drops
+- \(\varepsilon_t\): the exploration rate at step t
+- \(\varepsilon_{\text{start}}\): initial exploration rate (typically 1.0)
+- \(\varepsilon_{\text{end}}\): final exploration rate (typically 0.05)
+- \(T_{\text{decay}}\): the decay timescale in steps — controls how fast exploration drops
 
 ```python
 import math
@@ -191,14 +191,14 @@ The key property: optimistic initialization drives exploration without requiring
 
 The UCB action selection rule:
 
-\\[ a^* = \arg\max_a \left[ Q(s, a) + c \sqrt{\frac{\ln t}{N(s, a)}} \\right] \\]
+\[ a^* = \arg\max_a \left[ Q(s, a) + c \sqrt{\frac{\ln t}{N(s, a)}} \right] \]
 
 **Decoding:**
-- \\(Q(s, a)\\): the current Q-value estimate for action a in state s
-- \\(N(s, a)\\): the number of times action a has been taken in state s
-- \\(t\\): total number of steps so far
-- \\(c\\): exploration coefficient (controls the exploration-exploitation balance; typically 1 or 2)
-- \\(\sqrt{\ln t / N(s, a)}\\): the uncertainty bonus — large when an action has been rarely tried, shrinks as the action is tried more
+- \(Q(s, a)\): the current Q-value estimate for action a in state s
+- \(N(s, a)\): the number of times action a has been taken in state s
+- \(t\): total number of steps so far
+- \(c\): exploration coefficient (controls the exploration-exploitation balance; typically 1 or 2)
+- \(\sqrt{\ln t / N(s, a)}\): the uncertainty bonus — large when an action has been rarely tried, shrinks as the action is tried more
 
 ```python
 import numpy as np
@@ -449,12 +449,12 @@ This is what motivates DQN (next lesson): replace the table with a neural networ
 
 The formal measure is the **Bellman residual**: the maximum absolute change in any Q-value between two successive passes through the data.
 
-\\[ \text{Bellman residual} = \max_{(s, a)} \left| Q_{\text{new}}(s, a) - Q_{\text{old}}(s, a) \right| \\]
+\[ \text{Bellman residual} = \max_{(s, a)} \left| Q_{\text{new}}(s, a) - Q_{\text{old}}(s, a) \right| \]
 
 **Decoding:**
-- \\(Q_{\text{new}}(s, a)\\): the Q-value after an update step
-- \\(Q_{\text{old}}(s, a)\\): the Q-value before the update
-- \\(\max_{(s,a)}\\): take the worst-case over all state-action pairs
+- \(Q_{\text{new}}(s, a)\): the Q-value after an update step
+- \(Q_{\text{old}}(s, a)\): the Q-value before the update
+- \(\max_{(s,a)}\): take the worst-case over all state-action pairs
 - As the algorithm converges, this residual → 0
 
 When the Bellman residual is below some small threshold (e.g., 0.01), we declare convergence. Monitoring this is useful for:
@@ -468,7 +468,7 @@ Tabular Q-learning converges to Q* under two conditions:
 
 1. **All state-action pairs are visited infinitely often.** If the agent never visits a particular (s, a) pair, its Q-value never gets updated. A stuck Q-value in a corner of the table can distort the optimal policy for nearby states. This is the formal justification for maintaining exploration throughout training — not just at the start.
 
-2. **The learning rate α decays appropriately.** Specifically, the Robbins-Monro conditions require \\(\sum_t \alpha_t = \infty\\) (enough total learning to converge) and \\(\sum_t \alpha_t^2 < \infty\\) (learning rate decays fast enough to prevent oscillation). A common schedule: \\(\alpha_t = 1 / (1 + \text{visit\_count}(s, a))\\), which decreases each time a specific (s, a) pair is updated.
+2. **The learning rate α decays appropriately.** Specifically, the Robbins-Monro conditions require \(\sum_t \alpha_t = \infty\) (enough total learning to converge) and \(\sum_t \alpha_t^2 < \infty\) (learning rate decays fast enough to prevent oscillation). A common schedule: \(\alpha_t = 1 / (1 + \text{visit\_count}(s, a))\), which decreases each time a specific (s, a) pair is updated.
 
 In practice, a fixed α (like 0.1) with sufficient exploration works well on small tabular problems. The theoretical conditions matter more when the state space is large or the reward signal is noisy.
 
@@ -563,7 +563,7 @@ Instead of a lookup table with one entry per state-action pair, the Q function i
 
 The TD target is:
 
-\\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta) \\]
+\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta) \]
 
 The target depends on Q itself. You are using your own current (imperfect) estimate to define what you are trying to learn. This is "bootstrapping" — pulling yourself up by your own bootstraps. In the tabular case, bootstrapping is fine because updates are isolated to single cells. With function approximation, the target and the estimate share weights, which can cause feedback loops.
 
@@ -609,9 +609,9 @@ With a neural network Q(s, a; θ) parameterized by weights θ, updating one (s, 
 
 - **Exploration is not optional; it is a convergence requirement.** The theoretical guarantee that Q-learning converges to Q* requires that all state-action pairs be visited infinitely often. In practice, ε-greedy exploration is the standard mechanism. ε-decay (starting at 1.0, decaying to 0.05) front-loads exploration when Q-values are uninformative and shifts to exploitation as estimates improve.
 
-- **Beyond ε-greedy: optimistic initialization and UCB.** Initializing Q-values high encourages early exploration without random noise. UCB selects actions with high uncertainty by adding a bonus proportional to \\(\sqrt{\ln t / N(s,a)}\\), directing exploration toward poorly-understood actions rather than random ones. In SSA, exploration means periodically observing satellites you have not recently tracked — even those with currently low estimated risk.
+- **Beyond ε-greedy: optimistic initialization and UCB.** Initializing Q-values high encourages early exploration without random noise. UCB selects actions with high uncertainty by adding a bonus proportional to \(\sqrt{\ln t / N(s,a)}\), directing exploration toward poorly-understood actions rather than random ones. In SSA, exploration means periodically observing satellites you have not recently tracked — even those with currently low estimated risk.
 
-- **The Bellman residual measures convergence.** \\(\max_{(s,a)} |Q_{\text{new}}(s,a) - Q_{\text{old}}(s,a)|\\) should decay toward zero in a well-behaved training run. Monitor it; a rising residual signals instability before Q-values diverge visibly.
+- **The Bellman residual measures convergence.** \(\max_{(s,a)} |Q_{\text{new}}(s,a) - Q_{\text{old}}(s,a)|\) should decay toward zero in a well-behaved training run. Monitor it; a rising residual signals instability before Q-values diverge visibly.
 
 - **Tabular Q-learning fails when the state space is large.** The table requires one entry per (state, action) pair. Continuous orbital state vectors, raw sensor images, or any high-dimensional state space makes the table infinitely large or intractable. DQN replaces the table with a neural network that generalizes across similar states.
 

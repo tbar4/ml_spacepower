@@ -27,22 +27,22 @@ Starting from the root, traverse the tree by repeatedly selecting child nodes un
 
 The standard selection rule is **UCB1** (Upper Confidence Bound), specifically the variant called **UCT** (UCB applied to Trees):
 
-\\[ UCT(\text{child}) = \frac{W(\text{child})}{N(\text{child})} + c \cdot \sqrt{\frac{\ln N(\text{parent})}{N(\text{child})}} \\]
+\[ UCT(\text{child}) = \frac{W(\text{child})}{N(\text{child})} + c \cdot \sqrt{\frac{\ln N(\text{parent})}{N(\text{child})}} \]
 
 **Decoding:**
-- \\(W(\text{child})\\): the total wins (or accumulated reward) from simulations that went through this child
-- \\(N(\text{child})\\): the number of times this child has been visited
-- \\(N(\text{parent})\\): the number of times the parent has been visited
-- \\(c\\): an exploration constant (typically √2 ≈ 1.41 for binary win/loss games)
-- \\(\ln\\): natural logarithm
+- \(W(\text{child})\): the total wins (or accumulated reward) from simulations that went through this child
+- \(N(\text{child})\): the number of times this child has been visited
+- \(N(\text{parent})\): the number of times the parent has been visited
+- \(c\): an exploration constant (typically √2 ≈ 1.41 for binary win/loss games)
+- \(\ln\): natural logarithm
 
-The first term \\(W/N\\) is the average value (the win rate). The second term grows when the child has been visited rarely compared to its siblings, encouraging exploration of less-tried options.
+The first term \(W/N\) is the average value (the win rate). The second term grows when the child has been visited rarely compared to its siblings, encouraging exploration of less-tried options.
 
 At each step of selection, pick the child with the highest UCT value. This biases toward strong moves while still occasionally exploring weak-looking ones.
 
 ### Phase 2: Expansion
 
-When you reach a node with unexplored children, add one of those children to the tree. Initialize its statistics: \\(N = 0\\), \\(W = 0\\).
+When you reach a node with unexplored children, add one of those children to the tree. Initialize its statistics: \(N = 0\), \(W = 0\).
 
 ### Phase 3: Simulation (also called "rollout" or "playout")
 
@@ -53,8 +53,8 @@ The simulation does not add nodes to the tree; it just plays out one quick game 
 ### Phase 4: Backpropagation
 
 Walk back up the tree from the new node to the root. Update the statistics on every node along the path:
-- Increment \\(N\\) by 1
-- Add the simulation outcome to \\(W\\)
+- Increment \(N\) by 1
+- Add the simulation outcome to \(W\)
 
 This propagates the simulation result up through the path that led to it.
 
@@ -206,13 +206,13 @@ The tension is exploration vs. exploitation. Pull the arm that looks best so far
 
 **UCB1** (Auer et al., 2002) says: at time t, pull arm i that maximizes
 
-\\[ \text{UCB1}(i) = \bar{X}_i + \sqrt{\frac{2 \ln t}{n_i}} \\]
+\[ \text{UCB1}(i) = \bar{X}_i + \sqrt{\frac{2 \ln t}{n_i}} \]
 
 **Decoding:**
-- \\(\bar{X}_i\\): sample mean reward from arm i (the exploitation term)
-- \\(t\\): total number of pulls so far across all arms
-- \\(n_i\\): number of times arm i has been pulled
-- \\(\sqrt{2 \ln t / n_i}\\): the exploration bonus — grows when arm i has been tried infrequently
+- \(\bar{X}_i\): sample mean reward from arm i (the exploitation term)
+- \(t\): total number of pulls so far across all arms
+- \(n_i\): number of times arm i has been pulled
+- \(\sqrt{2 \ln t / n_i}\): the exploration bonus — grows when arm i has been tried infrequently
 
 **Why the log?** Auer et al. showed that UCB1 achieves regret (cumulative missed reward vs. omniscient play) of O(ln t). The log function grows slowly: ln(1000) ≈ 6.9, ln(1,000,000) ≈ 13.8. This means the exploration bonus shrinks relative to the exploitation term as total pulls grow — which is the right behavior. Early on, explore widely. Later, exploit the best arm.
 

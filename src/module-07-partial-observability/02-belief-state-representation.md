@@ -5,7 +5,7 @@
 
 ## Where this fits
 
-Lesson 1 defined what a belief state is: a probability distribution \\(b(s) = P(s \mid \text{history})\\) that summarizes everything the agent knows about the true world state. It showed that maintaining a belief is both necessary (ignoring partial observability causes systematic errors) and sufficient (the belief is all you need to make optimal decisions).
+Lesson 1 defined what a belief state is: a probability distribution \(b(s) = P(s \mid \text{history})\) that summarizes everything the agent knows about the true world state. It showed that maintaining a belief is both necessary (ignoring partial observability causes systematic errors) and sufficient (the belief is all you need to make optimal decisions).
 
 This lesson covers the practical question: how do you actually *represent* and *update* a belief distribution in code? The true answer — an arbitrary probability distribution over a continuous, high-dimensional state space — is almost never directly representable. The art of POMDP engineering is choosing a representation that is accurate enough to support good decisions and cheap enough to run in real time.
 
@@ -92,40 +92,40 @@ Exact belief update is fast and exact. Its limitation is the state space: with a
 
 ## Gaussian belief: the Kalman filter family
 
-For linear Gaussian systems, the belief \\(b(s)\\) is always Gaussian. A Gaussian over \\(d\\) dimensions is parameterized by just \\(d + d^2/2\\) numbers: a mean vector \\(\mu\\) and a covariance matrix \\(\Sigma\\). This is far more compact than a full distribution, and the updates are analytically tractable.
+For linear Gaussian systems, the belief \(b(s)\) is always Gaussian. A Gaussian over \(d\) dimensions is parameterized by just \(d + d^2/2\) numbers: a mean vector \(\mu\) and a covariance matrix \(\Sigma\). This is far more compact than a full distribution, and the updates are analytically tractable.
 
 The **Kalman filter** (KF) is the exact Bayesian filter for linear Gaussian systems. For nonlinear orbital mechanics, the **Extended Kalman Filter (EKF)** or **Unscented Kalman Filter (UKF)** approximates the nonlinear dynamics with a linearization.
 
 ### Kalman filter summary
 
-For a linear system \\(s_{t+1} = A s_t + B u_t + w_t\\) and observation model \\(o_t = H s_t + v_t\\), where \\(w_t \sim \mathcal{N}(0, Q)\\) and \\(v_t \sim \mathcal{N}(0, R)\\):
+For a linear system \(s_{t+1} = A s_t + B u_t + w_t\) and observation model \(o_t = H s_t + v_t\), where \(w_t \sim \mathcal{N}(0, Q)\) and \(v_t \sim \mathcal{N}(0, R)\):
 
 **Predict step:**
-\\[ \bar{\mu}_{t+1} = A \mu_t + B u_t \\]
-\\[ \bar{\Sigma}_{t+1} = A \Sigma_t A^\top + Q \\]
+\[ \bar{\mu}_{t+1} = A \mu_t + B u_t \]
+\[ \bar{\Sigma}_{t+1} = A \Sigma_t A^\top + Q \]
 
 **Update step:**
-\\[ K = \bar{\Sigma}_{t+1} H^\top (H \bar{\Sigma}_{t+1} H^\top + R)^{-1} \\]
-\\[ \mu_{t+1} = \bar{\mu}_{t+1} + K(o_{t+1} - H \bar{\mu}_{t+1}) \\]
-\\[ \Sigma_{t+1} = (I - KH)\bar{\Sigma}_{t+1} \\]
+\[ K = \bar{\Sigma}_{t+1} H^\top (H \bar{\Sigma}_{t+1} H^\top + R)^{-1} \]
+\[ \mu_{t+1} = \bar{\mu}_{t+1} + K(o_{t+1} - H \bar{\mu}_{t+1}) \]
+\[ \Sigma_{t+1} = (I - KH)\bar{\Sigma}_{t+1} \]
 
 **Decoding:**
-- \\(\bar{\mu}\\), \\(\bar{\Sigma}\\): predicted mean and covariance (before observing \\(o_{t+1}\\))
-- \\(K\\): Kalman gain. A matrix that says "how much should the new observation shift the mean?" Large \\(K\\) means we trust the observation heavily; small \\(K\\) means we trust our prediction.
-- \\(o_{t+1} - H \bar{\mu}_{t+1}\\): the **innovation** — the difference between the actual observation and what we predicted we would see. If this is small, the world is evolving as expected. If it is large, something unexpected happened.
-- \\((I - KH)\bar{\Sigma}_{t+1}\\): the covariance shrinks after an observation, because we learned something.
+- \(\bar{\mu}\), \(\bar{\Sigma}\): predicted mean and covariance (before observing \(o_{t+1}\))
+- \(K\): Kalman gain. A matrix that says "how much should the new observation shift the mean?" Large \(K\) means we trust the observation heavily; small \(K\) means we trust our prediction.
+- \(o_{t+1} - H \bar{\mu}_{t+1}\): the **innovation** — the difference between the actual observation and what we predicted we would see. If this is small, the world is evolving as expected. If it is large, something unexpected happened.
+- \((I - KH)\bar{\Sigma}_{t+1}\): the covariance shrinks after an observation, because we learned something.
 
 The Kalman filter is the foundation of operational space surveillance. Organizations track orbital objects using variants of the EKF or UKF applied to radar and optical measurements. The particle filter below is a generalization that handles non-Gaussian, multi-modal, and highly nonlinear cases that Kalman filters cannot.
 
 ## Particle filters: the general-purpose belief
 
-A **particle filter** represents the belief as a set of \\(N\\) weighted samples (particles):
+A **particle filter** represents the belief as a set of \(N\) weighted samples (particles):
 
-\\[ b(s) \approx \sum_{i=1}^{N} w^{(i)} \delta(s - s^{(i)}) \\]
+\[ b(s) \approx \sum_{i=1}^{N} w^{(i)} \delta(s - s^{(i)}) \]
 
-where \\(s^{(i)}\\) is the \\(i\\)th particle's state, \\(w^{(i)}\\) is its weight (with \\(\sum_i w^{(i)} = 1\\)), and \\(\delta\\) is the Dirac delta function (a point mass at \\(s^{(i)}\\)).
+where \(s^{(i)}\) is the \(i\)th particle's state, \(w^{(i)}\) is its weight (with \(\sum_i w^{(i)} = 1\)), and \(\delta\) is the Dirac delta function (a point mass at \(s^{(i)}\)).
 
-**Decoding:** Each particle \\(s^{(i)}\\) is a hypothesis about the current true state. The weight \\(w^{(i)}\\) is how likely that hypothesis is, given all observations so far. The distribution they collectively represent approximates the true posterior belief.
+**Decoding:** Each particle \(s^{(i)}\) is a hypothesis about the current true state. The weight \(w^{(i)}\) is how likely that hypothesis is, given all observations so far. The distribution they collectively represent approximates the true posterior belief.
 
 The particle filter update follows the same two-step logic as the exact update, but applied to particles rather than a probability table:
 
@@ -133,9 +133,9 @@ The particle filter update follows the same two-step logic as the exact update, 
 
 The standard particle filter algorithm is called SIR:
 
-1. **Predict**: propagate each particle through the dynamics model (with noise), giving \\(s^{(i)} \leftarrow p(s_{t+1} \mid s_t^{(i)}, a)\\).
-2. **Update (importance weighting)**: multiply each particle's weight by the observation likelihood: \\(w^{(i)} \leftarrow w^{(i)} \cdot O(o \mid s^{(i)}, a)\\). Renormalize.
-3. **Resample**: draw \\(N\\) new particles from the weighted distribution, replacing the old particles. Reset all weights to \\(1/N\\).
+1. **Predict**: propagate each particle through the dynamics model (with noise), giving \(s^{(i)} \leftarrow p(s_{t+1} \mid s_t^{(i)}, a)\).
+2. **Update (importance weighting)**: multiply each particle's weight by the observation likelihood: \(w^{(i)} \leftarrow w^{(i)} \cdot O(o \mid s^{(i)}, a)\). Renormalize.
+3. **Resample**: draw \(N\) new particles from the weighted distribution, replacing the old particles. Reset all weights to \(1/N\).
 
 The resampling step focuses computational effort on high-probability regions. Without resampling, a few particles would accumulate nearly all the weight and the estimate would degrade.
 
@@ -382,11 +382,11 @@ Particle deprivation occurs when all particles have near-zero weight after an up
 
 **Detection:** monitor the effective sample size (ESS):
 
-\\[ \text{ESS} = \frac{1}{\sum_{i=1}^N (w^{(i)})^2} \\]
+\[ \text{ESS} = \frac{1}{\sum_{i=1}^N (w^{(i)})^2} \]
 
-**Decoding:** ESS measures how many "effective" particles are contributing to the estimate. If all weights are equal (\\(w^{(i)} = 1/N\\)), ESS = N (full diversity). If one particle has weight 1.0 and all others are 0, ESS = 1 (complete collapse).
+**Decoding:** ESS measures how many "effective" particles are contributing to the estimate. If all weights are equal (\(w^{(i)} = 1/N\)), ESS = N (full diversity). If one particle has weight 1.0 and all others are 0, ESS = 1 (complete collapse).
 
-An ESS below \\(N/10\\) is a warning sign. An ESS below \\(N/100\\) indicates imminent deprivation.
+An ESS below \(N/10\) is a warning sign. An ESS below \(N/100\) indicates imminent deprivation.
 
 **Prevention strategies:**
 
@@ -414,7 +414,7 @@ hidden_{t-1} ──────────────────┘
      └── hidden_t fed back next step
 ```
 
-The LSTM maintains a hidden state \\(h_t\\) that compresses the observation history into a fixed-size vector. The Q-head maps \\(h_t\\) to Q-values for each action. Training uses standard DQN objectives (TD error minimization) with experience replay over sequences (not individual transitions, since the LSTM needs temporal context to build its hidden state).
+The LSTM maintains a hidden state \(h_t\) that compresses the observation history into a fixed-size vector. The Q-head maps \(h_t\) to Q-values for each action. Training uses standard DQN objectives (TD error minimization) with experience replay over sequences (not individual transitions, since the LSTM needs temporal context to build its hidden state).
 
 ```python
 import torch

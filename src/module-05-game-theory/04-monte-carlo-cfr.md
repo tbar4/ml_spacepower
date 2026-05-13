@@ -221,13 +221,13 @@ The two variants differ in exactly which nodes they visit per iteration:
 
 **Outcome sampling** visits a single root-to-leaf path. At every node — whether chance, traverser, or opponent — a single action is sampled. The result is one complete play-through of the game per iteration.
 
-- Visited nodes: \\(O(D)\\) where \\(D\\) is the maximum depth of the game tree
+- Visited nodes: \(O(D)\) where \(D\) is the maximum depth of the game tree
 - Updated information sets: only the traverser's information sets that appear on the sampled path
 - Unvisited information sets: receive no update this iteration, regardless of how important they are
 
 **External sampling** visits more of the tree. At opponent and chance nodes, one action is sampled. But at the traverser's nodes, all actions are explored.
 
-- Visited nodes: \\(O(b^{d_\text{traverser}})\\) where \\(b\\) is the traverser's branching factor and \\(d_\text{traverser}\\) is the depth of the traverser's decisions
+- Visited nodes: \(O(b^{d_\text{traverser}})\) where \(b\) is the traverser's branching factor and \(d_\text{traverser}\) is the depth of the traverser's decisions
 - Updated information sets: all traverser information sets reachable under the sampled opponent/chance play
 - Every traverser information set reachable in this trajectory is updated with an exact regret estimate
 
@@ -259,26 +259,26 @@ The correction factor is the **importance weight**: the ratio of the actual prob
 
 ### The w/q factor
 
-In outcome sampling MCCFR, when a trajectory \\(\tau\\) is sampled with probability \\(q(\tau)\\) under the current sampling distribution, the regret estimate for action \\(a\\) at information set \\(I\\) on that trajectory is:
+In outcome sampling MCCFR, when a trajectory \(\tau\) is sampled with probability \(q(\tau)\) under the current sampling distribution, the regret estimate for action \(a\) at information set \(I\) on that trajectory is:
 
-\\[ \hat{r}(I, a) = \frac{\pi_{-i}(I) \cdot (u_a - u_{\sigma})}{q(\tau)} \\]
+\[ \hat{r}(I, a) = \frac{\pi_{-i}(I) \cdot (u_a - u_{\sigma})}{q(\tau)} \]
 
 **Decoding:**
-- \\(\pi_{-i}(I)\\): counterfactual reach of information set \\(I\\) (opponents' and chance's contribution)
-- \\(u_a\\): the utility at the sampled terminal node if we had taken action \\(a\\) at \\(I\\) (holding the rest of the trajectory constant)
-- \\(u_\sigma\\): the utility at the sampled terminal under the current strategy
-- \\(q(\tau)\\): the probability of sampling this particular trajectory
+- \(\pi_{-i}(I)\): counterfactual reach of information set \(I\) (opponents' and chance's contribution)
+- \(u_a\): the utility at the sampled terminal node if we had taken action \(a\) at \(I\) (holding the rest of the trajectory constant)
+- \(u_\sigma\): the utility at the sampled terminal under the current strategy
+- \(q(\tau)\): the probability of sampling this particular trajectory
 
-The division by \\(q(\tau)\\) is the **importance weight**. It corrects for the fact that if we sample a trajectory with probability \\(q\\) but it would naturally occur with probability \\(p\\), the update should be scaled by \\(p/q\\) to make it unbiased. In outcome sampling, \\(q(\tau)\\) includes the player's own strategy probabilities, so this factor partially cancels with the strategy probabilities in \\(\pi_{-i}\\).
+The division by \(q(\tau)\) is the **importance weight**. It corrects for the fact that if we sample a trajectory with probability \(q\) but it would naturally occur with probability \(p\), the update should be scaled by \(p/q\) to make it unbiased. In outcome sampling, \(q(\tau)\) includes the player's own strategy probabilities, so this factor partially cancels with the strategy probabilities in \(\pi_{-i}\).
 
 ### Variance can increase with importance weighting
 
 Importance weighting is unbiased in expectation, but it can dramatically increase variance. Consider:
 
-- A trajectory that naturally occurs with probability \\(p = 0.001\\) (very rare)
-- Under the sampling distribution, it is sampled with probability \\(q = 0.0001\\) (10× undersampled)
-- The importance weight is \\(p/q = 10\\)
-- If this trajectory's terminal payoff is \\(+5\\), the weighted update is \\(+50\\) — much larger than the actual effect on expected payoff
+- A trajectory that naturally occurs with probability \(p = 0.001\) (very rare)
+- Under the sampling distribution, it is sampled with probability \(q = 0.0001\) (10× undersampled)
+- The importance weight is \(p/q = 10\)
+- If this trajectory's terminal payoff is \(+5\), the weighted update is \(+50\) — much larger than the actual effect on expected payoff
 
 This variance amplification is the fundamental tension in MCCFR: sampling rare trajectories infrequently is efficient per iteration, but the resulting high-variance updates mean more iterations are needed for the estimates to stabilize.
 
@@ -353,45 +353,45 @@ importance_sampling_variance_demo(
 )
 ```
 
-The output demonstrates that when \\(q \neq p\\), variance increases proportionally to \\((p/q)^2\\). Undersampling rare high-payoff events by 10× multiplies variance by up to 100×. This is why MCCFR practitioners are careful about the sampling distribution and why some variants use **ε-greedy sampling** (mixing the strategy with a small uniform component) to ensure all actions get sampled with a minimum probability.
+The output demonstrates that when \(q \neq p\), variance increases proportionally to \((p/q)^2\). Undersampling rare high-payoff events by 10× multiplies variance by up to 100×. This is why MCCFR practitioners are careful about the sampling distribution and why some variants use **ε-greedy sampling** (mixing the strategy with a small uniform component) to ensure all actions get sampled with a minimum probability.
 
 ## Convergence bounds for MCCFR
 
 ### The T^{-1/2} bound still holds
 
-Like vanilla CFR, both outcome sampling and external sampling MCCFR converge at rate \\(O(T^{-1/2})\\):
+Like vanilla CFR, both outcome sampling and external sampling MCCFR converge at rate \(O(T^{-1/2})\):
 
-\\[ \epsilon(T) \leq \frac{C_{\text{MC}}}{\sqrt{T}} \\]
+\[ \epsilon(T) \leq \frac{C_{\text{MC}}}{\sqrt{T}} \]
 
-The convergence rate exponent is the same. This might seem surprising — sampling introduces variance, which should slow convergence. The reason the rate exponent is preserved: regret matching already achieves \\(O(1/\sqrt{T})\\) convergence regardless of the noise level in the per-iteration update, as long as the estimates are unbiased and have finite variance.
+The convergence rate exponent is the same. This might seem surprising — sampling introduces variance, which should slow convergence. The reason the rate exponent is preserved: regret matching already achieves \(O(1/\sqrt{T})\) convergence regardless of the noise level in the per-iteration update, as long as the estimates are unbiased and have finite variance.
 
 ### But the constant is larger
 
-The crucial difference is in the constant \\(C_{\text{MC}}\\). For vanilla CFR, the constant depends on the game structure (payoff ranges, number of information sets). For MCCFR:
+The crucial difference is in the constant \(C_{\text{MC}}\). For vanilla CFR, the constant depends on the game structure (payoff ranges, number of information sets). For MCCFR:
 
-\\[ C_{\text{MC}} = C_{\text{vanilla}} \cdot \sqrt{\text{Var}_{\text{sampling}}} \\]
+\[ C_{\text{MC}} = C_{\text{vanilla}} \cdot \sqrt{\text{Var}_{\text{sampling}}} \]
 
-where \\(\text{Var}_{\text{sampling}}\\) is the variance introduced by the sampling procedure. This variance depends on:
-- **Outcome sampling**: variance proportional to \\(\Delta^2 / q_{\min}\\), where \\(\Delta\\) is the payoff range and \\(q_{\min}\\) is the minimum probability of sampling any terminal node.
+where \(\text{Var}_{\text{sampling}}\) is the variance introduced by the sampling procedure. This variance depends on:
+- **Outcome sampling**: variance proportional to \(\Delta^2 / q_{\min}\), where \(\Delta\) is the payoff range and \(q_{\min}\) is the minimum probability of sampling any terminal node.
 - **External sampling**: lower variance because the traverser's regrets are estimated exactly; variance only comes from the opponent's sampled actions.
 
 ### Practical implication for iteration count
 
-Let \\(\rho = C_{\text{MC}} / C_{\text{vanilla}}\\) be the variance ratio. For a given target exploitability \\(\epsilon\\):
+Let \(\rho = C_{\text{MC}} / C_{\text{vanilla}}\) be the variance ratio. For a given target exploitability \(\epsilon\):
 
-\\[ T_{\text{MCCFR}} = \rho^2 \cdot T_{\text{vanilla}} \\]
+\[ T_{\text{MCCFR}} = \rho^2 \cdot T_{\text{vanilla}} \]
 
-If outcome sampling has \\(\rho = 10\\) (estimated 10× higher constant due to variance), MCCFR needs 100× more iterations to match vanilla CFR's convergence. But since each MCCFR iteration is \\(O(D)\\) vs. \\(O(N)\\) for vanilla CFR:
+If outcome sampling has \(\rho = 10\) (estimated 10× higher constant due to variance), MCCFR needs 100× more iterations to match vanilla CFR's convergence. But since each MCCFR iteration is \(O(D)\) vs. \(O(N)\) for vanilla CFR:
 
-\\[ \text{Total cost ratio} = \frac{T_{\text{MCCFR}} \cdot O(D)}{T_{\text{vanilla}} \cdot O(N)} = \rho^2 \cdot \frac{D}{N} \\]
+\[ \text{Total cost ratio} = \frac{T_{\text{MCCFR}} \cdot O(D)}{T_{\text{vanilla}} \cdot O(N)} = \rho^2 \cdot \frac{D}{N} \]
 
-For typical games, \\(D \ll N / \rho^2\\), so MCCFR wins overall. For shallow games with high branching (e.g., a 3-action game with depth 5, \\(N = 3^5 = 243\\), \\(D = 5\\)), the advantage is:
+For typical games, \(D \ll N / \rho^2\), so MCCFR wins overall. For shallow games with high branching (e.g., a 3-action game with depth 5, \(N = 3^5 = 243\), \(D = 5\)), the advantage is:
 
-\\[ \frac{T_{\text{MCCFR}} \cdot 5}{T_{\text{vanilla}} \cdot 243} = 100 \cdot \frac{5}{243} \approx 2 \\]
+\[ \frac{T_{\text{MCCFR}} \cdot 5}{T_{\text{vanilla}} \cdot 243} = 100 \cdot \frac{5}{243} \approx 2 \]
 
-Only a 2× improvement — vanilla CFR is competitive. For a deeper game (depth 20, \\(N = 3^{20} \approx 3.5 \times 10^9\\)):
+Only a 2× improvement — vanilla CFR is competitive. For a deeper game (depth 20, \(N = 3^{20} \approx 3.5 \times 10^9\)):
 
-\\[ 100 \cdot \frac{20}{3.5 \times 10^9} \approx 6 \times 10^{-7} \\]
+\[ 100 \cdot \frac{20}{3.5 \times 10^9} \approx 6 \times 10^{-7} \]
 
 A massive advantage for MCCFR. The deeper the game, the more MCCFR dominates.
 
@@ -458,10 +458,10 @@ The comparison shows that for the small SSA game, vanilla CFR is competitive or 
 
 ## Key Takeaways
 
-- MCCFR replaces the full game tree traversal of vanilla CFR with a sampled traversal, trading per-iteration accuracy for the ability to run far more iterations; the same \\(O(T^{-1/2})\\) convergence rate applies, but with a larger constant.
-- **Outcome sampling** visits a single root-to-leaf trajectory per iteration (cost \\(O(D)\\)), while **external sampling** explores all traverser actions but samples opponent/chance play (cost \\(O(b^{d_\text{traverser}})\\)); external sampling has lower variance and is preferred for medium-sized games.
-- **Importance weighting** (dividing regret updates by the sampling probability \\(q(\tau)\\)) makes the MCCFR estimator unbiased, but can amplify variance by \\((p/q)^2\\) when rare events are undersampled — practitioners mitigate this with ε-greedy sampling to ensure all actions get a minimum sampling probability.
-- The \\(T^{-1/2}\\) convergence bound still holds for MCCFR, but the constant \\(C_{\text{MC}}\\) is larger than for vanilla CFR; the total cost advantage of MCCFR grows with game depth and is most dramatic for deep trees where \\(D \ll N / \rho^2\\).
+- MCCFR replaces the full game tree traversal of vanilla CFR with a sampled traversal, trading per-iteration accuracy for the ability to run far more iterations; the same \(O(T^{-1/2})\) convergence rate applies, but with a larger constant.
+- **Outcome sampling** visits a single root-to-leaf trajectory per iteration (cost \(O(D)\)), while **external sampling** explores all traverser actions but samples opponent/chance play (cost \(O(b^{d_\text{traverser}})\)); external sampling has lower variance and is preferred for medium-sized games.
+- **Importance weighting** (dividing regret updates by the sampling probability \(q(\tau)\)) makes the MCCFR estimator unbiased, but can amplify variance by \((p/q)^2\) when rare events are undersampled — practitioners mitigate this with ε-greedy sampling to ensure all actions get a minimum sampling probability.
+- The \(T^{-1/2}\) convergence bound still holds for MCCFR, but the constant \(C_{\text{MC}}\) is larger than for vanilla CFR; the total cost advantage of MCCFR grows with game depth and is most dramatic for deep trees where \(D \ll N / \rho^2\).
 - For very large games (poker, large SSA scheduling problems), even tabular MCCFR cannot store regrets for all information sets; this motivates Deep CFR (Lesson 5), which replaces the regret table with a neural network.
 - In SSA applications, MCCFR is the practical algorithm for games with more than a few thousand information sets: the conjunction maneuver coordination game fits vanilla CFR, but a multi-satellite spectrum deconfliction game with many operators and frequency bands requires MCCFR or its deep variants.
 

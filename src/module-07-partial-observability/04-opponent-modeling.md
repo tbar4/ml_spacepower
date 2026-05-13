@@ -123,17 +123,17 @@ class ExponentialMovingFrequencyModel:
 A richer approach: maintain a prior over *types* of opponents, where each type is associated with a different behavioral strategy. Update the type posterior as actions are observed.
 
 **Setup:**
-- Define \\(K\\) types \\(\Theta = \{\theta_1, \ldots, \theta_K\}\\), each with a known action distribution \\(\pi_{\theta_k}(a)\\).
-- Maintain a prior \\(P(\theta)\\) over types.
-- After observing action \\(a_t\\), update:
+- Define \(K\) types \(\Theta = \{\theta_1, \ldots, \theta_K\}\), each with a known action distribution \(\pi_{\theta_k}(a)\).
+- Maintain a prior \(P(\theta)\) over types.
+- After observing action \(a_t\), update:
 
-\\[ P(\theta_k \mid a_{1:t}) \propto P(a_t \mid \theta_k) \cdot P(\theta_k \mid a_{1:t-1}) \\]
+\[ P(\theta_k \mid a_{1:t}) \propto P(a_t \mid \theta_k) \cdot P(\theta_k \mid a_{1:t-1}) \]
 
-**Decoding:** This is Bayes' rule applied recursively. The likelihood \\(P(a_t \mid \theta_k)\\) is the probability that type \\(\theta_k\\) would have taken action \\(a_t\\). The prior \\(P(\theta_k \mid a_{1:t-1})\\) is the current type belief after all previous observations. Multiplying and normalizing gives the updated type belief.
+**Decoding:** This is Bayes' rule applied recursively. The likelihood \(P(a_t \mid \theta_k)\) is the probability that type \(\theta_k\) would have taken action \(a_t\). The prior \(P(\theta_k \mid a_{1:t-1})\) is the current type belief after all previous observations. Multiplying and normalizing gives the updated type belief.
 
 The best response is computed against the *mixture* of type strategies, weighted by the type posterior:
 
-\\[ \pi_{\text{predicted}}(a) = \sum_k P(\theta_k \mid a_{1:t}) \cdot \pi_{\theta_k}(a) \\]
+\[ \pi_{\text{predicted}}(a) = \sum_k P(\theta_k \mid a_{1:t}) \cdot \pi_{\theta_k}(a) \]
 
 **Decoding:** The predicted action distribution is a mixture of the type-specific distributions, where the mixing weights are the type posteriors. As more actions are observed, the posterior concentrates on the most consistent type, and the predicted distribution approaches the true opponent strategy.
 
@@ -272,21 +272,21 @@ Given an opponent model, the **response function** maps the model's predicted ac
 
 For a pure best response against a fixed opponent:
 
-\\[ a^* = \arg\max_{a \in A_D} \sum_{a' \in A_C} \hat{P}(a') \cdot R(a, a') \\]
+\[ a^* = \arg\max_{a \in A_D} \sum_{a' \in A_C} \hat{P}(a') \cdot R(a, a') \]
 
 **Decoding:**
-- \\(A_D\\): defender's action space.
-- \\(A_C\\): challenger's action space.
-- \\(\hat{P}(a')\\): the model's predicted probability that the challenger takes action \\(a'\\).
-- \\(R(a, a')\\): defender's reward for action \\(a\\) when challenger takes \\(a'\\).
+- \(A_D\): defender's action space.
+- \(A_C\): challenger's action space.
+- \(\hat{P}(a')\): the model's predicted probability that the challenger takes action \(a'\).
+- \(R(a, a')\): defender's reward for action \(a\) when challenger takes \(a'\).
 
 The pure best response is optimal if the opponent model is correct and the opponent is not adapting. Against an adaptive opponent, the pure best response is exploitable.
 
 The **safe hedge**: mix between the best response and the Nash equilibrium strategy. The mixing weight is the confidence in the model:
 
-\\[ \sigma_D = \lambda \cdot \sigma^*_{\text{BR}} + (1 - \lambda) \cdot \sigma^*_{\text{Nash}} \\]
+\[ \sigma_D = \lambda \cdot \sigma^*_{\text{BR}} + (1 - \lambda) \cdot \sigma^*_{\text{Nash}} \]
 
-where \\(\lambda \in [0, 1]\\) is the confidence in the opponent model. High confidence: act mostly on the model. Low confidence: fall back toward Nash.
+where \(\lambda \in [0, 1]\) is the confidence in the opponent model. High confidence: act mostly on the model. Low confidence: fall back toward Nash.
 
 ```python
 def hedged_defender_strategy(
@@ -447,11 +447,11 @@ Every opponent model is an approximation. The operator may be following a differ
 
 **Detecting model failure:** Monitor the KL divergence between what the model predicts and what is actually observed. If the model's predictions are consistently wrong, the KL divergence will be large:
 
-\\[ D_{KL}(P_{\text{observed}} \| P_{\text{predicted}}) = \sum_a P_{\text{observed}}(a) \log \frac{P_{\text{observed}}(a)}{P_{\text{predicted}}(a)} \\]
+\[ D_{KL}(P_{\text{observed}} \| P_{\text{predicted}}) = \sum_a P_{\text{observed}}(a) \log \frac{P_{\text{observed}}(a)}{P_{\text{predicted}}(a)} \]
 
 **Decoding:**
-- \\(P_{\text{observed}}\\): empirical action distribution over a recent window.
-- \\(P_{\text{predicted}}\\): model's predicted distribution over the same window.
+- \(P_{\text{observed}}\): empirical action distribution over a recent window.
+- \(P_{\text{predicted}}\): model's predicted distribution over the same window.
 - If this is small (near zero), the model is a good fit. If large, the model is systematically wrong.
 
 ```python
@@ -577,9 +577,9 @@ Both are tests of the same hypothesis: is the evidence consistent with the curre
 
 In CFR (Module 5), there is no explicit opponent model. Instead, CFR iteratively updates *both* players' strategies based on accumulated regrets, converging to a Nash equilibrium. How does this relate to opponent modeling?
 
-**Reach probabilities track beliefs about the opponent's behavior.** At information set \\(I\\) belonging to player \\(i\\), the counterfactual reach probability \\(\pi_{-i}(I)\\) is the probability that play reaches \\(I\\) if all players except \\(i\\) play their current strategy. This is an implicit model of the opponent's strategy — not an explicit type distribution, but a probability distribution over what the opponent has been doing.
+**Reach probabilities track beliefs about the opponent's behavior.** At information set \(I\) belonging to player \(i\), the counterfactual reach probability \(\pi_{-i}(I)\) is the probability that play reaches \(I\) if all players except \(i\) play their current strategy. This is an implicit model of the opponent's strategy — not an explicit type distribution, but a probability distribution over what the opponent has been doing.
 
-**Counterfactual values correct for opponent deviation.** When CFR computes the counterfactual regret of action \\(a\\) at \\(I\\), it asks: "how much better would I have done by always playing \\(a\\) at \\(I\\), holding the opponent's strategy fixed?" This is precisely the best-response computation against a fixed opponent model — the opponent model is the current strategy profile maintained by CFR.
+**Counterfactual values correct for opponent deviation.** When CFR computes the counterfactual regret of action \(a\) at \(I\), it asks: "how much better would I have done by always playing \(a\) at \(I\), holding the opponent's strategy fixed?" This is precisely the best-response computation against a fixed opponent model — the opponent model is the current strategy profile maintained by CFR.
 
 **The key difference:** explicit opponent modeling assumes the opponent has a fixed (or slowly-changing) strategy that you estimate and best-respond to. CFR assumes both players are simultaneously adapting, and finds the equilibrium where neither wants to change. Explicit modeling is better against static, predictable opponents; CFR is better against adaptive opponents or when you have no history to train on.
 

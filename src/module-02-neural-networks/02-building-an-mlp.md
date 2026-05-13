@@ -405,15 +405,15 @@ The goal is initialization that keeps activations at a reasonable scale througho
 
 ### Xavier initialization (for tanh)
 
-\\[ w \sim \mathcal{U}\left(-\frac{1}{\sqrt{\text{fan\_in}}}, \frac{1}{\sqrt{\text{fan\_in}}}\right) \\]
+\[ w \sim \mathcal{U}\left(-\frac{1}{\sqrt{\text{fan\_in}}}, \frac{1}{\sqrt{\text{fan\_in}}}\right) \]
 
-**Decoding:** fan\_in is the number of inputs to a layer (the "in" dimension of the weight matrix). Xavier initialization scales the initial weights by \\(1/\sqrt{\text{fan\_in}}\\), which keeps the variance of activations approximately constant across layers when using tanh.
+**Decoding:** fan\_in is the number of inputs to a layer (the "in" dimension of the weight matrix). Xavier initialization scales the initial weights by \(1/\sqrt{\text{fan\_in}}\), which keeps the variance of activations approximately constant across layers when using tanh.
 
 ### He initialization (for ReLU)
 
-\\[ w \sim \mathcal{N}\left(0, \sqrt{\frac{2}{\text{fan\_in}}}\right) \\]
+\[ w \sim \mathcal{N}\left(0, \sqrt{\frac{2}{\text{fan\_in}}}\right) \]
 
-**Decoding:** He initialization uses a larger scale factor — \\(\sqrt{2/\text{fan\_in}}\\) instead of \\(1/\sqrt{\text{fan\_in}}\\) — because ReLU zeros out half its inputs (all negative values), which would otherwise cause activations to shrink. The factor of 2 compensates for this halving. He initialization is the PyTorch default for `nn.Linear`.
+**Decoding:** He initialization uses a larger scale factor — \(\sqrt{2/\text{fan\_in}}\) instead of \(1/\sqrt{\text{fan\_in}}\) — because ReLU zeros out half its inputs (all negative values), which would otherwise cause activations to shrink. The factor of 2 compensates for this halving. He initialization is the PyTorch default for `nn.Linear`.
 
 ```python
 import torch

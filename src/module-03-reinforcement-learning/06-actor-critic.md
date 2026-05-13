@@ -16,9 +16,9 @@ Actor-critic methods combine the strengths of value-based learning (low variance
 
 An actor-critic agent has **two networks** that learn together:
 
-1. **The actor**: a policy network \\(\pi(a \mid s; \theta)\\) that outputs action probabilities. Trained using policy gradient.
+1. **The actor**: a policy network \(\pi(a \mid s; \theta)\) that outputs action probabilities. Trained using policy gradient.
 
-2. **The critic**: a value network \\(V(s; \phi)\\) that estimates the value of states. Trained using TD learning (similar to DQN, but for V instead of Q).
+2. **The critic**: a value network \(V(s; \phi)\) that estimates the value of states. Trained using TD learning (similar to DQN, but for V instead of Q).
 
 The names come from theater: the actor performs (chooses actions); the critic evaluates the performance (estimates value). They learn together, with the critic's evaluations guiding the actor's improvement.
 
@@ -26,9 +26,9 @@ The two networks are usually trained simultaneously, in the same loop.
 
 ## The advantage function
 
-Recall from lesson 5 that a baseline can reduce policy gradient variance. The natural baseline is the value function \\(V(s_t)\\), and the resulting quantity \\(G_t - V(s_t)\\) is called the **advantage**:
+Recall from lesson 5 that a baseline can reduce policy gradient variance. The natural baseline is the value function \(V(s_t)\), and the resulting quantity \(G_t - V(s_t)\) is called the **advantage**:
 
-\\[ A(s_t, a_t) = G_t - V(s_t) \\]
+\[ A(s_t, a_t) = G_t - V(s_t) \]
 
 Reading: "how much better was the actual return from this trajectory than the average expected return from this state?"
 
@@ -36,27 +36,27 @@ If A is positive, the trajectory was better than expected: increase the probabil
 
 The policy gradient with the value baseline becomes:
 
-\\[ \nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t A(s_t, a_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \\]
+\[ \nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t A(s_t, a_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \]
 
-Same structure as REINFORCE, but \\(G_t\\) is replaced by \\(A(s_t, a_t)\\). This dramatically reduces variance because the advantage typically has much smaller magnitude than the raw return.
+Same structure as REINFORCE, but \(G_t\) is replaced by \(A(s_t, a_t)\). This dramatically reduces variance because the advantage typically has much smaller magnitude than the raw return.
 
 ## Estimating the advantage with the critic
 
-The critic provides \\(V(s_t)\\). For \\(G_t\\), we have a few options:
+The critic provides \(V(s_t)\). For \(G_t\), we have a few options:
 
 **Monte Carlo estimate** (full return):
-\\[ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \\]
+\[ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \]
 
 This requires waiting for the episode to end. High variance, no bias.
 
 **One-step TD estimate**:
-\\[ G_t \approx R_{t+1} + \gamma V(s_{t+1}) \\]
+\[ G_t \approx R_{t+1} + \gamma V(s_{t+1}) \]
 
-This bootstraps off the critic's estimate of \\(V(s_{t+1})\\). Available immediately after each step. Lower variance, but biased (if V is wrong, this estimate is wrong).
+This bootstraps off the critic's estimate of \(V(s_{t+1})\). Available immediately after each step. Lower variance, but biased (if V is wrong, this estimate is wrong).
 
 The one-step TD advantage is:
 
-\\[ A(s_t, a_t) \approx R_{t+1} + \gamma V(s_{t+1}) - V(s_t) \\]
+\[ A(s_t, a_t) \approx R_{t+1} + \gamma V(s_{t+1}) - V(s_t) \]
 
 This is the same as the TD error from Q-learning (lesson 3), just for V instead of Q. It is sometimes called the "TD error" or "δ" in actor-critic literature.
 
@@ -66,9 +66,9 @@ In between are n-step returns and the Generalized Advantage Estimator (GAE), whi
 
 The critic is trained like any value function: minimize the mean squared TD error.
 
-\\[ L(\phi) = \left( R_{t+1} + \gamma V(s_{t+1}; \phi) - V(s_t; \phi) \right)^2 \\]
+\[ L(\phi) = \left( R_{t+1} + \gamma V(s_{t+1}; \phi) - V(s_t; \phi) \right)^2 \]
 
-We want \\(V(s_t)\\) to match the bootstrapped estimate \\(R_{t+1} + \gamma V(s_{t+1})\\). Same MSE loss as DQN, just for V instead of Q. As with DQN, you should use `torch.no_grad()` around the target so gradients only flow through \\(V(s_t)\\), not through the target.
+We want \(V(s_t)\) to match the bootstrapped estimate \(R_{t+1} + \gamma V(s_{t+1})\). Same MSE loss as DQN, just for V instead of Q. As with DQN, you should use `torch.no_grad()` around the target so gradients only flow through \(V(s_t)\), not through the target.
 
 In practice, both the policy update and the critic update happen at every step (or every batch of steps), using the same recently observed transitions.
 
@@ -212,7 +212,7 @@ The total loss combines three terms:
 
 **3. Entropy bonus**: rewards the policy for being more random (higher entropy).
 
-The entropy bonus is the trick from Module 1, lesson 4. By subtracting \\(c \cdot H(\pi)\\) from the loss (which is the same as adding to the reward objective), we encourage the policy to remain stochastic. Without it, the policy quickly concentrates on a single action and stops exploring. The coefficient (0.01 here) is tuned per problem.
+The entropy bonus is the trick from Module 1, lesson 4. By subtracting \(c \cdot H(\pi)\) from the loss (which is the same as adding to the reward objective), we encourage the policy to remain stochastic. Without it, the policy quickly concentrates on a single action and stops exploring. The coefficient (0.01 here) is tuned per problem.
 
 ## Why combine actor and critic in one network?
 
@@ -250,26 +250,26 @@ The Module 3 project focuses on DQN rather than actor-critic, because DQN is mor
 
 ## The advantage function as the critic's output
 
-The previous sections introduced the advantage \\(A(s_t, a_t) = G_t - V(s_t)\\) informally. Let us be precise about what the advantage function measures, why using it rather than raw returns is so important, and how to implement a critic that produces advantage estimates in PyTorch.
+The previous sections introduced the advantage \(A(s_t, a_t) = G_t - V(s_t)\) informally. Let us be precise about what the advantage function measures, why using it rather than raw returns is so important, and how to implement a critic that produces advantage estimates in PyTorch.
 
 ### Q, V, and A
 
 There are three related value functions in RL:
 
-\\[ V(s) = \mathbb{E}_\pi\left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s \right] \\]
+\[ V(s) = \mathbb{E}_\pi\left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s \right] \]
 
-\\[ Q(s, a) = \mathbb{E}_\pi\left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s, A_t = a \right] \\]
+\[ Q(s, a) = \mathbb{E}_\pi\left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s, A_t = a \right] \]
 
-\\[ A(s, a) = Q(s, a) - V(s) \\]
+\[ A(s, a) = Q(s, a) - V(s) \]
 
 **Decoding:**
-- \\(V(s)\\): the state value — expected cumulative reward starting from state \\(s\\), following policy \\(\pi\\). This is a **baseline**: what the agent expects to get from here on average.
-- \\(Q(s, a)\\): the action value — expected cumulative reward starting from state \\(s\\), taking action \\(a\\), then following \\(\pi\\). This tells you the value of a specific action from a specific state.
-- \\(A(s, a) = Q(s, a) - V(s)\\): the advantage — how much better (or worse) is taking action \\(a\\) compared to the average action the policy would take from state \\(s\\)?
+- \(V(s)\): the state value — expected cumulative reward starting from state \(s\), following policy \(\pi\). This is a **baseline**: what the agent expects to get from here on average.
+- \(Q(s, a)\): the action value — expected cumulative reward starting from state \(s\), taking action \(a\), then following \(\pi\). This tells you the value of a specific action from a specific state.
+- \(A(s, a) = Q(s, a) - V(s)\): the advantage — how much better (or worse) is taking action \(a\) compared to the average action the policy would take from state \(s\)?
 
 The advantage has two useful properties that raw returns do not:
 
-1. **Zero-centered in expectation**: \\(\mathbb{E}_{a \sim \pi}[A(s, a)] = 0\\) for all \\(s\\). Actions better than average get positive advantage; actions worse than average get negative advantage. This centering reduces gradient variance.
+1. **Zero-centered in expectation**: \(\mathbb{E}_{a \sim \pi}[A(s, a)] = 0\) for all \(s\). Actions better than average get positive advantage; actions worse than average get negative advantage. This centering reduces gradient variance.
 
 2. **Action-relative**: the advantage isolates *which action was taken* from *where we are*. A return of 500 from a state where the expected return is 490 indicates a slightly-above-average action. A return of 500 from a state where the expected return is 100 indicates a great action. Raw returns confuse these two things; advantages separate them.
 
@@ -382,21 +382,21 @@ print("Advantages have smaller variance relative to returns,")
 print("and are zero-mean (approximately) once the critic is trained.")
 ```
 
-The critic does not directly output \\(A(s, a)\\). It outputs \\(V(s)\\), and the advantage is computed as \\(G_t - V(s_t)\\) (or \\(\delta_t = R_{t+1} + \gamma V(s_{t+1}) - V(s_t)\\) for the TD version). This is an important distinction: the critic estimates a state-level quantity (independent of which action was taken), while the advantage is computed by comparing the actual trajectory to that baseline.
+The critic does not directly output \(A(s, a)\). It outputs \(V(s)\), and the advantage is computed as \(G_t - V(s_t)\) (or \(\delta_t = R_{t+1} + \gamma V(s_{t+1}) - V(s_t)\) for the TD version). This is an important distinction: the critic estimates a state-level quantity (independent of which action was taken), while the advantage is computed by comparing the actual trajectory to that baseline.
 
 ---
 
 ## TD(0) critic vs. Monte Carlo critic
 
-The REINFORCE baseline and simple actor-critic implementations in the previous sections used Monte Carlo returns: wait for the episode to end, compute \\(G_t = \sum_k \gamma^k R_{t+k}\\), use it as the return estimate. This is high variance but unbiased. TD(0) bootstraps after a single step and is low variance but biased. The choice between them is the fundamental bias-variance tradeoff in RL.
+The REINFORCE baseline and simple actor-critic implementations in the previous sections used Monte Carlo returns: wait for the episode to end, compute \(G_t = \sum_k \gamma^k R_{t+k}\), use it as the return estimate. This is high variance but unbiased. TD(0) bootstraps after a single step and is low variance but biased. The choice between them is the fundamental bias-variance tradeoff in RL.
 
 ### Monte Carlo critic
 
 The MC critic uses the full episodic return to train the value network:
 
-\\[ \text{Target}: y_t^{\text{MC}} = G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \\]
+\[ \text{Target}: y_t^{\text{MC}} = G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots \]
 
-\\[ L_{\text{MC}}(\phi) = \frac{1}{T} \sum_t \left( V(s_t; \phi) - G_t \right)^2 \\]
+\[ L_{\text{MC}}(\phi) = \frac{1}{T} \sum_t \left( V(s_t; \phi) - G_t \right)^2 \]
 
 **When to use MC:**
 - Episodes are short (the full return is cheap to wait for)
@@ -408,9 +408,9 @@ The MC critic uses the full episodic return to train the value network:
 
 The TD(0) critic bootstraps: use the current value estimate of the next state as part of the target:
 
-\\[ \text{Target}: y_t^{\text{TD}} = R_{t+1} + \gamma V(s_{t+1}; \phi) \\]
+\[ \text{Target}: y_t^{\text{TD}} = R_{t+1} + \gamma V(s_{t+1}; \phi) \]
 
-\\[ L_{\text{TD}}(\phi) = \frac{1}{T} \sum_t \left( V(s_t; \phi) - \left(R_{t+1} + \gamma V(s_{t+1}; \phi_{\text{target}}) \right) \right)^2 \\]
+\[ L_{\text{TD}}(\phi) = \frac{1}{T} \sum_t \left( V(s_t; \phi) - \left(R_{t+1} + \gamma V(s_{t+1}; \phi_{\text{target}}) \right) \right)^2 \]
 
 **When to use TD(0):**
 - Episodes are long (waiting for the full return is expensive)
@@ -535,26 +535,26 @@ print(f"  MC:   unbiased (uses real returns), but high variance per episode")
 print(f"  TD(0): lower variance per step, but biased if V is initially wrong")
 ```
 
-**Decoding the `torch.no_grad()` in TD(0):** The TD target \\(R_{t+1} + \gamma V(s_{t+1})\\) involves the critic's own output on the next state. If we allow gradients to flow through \\(V(s_{t+1})\\), the loss becomes a function of both \\(V(s_t)\\) and \\(V(s_{t+1})\\), creating a "chasing your own tail" phenomenon where updates to \\(V(s_t)\\) also shift the target. Using `no_grad()` freezes the target, making it a stable supervised learning problem: fit \\(V(s_t)\\) toward a fixed target, then recompute the target in the next batch.
+**Decoding the `torch.no_grad()` in TD(0):** The TD target \(R_{t+1} + \gamma V(s_{t+1})\) involves the critic's own output on the next state. If we allow gradients to flow through \(V(s_{t+1})\), the loss becomes a function of both \(V(s_t)\) and \(V(s_{t+1})\), creating a "chasing your own tail" phenomenon where updates to \(V(s_t)\) also shift the target. Using `no_grad()` freezes the target, making it a stable supervised learning problem: fit \(V(s_t)\) toward a fixed target, then recompute the target in the next batch.
 
 ---
 
 ## The n-step return
 
-Between the extremes of TD(0) (1-step bootstrap) and Monte Carlo (full episode), there is a spectrum parameterized by \\(n\\): the n-step return.
+Between the extremes of TD(0) (1-step bootstrap) and Monte Carlo (full episode), there is a spectrum parameterized by \(n\): the n-step return.
 
-\\[ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) \\]
+\[ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) \]
 
 **Decoding:**
-- \\(R_{t+1}, \ldots, R_{t+n}\\): the actual observed rewards for the next \\(n\\) steps. These are not estimated — they are sampled from the real environment.
-- \\(\gamma^n V(s_{t+n})\\): the bootstrapped value from the state after \\(n\\) real steps. This is the only estimated component.
-- \\(n = 1\\): recovers TD(0). \\(n = T\\) (full episode): recovers Monte Carlo.
+- \(R_{t+1}, \ldots, R_{t+n}\): the actual observed rewards for the next \(n\) steps. These are not estimated — they are sampled from the real environment.
+- \(\gamma^n V(s_{t+n})\): the bootstrapped value from the state after \(n\) real steps. This is the only estimated component.
+- \(n = 1\): recovers TD(0). \(n = T\) (full episode): recovers Monte Carlo.
 
 The n-step advantage is:
 
-\\[ A_t^{(n)} = G_t^{(n)} - V(s_t) = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) - V(s_t) \\]
+\[ A_t^{(n)} = G_t^{(n)} - V(s_t) = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n V(s_{t+n}) - V(s_t) \]
 
-Larger \\(n\\) reduces bias (more real reward signal, less reliance on potentially wrong \\(V\\)) but increases variance (more stochastic reward steps). The sweet spot is typically \\(n \in [3, 10]\\) for most tasks; PPO uses a related approach called Generalized Advantage Estimation (GAE) which is essentially an exponentially-weighted average over all \\(n\\).
+Larger \(n\) reduces bias (more real reward signal, less reliance on potentially wrong \(V\)) but increases variance (more stochastic reward steps). The sweet spot is typically \(n \in [3, 10]\) for most tasks; PPO uses a related approach called Generalized Advantage Estimation (GAE) which is essentially an exponentially-weighted average over all \(n\).
 
 ```python
 import torch
@@ -628,7 +628,7 @@ for n in [1, 2, 4, 8, 15]:
     print(f"  n={n:>2}: advantage std = {adv.std().item():.3f}")
 ```
 
-In practice, the n-step return gives you a direct knob on the bias-variance tradeoff. For SSA tasks where the satellite makes observations over a fixed horizon (say, a 24-hour scheduling window), \\(n \approx 5\text{–}10\\) often works well: enough real reward signal to reduce bias, not so many steps that variance explodes.
+In practice, the n-step return gives you a direct knob on the bias-variance tradeoff. For SSA tasks where the satellite makes observations over a fixed horizon (say, a 24-hour scheduling window), \(n \approx 5\text{–}10\) often works well: enough real reward signal to reduce bias, not so many steps that variance explodes.
 
 ---
 
@@ -893,7 +893,7 @@ Actor-critic training has several failure modes that do not appear in simpler va
 
 ### Failure mode 1: The actor learns too fast relative to the critic
 
-The most common failure mode. If the actor updates too aggressively, it changes the policy faster than the critic can track. The critic's value estimates \\(V(s_t)\\) then reflect the old policy, not the current one. The advantage estimates become wrong — sometimes wildly so — and the actor receives garbage gradient signals.
+The most common failure mode. If the actor updates too aggressively, it changes the policy faster than the critic can track. The critic's value estimates \(V(s_t)\) then reflect the old policy, not the current one. The advantage estimates become wrong — sometimes wildly so — and the actor receives garbage gradient signals.
 
 **Symptoms**: policy entropy drops sharply and early, then performance plateaus or collapses. Loss curves show critic loss spiking repeatedly.
 
@@ -1017,8 +1017,8 @@ The SSA scheduling implication: a collapsed policy might learn to always observe
 
 ## Key Takeaways
 
-- **The advantage function** \\(A(s, a) = Q(s, a) - V(s)\\) measures how much better a specific action is compared to the average action from that state. It has lower variance than raw returns (smaller magnitude, zero-mean in expectation once the critic converges) and naturally separates the quality of the action from the quality of the state.
-- **TD(0) bootstraps** from the next state value (low variance, biased by critic quality), while **Monte Carlo** uses the full episode return (high variance, unbiased). The n-step return generalizes both, with \\(n\\) as a hyperparameter controlling the bias-variance tradeoff — values \\(n \in [3, 10]\\) are typically a good middle ground for SSA scheduling tasks.
+- **The advantage function** \(A(s, a) = Q(s, a) - V(s)\) measures how much better a specific action is compared to the average action from that state. It has lower variance than raw returns (smaller magnitude, zero-mean in expectation once the critic converges) and naturally separates the quality of the action from the quality of the state.
+- **TD(0) bootstraps** from the next state value (low variance, biased by critic quality), while **Monte Carlo** uses the full episode return (high variance, unbiased). The n-step return generalizes both, with \(n\) as a hyperparameter controlling the bias-variance tradeoff — values \(n \in [3, 10]\) are typically a good middle ground for SSA scheduling tasks.
 - **A2C** (Advantage Actor-Critic) is the synchronous actor-critic baseline: collect an episode, compute n-step advantages using the critic, update both actor (policy gradient) and critic (MSE loss) jointly with gradient clipping and an entropy bonus. It is the conceptual foundation for PPO, A3C, and SAC.
 - **The actor and critic interact during learning**: if the actor changes too fast, the critic's value estimates become stale and advantages become wrong. Use a higher learning rate for the critic, gradient clipping (typically `max_norm=0.5`), and conservative actor updates to keep them in sync.
 - **Entropy collapse is a silent failure mode**: without an entropy bonus, actor-critic policies converge to near-deterministic within hundreds of episodes. In SSA scheduling, this produces an agent that obsessively tasks high-priority satellites while letting lower-priority objects go unobserved — missing important conjunction events. Keep `entropy_coef` nonzero and monitor policy entropy during training.

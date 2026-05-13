@@ -5,7 +5,7 @@
 
 ## Where this fits
 
-At the end of Module 1, lesson 6, we noted a problem: stacking linear layers produces another linear layer. No matter how deep you make the network, if every layer is just \\(W\mathbf{x} + \mathbf{b}\\), the whole thing is equivalent to a single linear transformation. It can only learn straight-line relationships between inputs and outputs.
+At the end of Module 1, lesson 6, we noted a problem: stacking linear layers produces another linear layer. No matter how deep you make the network, if every layer is just \(W\mathbf{x} + \mathbf{b}\), the whole thing is equivalent to a single linear transformation. It can only learn straight-line relationships between inputs and outputs.
 
 That is a fatal limitation. Real value functions in RL are not linear. Real policy distributions are not linear functions of the game state. The conjunction risk for a satellite does not increase linearly with approach velocity, because the risk profile is nonlinear: there are safe regimes, transition zones, and high-risk regimes that a line cannot capture.
 
@@ -40,7 +40,7 @@ What we actually want is something more like: below 0.7, output is 0. Above 0.7,
 
 **ReLU** stands for Rectified Linear Unit. The function is:
 
-\\[ \text{ReLU}(x) = \max(0, x) \\]
+\[ \text{ReLU}(x) = \max(0, x) \]
 
 In plain English: if the input is negative, output 0. If the input is positive, output it unchanged.
 
@@ -73,7 +73,7 @@ print(output.tolist())  # [0.0, 0.0, 0.0, 1.0, 3.0]
 
 ## What ReLU does to a layer output
 
-Recall from lesson 6 of Module 1 that a layer computes \\(\mathbf{y} = W\mathbf{x} + \mathbf{b}\\). The output \\(\mathbf{y}\\) is a vector, one value per neuron. Applying ReLU to it means applying max(0, ·) to each element independently:
+Recall from lesson 6 of Module 1 that a layer computes \(\mathbf{y} = W\mathbf{x} + \mathbf{b}\). The output \(\mathbf{y}\) is a vector, one value per neuron. Applying ReLU to it means applying max(0, ·) to each element independently:
 
 ```python
 import torch
@@ -96,7 +96,7 @@ Three neurons got zeroed out. They were "inactive" for this input. The other thr
 
 **tanh** (hyperbolic tangent) is an S-shaped (sigmoid) curve that squashes any input into the range (−1, +1):
 
-\\[ \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} \\]
+\[ \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} \]
 
 You do not need to memorize this formula. What matters:
 
@@ -156,7 +156,7 @@ print(f"Leaky ReLU output:  {leaky_out.tolist()}")
 
 **Leaky ReLU** lets a small fraction of the negative signal through:
 
-\\[ \text{LeakyReLU}(x) = \begin{cases} x & \text{if } x > 0 \\\\ 0.01 \cdot x & \text{if } x \leq 0 \end{cases} \\]
+\[ \text{LeakyReLU}(x) = \begin{cases} x & \text{if } x > 0 \\ 0.01 \cdot x & \text{if } x \leq 0 \end{cases} \]
 
 The slope for negative inputs (0.01 by default) is the "leak." It is small enough not to dominate but large enough to keep gradients nonzero, so the neuron can recover during training if the weights shift.
 
@@ -164,11 +164,11 @@ The slope for negative inputs (0.01 by default) is the "leak." It is small enoug
 
 **ELU** uses an exponential curve for negative inputs rather than a fixed linear slope:
 
-\\[ \text{ELU}(x) = \begin{cases} x & \text{if } x > 0 \\\\ \alpha (e^x - 1) & \text{if } x \leq 0 \end{cases} \\]
+\[ \text{ELU}(x) = \begin{cases} x & \text{if } x > 0 \\ \alpha (e^x - 1) & \text{if } x \leq 0 \end{cases} \]
 
-where \\(\alpha\\) is typically 1.0.
+where \(\alpha\) is typically 1.0.
 
-**Decoding:** For negative \\(x\\), the exponential \\(e^x\\) is between 0 and 1, so \\(e^x - 1\\) is between -1 and 0. ELU smoothly saturates near \\(-\alpha\\) for large negative values, which can help with training stability. Unlike Leaky ReLU (which is linear everywhere), ELU has a curved negative region that brings the mean activation of layers closer to zero — a property known to speed up learning.
+**Decoding:** For negative \(x\), the exponential \(e^x\) is between 0 and 1, so \(e^x - 1\) is between -1 and 0. ELU smoothly saturates near \(-\alpha\) for large negative values, which can help with training stability. Unlike Leaky ReLU (which is linear everywhere), ELU has a curved negative region that brings the mean activation of layers closer to zero — a property known to speed up learning.
 
 ```python
 import torch.nn as nn
@@ -219,15 +219,15 @@ ReLU and tanh are activation functions for hidden layers (the intermediate layer
 
 Softmax takes a vector of raw scores (called **logits**) and converts them into a valid probability distribution: all values positive, all values summing to 1.
 
-For an input vector \\(\mathbf{z} = (z_1, z_2, \ldots, z_n)\\), the softmax output for component \\(i\\) is:
+For an input vector \(\mathbf{z} = (z_1, z_2, \ldots, z_n)\), the softmax output for component \(i\) is:
 
-\\[ \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{n} e^{z_j}} \\]
+\[ \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{n} e^{z_j}} \]
 
 **Decoding each piece:**
 
-**\\(e^{z_i}\\)**: The number \\(e\\) (approximately 2.718, Euler's number) raised to the power \\(z_i\\). This is the exponential function. Its important property: exponentials are always positive, so softmax outputs are always positive. Also, larger inputs give exponentially larger outputs, so softmax amplifies differences between logits.
+**\(e^{z_i}\)**: The number \(e\) (approximately 2.718, Euler's number) raised to the power \(z_i\). This is the exponential function. Its important property: exponentials are always positive, so softmax outputs are always positive. Also, larger inputs give exponentially larger outputs, so softmax amplifies differences between logits.
 
-**\\(\sum_{j=1}^{n} e^{z_j}\\)**: Sum of all the exponentials, over all n outputs. This is the normalizing constant that makes everything add up to 1.
+**\(\sum_{j=1}^{n} e^{z_j}\)**: Sum of all the exponentials, over all n outputs. This is the normalizing constant that makes everything add up to 1.
 
 **Reading in English**: "Exponentiate each score, then divide each by the sum of all the exponentiated scores."
 
@@ -241,7 +241,7 @@ Logits: z = [1.0, 2.0, 0.5, -1.0]
 
 **Step 1**: Compute the exponential of each logit.
 
-| Action | Logit \\(z_i\\) | \\(e^{z_i}\\) |
+| Action | Logit \(z_i\) | \(e^{z_i}\) |
 |--------|----------------|----------------|
 | 0      | 1.0            | e¹ ≈ 2.718     |
 | 1      | 2.0            | e² ≈ 7.389     |
@@ -254,7 +254,7 @@ Logits: z = [1.0, 2.0, 0.5, -1.0]
 
 **Step 3**: Divide each exponential by the sum.
 
-| Action | \\(e^{z_i}\\) | Probability |
+| Action | \(e^{z_i}\) | Probability |
 |--------|----------------|-------------|
 | 0      | 2.718          | 2.718 / 12.124 ≈ **0.224** |
 | 1      | 7.389          | 7.389 / 12.124 ≈ **0.609** |
@@ -306,7 +306,7 @@ Softmax also has a nice training property: it is differentiable everywhere, so g
 
 Vanilla softmax has an implicit "temperature" of 1. We can generalize it with an explicit temperature parameter T:
 
-\\[ \text{softmax}_T(\mathbf{z})_i = \frac{e^{z_i / T}}{\sum_{j=1}^{n} e^{z_j / T}} \\]
+\[ \text{softmax}_T(\mathbf{z})_i = \frac{e^{z_i / T}}{\sum_{j=1}^{n} e^{z_j / T}} \]
 
 **Decoding:** Dividing each logit by T before exponentiating scales all the values. This controls how "sharp" or "spread out" the resulting distribution is.
 
@@ -373,9 +373,9 @@ No external crates needed. Dividing each logit by `temperature` before the max-s
 
 Softmax is designed for choosing among multiple competing outputs. When you have a single yes/no output — is there a conjunction alert? is this track anomalous? — you use **sigmoid** instead.
 
-\\[ \sigma(x) = \frac{1}{1 + e^{-x}} \\]
+\[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
 
-**Decoding:** The exponential \\(e^{-x}\\) is always positive, so the denominator \\(1 + e^{-x}\\) is always greater than 1. Therefore \\(\sigma(x)\\) is always in the interval (0, 1). For large positive x, \\(e^{-x} \approx 0\\) and \\(\sigma(x) \approx 1\\). For large negative x, \\(e^{-x}\\) is large and \\(\sigma(x) \approx 0\\).
+**Decoding:** The exponential \(e^{-x}\) is always positive, so the denominator \(1 + e^{-x}\) is always greater than 1. Therefore \(\sigma(x)\) is always in the interval (0, 1). For large positive x, \(e^{-x} \approx 0\) and \(\sigma(x) \approx 1\). For large negative x, \(e^{-x}\) is large and \(\sigma(x) \approx 0\).
 
 | Input x | σ(x)  | Interpretation |
 |---------|-------|----------------|
@@ -500,9 +500,9 @@ fn main() {
 }
 ```
 
-The forward pass is identical in structure to the Python version: `w1.dot(&x) + &b1` is the matrix-vector multiply with bias, `relu()` gates negative values to zero, and `softmax()` converts logits to a probability distribution. The `randn` closure generates uniform \\([-0.5, 0.5]\\) weights (PyTorch uses normal with std=0.5; the distribution differs but the forward-pass structure is the same).
+The forward pass is identical in structure to the Python version: `w1.dot(&x) + &b1` is the matrix-vector multiply with bias, `relu()` gates negative values to zero, and `softmax()` converts logits to a probability distribution. The `randn` closure generates uniform \([-0.5, 0.5]\) weights (PyTorch uses normal with std=0.5; the distribution differs but the forward-pass structure is the same).
 
-The weights \\(W_1, W_2\\) and biases \\(b_1, b_2\\) are random right now. In lessons 3 and 4, we will train them from data. The structure of the forward pass is what matters here: linear → ReLU → linear → softmax.
+The weights \(W_1, W_2\) and biases \(b_1, b_2\) are random right now. In lessons 3 and 4, we will train them from data. The structure of the forward pass is what matters here: linear → ReLU → linear → softmax.
 
 ## What we do not use on the final layer
 

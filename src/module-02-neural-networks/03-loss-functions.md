@@ -31,29 +31,29 @@ This is a **regression** problem: predicting a continuous output. The natural lo
 
 ### Building the formula from scratch
 
-Suppose your network outputs a prediction \\(\hat{y}\\) for an example whose true label is \\(y\\).
+Suppose your network outputs a prediction \(\hat{y}\) for an example whose true label is \(y\).
 
-The **error** for this example is how far off the prediction is: \\(\hat{y} - y\\).
+The **error** for this example is how far off the prediction is: \(\hat{y} - y\).
 
-The **squared error** is \\((\hat{y} - y)^2\\). We square it for two reasons:
+The **squared error** is \((\hat{y} - y)^2\). We square it for two reasons:
 1. It makes negative and positive errors contribute equally (being 0.3 too high is as bad as 0.3 too low)
 2. It penalizes large errors more than small ones (being off by 0.6 is four times worse than being off by 0.3, not twice as bad)
 
 For a batch of N examples, the **mean squared error** is:
 
-\\[ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i - y_i)^2 \\]
+\[ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i - y_i)^2 \]
 
 **Decoding:**
-- **\\(\hat{y}_i\\)**: the network's prediction for example i (\\(\hat{}\\) is the "hat" notation for estimates)
-- **\\(y_i\\)**: the true label for example i
-- **\\((\hat{y}_i - y_i)^2\\)**: the squared error for example i
-- **\\(\frac{1}{N} \sum_{i=1}^{N}\\)**: average over all N examples in the batch
+- **\(\hat{y}_i\)**: the network's prediction for example i (\(\hat{}\) is the "hat" notation for estimates)
+- **\(y_i\)**: the true label for example i
+- **\((\hat{y}_i - y_i)^2\)**: the squared error for example i
+- **\(\frac{1}{N} \sum_{i=1}^{N}\)**: average over all N examples in the batch
 
 ### Walking through an example by hand
 
 Suppose you have a batch of 4 examples:
 
-| Example | True risk \\(y_i\\) | Predicted \\(\hat{y}_i\\) | Error \\(\hat{y}_i - y_i\\) | Squared error |
+| Example | True risk \(y_i\) | Predicted \(\hat{y}_i\) | Error \(\hat{y}_i - y_i\) | Squared error |
 |---------|---------------------|---------------------------|------------------------------|---------------|
 | 1       | 0.80                | 0.72                      | -0.08                        | 0.0064        |
 | 2       | 0.20                | 0.35                      | +0.15                        | 0.0225        |
@@ -108,28 +108,28 @@ MSE penalizes large errors quadratically: being off by 0.3 contributes 0.09, bei
 
 MSE's quadratic penalty is a double-edged sword. It does make the network attend to its worst errors — but it also means a single corrupted label or measurement outlier can dominate the entire loss. Imagine your SSA data pipeline occasionally mis-tags a benign object as a high-risk conjunction (sensor dropout, coordinate transform bug, stale catalog entry). That one corrupted label has a squared error that might be 10× larger than any real example. Gradient descent will spend enormous energy chasing it.
 
-**Huber loss** solves this by being quadratic for small errors and linear for large ones. Below the threshold \\(\delta\\), it behaves exactly like MSE. Above \\(\delta\\), it grows linearly — the outlier still contributes to the loss, but its influence is bounded.
+**Huber loss** solves this by being quadratic for small errors and linear for large ones. Below the threshold \(\delta\), it behaves exactly like MSE. Above \(\delta\), it grows linearly — the outlier still contributes to the loss, but its influence is bounded.
 
 ### The formula
 
-\\[
+\[
 L_\delta(y, \hat{y}) = \begin{cases}
-\frac{1}{2}(y - \hat{y})^2 & \text{if } |y - \hat{y}| \leq \delta \\\\
+\frac{1}{2}(y - \hat{y})^2 & \text{if } |y - \hat{y}| \leq \delta \\
 \delta \cdot \left(|y - \hat{y}| - \frac{1}{2}\delta\right) & \text{otherwise}
 \end{cases}
-\\]
+\]
 
 **Decoding:**
-- **\\(\delta\\)** (delta): the threshold that separates "small error" from "large error." Common default is 1.0. A smaller \\(\delta\\) transitions to linear sooner (more robust, but less sensitive to genuine large errors). A larger \\(\delta\\) stays quadratic longer (behaves more like MSE).
-- **\\(\frac{1}{2}(y - \hat{y})^2\\)**: the quadratic region — identical to MSE (with a ½ factor for clean derivative math).
-- **\\(\delta \cdot (|y - \hat{y}| - \frac{1}{2}\delta)\\)**: the linear region — grows at rate \\(\delta\\) per unit of additional error, not quadratically.
-- The two pieces meet smoothly at \\(|y - \hat{y}| = \delta\\), so there is no sharp kink in the loss surface.
+- **\(\delta\)** (delta): the threshold that separates "small error" from "large error." Common default is 1.0. A smaller \(\delta\) transitions to linear sooner (more robust, but less sensitive to genuine large errors). A larger \(\delta\) stays quadratic longer (behaves more like MSE).
+- **\(\frac{1}{2}(y - \hat{y})^2\)**: the quadratic region — identical to MSE (with a ½ factor for clean derivative math).
+- **\(\delta \cdot (|y - \hat{y}| - \frac{1}{2}\delta)\)**: the linear region — grows at rate \(\delta\) per unit of additional error, not quadratically.
+- The two pieces meet smoothly at \(|y - \hat{y}| = \delta\), so there is no sharp kink in the loss surface.
 
 ### DQN and TD error stability
 
 In Deep Q-Networks (DQN), the loss is computed on the **temporal difference (TD) error**: the difference between the Q-network's current estimate and the TD target (reward + discounted next-state Q-value). Early in training, Q-estimates can be wildly off, and TD errors can be enormous. MSE on a TD error of 50 produces a gradient of 100 — a weight update large enough to destabilize the network.
 
-Huber loss clips this: a TD error of 50 with \\(\delta=1\\) produces a gradient of magnitude 1, not 100. Training stabilizes. This is why the original DQN paper (Mnih et al., 2015) used Huber loss rather than MSE.
+Huber loss clips this: a TD error of 50 with \(\delta=1\) produces a gradient of magnitude 1, not 100. Training stabilizes. This is why the original DQN paper (Mnih et al., 2015) used Huber loss rather than MSE.
 
 ```python
 import torch
@@ -205,15 +205,15 @@ This is a **classification** problem, and the right loss function is **cross-ent
 
 ### The connection to Module 1
 
-In lesson 4 of Module 1, you learned that cross-entropy \\(H(P, Q)\\) measures how surprised a model using distribution Q would be when the true distribution is P.
+In lesson 4 of Module 1, you learned that cross-entropy \(H(P, Q)\) measures how surprised a model using distribution Q would be when the true distribution is P.
 
 For classification, the true distribution P is one-hot: probability 1.0 on the correct class, probability 0.0 on all others. The network's output Q is the softmax probability distribution. Cross-entropy loss is:
 
-\\[ H(P, Q) = -\sum_{c=1}^{C} P(c) \log Q(c) \\]
+\[ H(P, Q) = -\sum_{c=1}^{C} P(c) \log Q(c) \]
 
 But since P is one-hot (only one class has nonzero probability), all terms in the sum except the true class drop out:
 
-\\[ \text{Cross-entropy loss} = -\log Q(\text{true class}) \\]
+\[ \text{Cross-entropy loss} = -\log Q(\text{true class}) \]
 
 In plain English: **cross-entropy loss is just the negative log probability that the network assigned to the correct answer.**
 
@@ -315,7 +315,7 @@ print(f"Log-softmax (stable):             {log_probs_stable}")
 
 ### What goes wrong
 
-Softmax computes \\(\exp(x_i) / \sum_j \exp(x_j)\\). When logits are very large, `exp(x)` overflows to `inf`. When logits are very small (large negative), `exp(x)` underflows to `0.0`, and `log(0.0)` is `-inf`. Either way, your loss and gradients are corrupted.
+Softmax computes \(\exp(x_i) / \sum_j \exp(x_j)\). When logits are very large, `exp(x)` overflows to `inf`. When logits are very small (large negative), `exp(x)` underflows to `0.0`, and `log(0.0)` is `-inf`. Either way, your loss and gradients are corrupted.
 
 The solution uses the **log-sum-exp trick**: subtract the maximum logit before exponentiating, compute in log-space, then add back. PyTorch implements this in `F.log_softmax` and `F.cross_entropy`.
 
@@ -342,21 +342,21 @@ Understanding the gradient of the loss with respect to the prediction helps expl
 
 ### MSE gradient
 
-\\[ \text{MSE} = (\hat{y} - y)^2 \quad \Rightarrow \quad \frac{\partial \text{MSE}}{\partial \hat{y}} = 2(\hat{y} - y) \\]
+\[ \text{MSE} = (\hat{y} - y)^2 \quad \Rightarrow \quad \frac{\partial \text{MSE}}{\partial \hat{y}} = 2(\hat{y} - y) \]
 
-**Decoding:** The gradient is zero when \\(\hat{y} = y\\) (perfect prediction) and grows linearly as the error grows. This is the right behavior: no update needed when correct, proportionally larger update when wrong.
+**Decoding:** The gradient is zero when \(\hat{y} = y\) (perfect prediction) and grows linearly as the error grows. This is the right behavior: no update needed when correct, proportionally larger update when wrong.
 
 ### Cross-entropy gradient
 
-For the softmax-cross-entropy combination, the gradient with respect to the logit for the true class \\(z_c\\) is:
+For the softmax-cross-entropy combination, the gradient with respect to the logit for the true class \(z_c\) is:
 
-\\[ \frac{\partial \text{CE}}{\partial z_c} = p_c - 1 \\]
+\[ \frac{\partial \text{CE}}{\partial z_c} = p_c - 1 \]
 
-where \\(p_c\\) is the predicted probability for the true class.
+where \(p_c\) is the predicted probability for the true class.
 
-**Decoding:** The gradient is \\(-1 + p_c\\). When \\(p_c \approx 0\\) (network is confidently wrong), the gradient is close to \\(-1\\) — a large correction. When \\(p_c \approx 1\\) (network is correct), the gradient is close to \\(0\\) — a tiny nudge. This is exactly the right signal.
+**Decoding:** The gradient is \(-1 + p_c\). When \(p_c \approx 0\) (network is confidently wrong), the gradient is close to \(-1\) — a large correction. When \(p_c \approx 1\) (network is correct), the gradient is close to \(0\) — a tiny nudge. This is exactly the right signal.
 
-Compare to what you would get from MSE on probabilities (\\((\hat{p} - 1)^2\\)):
+Compare to what you would get from MSE on probabilities (\((\hat{p} - 1)^2\)):
 
 | Predicted probability | CE gradient | MSE gradient | Which is bigger? |
 |----------------------|-------------|--------------|-----------------|
@@ -406,36 +406,36 @@ Every standard loss function is secretly a maximum likelihood estimator. Underst
 
 ### MSE = MLE under Gaussian noise
 
-Suppose each training label \\(y_i\\) is generated by the true function plus independent Gaussian noise:
+Suppose each training label \(y_i\) is generated by the true function plus independent Gaussian noise:
 
-\\[ y_i = f(x_i) + \varepsilon_i, \quad \varepsilon_i \sim \mathcal{N}(0, \sigma^2) \\]
+\[ y_i = f(x_i) + \varepsilon_i, \quad \varepsilon_i \sim \mathcal{N}(0, \sigma^2) \]
 
-This means the likelihood of observing label \\(y_i\\) given prediction \\(\hat{y}_i = f_\theta(x_i)\\) is:
+This means the likelihood of observing label \(y_i\) given prediction \(\hat{y}_i = f_\theta(x_i)\) is:
 
-\\[ p(y_i \mid x_i, \theta) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{(y_i - \hat{y}_i)^2}{2\sigma^2}\right) \\]
+\[ p(y_i \mid x_i, \theta) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{(y_i - \hat{y}_i)^2}{2\sigma^2}\right) \]
 
 **Decoding:**
-- The model says \\(y_i\\) is Gaussian-distributed around \\(\hat{y}_i\\)
+- The model says \(y_i\) is Gaussian-distributed around \(\hat{y}_i\)
 - A label close to the prediction has high likelihood; a label far away has low likelihood
-- \\(\sigma^2\\) is the assumed noise variance
+- \(\sigma^2\) is the assumed noise variance
 
-The **log-likelihood** over all \\(N\\) training examples is:
+The **log-likelihood** over all \(N\) training examples is:
 
-\\[ \log p(\mathcal{D} \mid \theta) = \sum_{i=1}^N \log p(y_i \mid x_i, \theta) = -\frac{N}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^N (y_i - \hat{y}_i)^2 \\]
+\[ \log p(\mathcal{D} \mid \theta) = \sum_{i=1}^N \log p(y_i \mid x_i, \theta) = -\frac{N}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^N (y_i - \hat{y}_i)^2 \]
 
-**Maximizing** this log-likelihood is equivalent to **minimizing** \\(\sum_i (y_i - \hat{y}_i)^2\\), which is exactly MSE (up to a constant \\(1/N\\) scaling).
+**Maximizing** this log-likelihood is equivalent to **minimizing** \(\sum_i (y_i - \hat{y}_i)^2\), which is exactly MSE (up to a constant \(1/N\) scaling).
 
 > Conclusion: **MSE is MLE under a Gaussian likelihood.** Choosing MSE implicitly assumes your labels are corrupted by Gaussian noise. If your noise is actually heavy-tailed (outliers), a more appropriate likelihood gives Huber or absolute-error loss.
 
 ### Cross-entropy = MLE under categorical likelihood
 
-For classification, the label \\(y_i \in \{1, \ldots, C\}\\) is drawn from a categorical distribution parameterized by the network's softmax output \\(\hat{p}_i \in \mathbb{R}^C\\):
+For classification, the label \(y_i \in \{1, \ldots, C\}\) is drawn from a categorical distribution parameterized by the network's softmax output \(\hat{p}_i \in \mathbb{R}^C\):
 
-\\[ p(y_i = c \mid x_i, \theta) = \hat{p}_{i,c} \\]
+\[ p(y_i = c \mid x_i, \theta) = \hat{p}_{i,c} \]
 
 The log-likelihood is:
 
-\\[ \log p(\mathcal{D} \mid \theta) = \sum_{i=1}^N \log \hat{p}_{i, y_i} = -\sum_{i=1}^N \text{CE}(y_i, \hat{p}_i) \\]
+\[ \log p(\mathcal{D} \mid \theta) = \sum_{i=1}^N \log \hat{p}_{i, y_i} = -\sum_{i=1}^N \text{CE}(y_i, \hat{p}_i) \]
 
 **Minimizing cross-entropy loss equals maximizing the categorical log-likelihood.** This explains why cross-entropy is the right loss for any problem where the network is trying to predict a probability distribution: it is the natural MLE objective for that output type.
 
@@ -443,19 +443,19 @@ The log-likelihood is:
 
 Plain MLE can overfit: the weights grow large to memorize training data. The fix is to add a prior over the weights and compute the **maximum a posteriori (MAP)** estimate instead.
 
-Choose a Gaussian prior \\(p(\theta) = \mathcal{N}(0, (1/\lambda) \cdot I)\\). The log-posterior is:
+Choose a Gaussian prior \(p(\theta) = \mathcal{N}(0, (1/\lambda) \cdot I)\). The log-posterior is:
 
-\\[ \log p(\theta \mid \mathcal{D}) = \log p(\mathcal{D} \mid \theta) + \log p(\theta) + \text{const} \\]
+\[ \log p(\theta \mid \mathcal{D}) = \log p(\mathcal{D} \mid \theta) + \log p(\theta) + \text{const} \]
 
-\\[ = \underbrace{\log p(\mathcal{D} \mid \theta)}_{\text{log-likelihood}} - \underbrace{\frac{\lambda}{2} \|\theta\|^2}_{\text{Gaussian log-prior}} + \text{const} \\]
+\[ = \underbrace{\log p(\mathcal{D} \mid \theta)}_{\text{log-likelihood}} - \underbrace{\frac{\lambda}{2} \|\theta\|^2}_{\text{Gaussian log-prior}} + \text{const} \]
 
 Maximizing this is equivalent to minimizing:
 
-\\[ \mathcal{L}_\text{MAP} = -\log p(\mathcal{D} \mid \theta) + \frac{\lambda}{2} \|\theta\|^2 \\]
+\[ \mathcal{L}_\text{MAP} = -\log p(\mathcal{D} \mid \theta) + \frac{\lambda}{2} \|\theta\|^2 \]
 
-The second term is **L2 regularization** (weight decay). The regularization strength \\(\lambda\\) is the precision (inverse variance) of the prior: larger \\(\lambda\\) means a tighter prior that pulls weights closer to zero.
+The second term is **L2 regularization** (weight decay). The regularization strength \(\lambda\) is the precision (inverse variance) of the prior: larger \(\lambda\) means a tighter prior that pulls weights closer to zero.
 
-> This is why the lesson on constrained optimization (Module 1, Lesson 10) discusses weight decay as a Lagrangian penalty: you are computing MAP with a Gaussian prior, and \\(\lambda\\) is the Lagrange multiplier for the norm constraint.
+> This is why the lesson on constrained optimization (Module 1, Lesson 10) discusses weight decay as a Lagrangian penalty: you are computing MAP with a Gaussian prior, and \(\lambda\) is the Lagrange multiplier for the norm constraint.
 
 ```python
 import torch
@@ -481,10 +481,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-3)
 
 | Noise model for labels | Likelihood | Loss function |
 |------------------------|-----------|---------------|
-| Gaussian \\(\mathcal{N}(y \mid \hat{y}, \sigma^2)\\) | MLE | MSE |
-| Laplace \\(\text{Laplace}(y \mid \hat{y}, b)\\) | MLE | MAE (L1) |
+| Gaussian \(\mathcal{N}(y \mid \hat{y}, \sigma^2)\) | MLE | MSE |
+| Laplace \(\text{Laplace}(y \mid \hat{y}, b)\) | MLE | MAE (L1) |
 | Huber (Gaussian + heavy tails) | MLE | Huber loss |
-| Categorical \\(\text{Cat}(y \mid \hat{p})\\) | MLE | Cross-entropy |
+| Categorical \(\text{Cat}(y \mid \hat{p})\) | MLE | Cross-entropy |
 | Gaussian + Gaussian weight prior | MAP | MSE + L2 |
 | Gaussian + Laplace weight prior | MAP | MSE + L1 (sparsity) |
 
@@ -496,9 +496,9 @@ Standard supervised learning uses MSE and cross-entropy. RL introduces additiona
 
 ### Value function loss (DQN)
 
-The Q-network estimates \\(Q(s, a)\\): the expected cumulative reward for taking action \\(a\\) in state \\(s\\). Training uses MSE between the Q-estimate and the TD target:
+The Q-network estimates \(Q(s, a)\): the expected cumulative reward for taking action \(a\) in state \(s\). Training uses MSE between the Q-estimate and the TD target:
 
-\\[ \mathcal{L}_\text{DQN} = \mathbb{E}\left[\left(r + \gamma \max_{a'} Q_{\text{target}}(s', a') - Q(s, a)\right)^2\right] \\]
+\[ \mathcal{L}_\text{DQN} = \mathbb{E}\left[\left(r + \gamma \max_{a'} Q_{\text{target}}(s', a') - Q(s, a)\right)^2\right] \]
 
 In practice, Huber loss is used instead of MSE for stability (see earlier section). For SSA applications, the "state" might be a vector of conjunction features and the "action" might be which sensor to task next for follow-up observation.
 
@@ -506,22 +506,22 @@ In practice, Huber loss is used instead of MSE for stability (see earlier sectio
 
 The policy gradient loss is not a loss in the supervised sense — you do not have a target to compare against. Instead, you maximize the expected reward by pushing up the log-probability of actions that led to high advantage:
 
-\\[ \mathcal{L}_\text{PG} = -\log \pi(a \mid s) \cdot A(s, a) \\]
+\[ \mathcal{L}_\text{PG} = -\log \pi(a \mid s) \cdot A(s, a) \]
 
 **Decoding:**
-- **\\(\pi(a \mid s)\\)**: the policy network's probability of taking action \\(a\\) in state \\(s\\)
-- **\\(A(s, a)\\)**: the **advantage** — how much better action \\(a\\) was compared to the average action in state \\(s\\)
+- **\(\pi(a \mid s)\)**: the policy network's probability of taking action \(a\) in state \(s\)
+- **\(A(s, a)\)**: the **advantage** — how much better action \(a\) was compared to the average action in state \(s\)
 - **Negative sign**: we flip the sign because PyTorch minimizes, but we want to maximize reward
-- If the advantage is positive (action was better than average), we decrease the loss by increasing \\(\log \pi(a \mid s)\\), making the action more likely
+- If the advantage is positive (action was better than average), we decrease the loss by increasing \(\log \pi(a \mid s)\), making the action more likely
 - If the advantage is negative (action was worse than average), we increase the loss, making the action less likely
 
 ### Entropy bonus
 
 Pure policy gradient tends to converge prematurely to deterministic policies — the network becomes overconfident in one action and stops exploring. The entropy bonus adds a term that rewards maintaining uncertainty:
 
-\\[ \mathcal{L}_\text{total} = \mathcal{L}_\text{PG} - \beta \cdot H(\pi(\cdot \mid s)) \\]
+\[ \mathcal{L}_\text{total} = \mathcal{L}_\text{PG} - \beta \cdot H(\pi(\cdot \mid s)) \]
 
-where \\(H(\pi) = -\sum_a \pi(a \mid s) \log \pi(a \mid s)\\) is the entropy of the policy and \\(\beta\\) is a small coefficient (typically 0.01–0.1). Subtracting entropy means reducing the loss by having a high-entropy (exploratory) policy.
+where \(H(\pi) = -\sum_a \pi(a \mid s) \log \pi(a \mid s)\) is the entropy of the policy and \(\beta\) is a small coefficient (typically 0.01–0.1). Subtracting entropy means reducing the loss by having a high-entropy (exploratory) policy.
 
 ```python
 import torch
@@ -589,7 +589,7 @@ No external crates needed. The math is straightforward: compute softmax probabil
 
 Deep Counterfactual Regret Minimization (Deep CFR, covered in Module 5) trains a neural network to predict the **cumulative regret** for each action at each information set. This is a regression target — use MSE:
 
-\\[ \mathcal{L}_\text{CFR} = \mathbb{E}\left[\left(R_\text{predicted}(a) - R_\text{actual}(a)\right)^2\right] \\]
+\[ \mathcal{L}_\text{CFR} = \mathbb{E}\left[\left(R_\text{predicted}(a) - R_\text{actual}(a)\right)^2\right] \]
 
 The regret values can range widely (they accumulate over many iterations), making Huber loss an option if they become unstable.
 

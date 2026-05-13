@@ -21,48 +21,48 @@ This approach has its own tradeoffs but is essential for the algorithms we will 
 
 ## The core idea
 
-Suppose your policy is a neural network with parameters θ. The output is a probability distribution over actions: \\(\pi(a \mid s; \theta)\\) is the probability of taking action a in state s, computed by passing s through the network.
+Suppose your policy is a neural network with parameters θ. The output is a probability distribution over actions: \(\pi(a \mid s; \theta)\) is the probability of taking action a in state s, computed by passing s through the network.
 
 The agent's objective is to maximize the expected return:
 
-\\[ J(\theta) = \mathbb{E}\left[ \sum_t \gamma^t R_t \right] \\]
+\[ J(\theta) = \mathbb{E}\left[ \sum_t \gamma^t R_t \right] \]
 
-This expectation is over all the sources of randomness: the policy's action selection, the environment's stochastic transitions, and the random rewards. \\(J(\theta)\\) is a function of the policy parameters: different policies produce different expected returns.
+This expectation is over all the sources of randomness: the policy's action selection, the environment's stochastic transitions, and the random rewards. \(J(\theta)\) is a function of the policy parameters: different policies produce different expected returns.
 
-We want to make \\(J(\theta)\\) larger. So we use gradient ascent: compute \\(\nabla_\theta J(\theta)\\) (the gradient of expected return with respect to the policy parameters) and step the parameters in the positive direction.
+We want to make \(J(\theta)\) larger. So we use gradient ascent: compute \(\nabla_\theta J(\theta)\) (the gradient of expected return with respect to the policy parameters) and step the parameters in the positive direction.
 
-\\[ \theta \leftarrow \theta + \alpha \nabla_\theta J(\theta) \\]
+\[ \theta \leftarrow \theta + \alpha \nabla_\theta J(\theta) \]
 
 This is gradient ascent (note the +, not - as in gradient descent). The algorithm is the same; the sign just flips because we are maximizing instead of minimizing.
 
-The hard part is computing \\(\nabla_\theta J(\theta)\\). The expectation is over all possible trajectories the agent might take. Direct computation is intractable. We need an estimator we can compute from samples.
+The hard part is computing \(\nabla_\theta J(\theta)\). The expectation is over all possible trajectories the agent might take. Direct computation is intractable. We need an estimator we can compute from samples.
 
 ## The score function estimator (REINFORCE)
 
 Here is the magic trick that makes policy gradient methods work. The gradient of expected return turns out to have a particularly clean form:
 
-\\[ \nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t G_t \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \\]
+\[ \nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t G_t \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \]
 
-Where \\(G_t\\) is the return from time t onward (the cumulative discounted reward from t to the end of the episode).
+Where \(G_t\) is the return from time t onward (the cumulative discounted reward from t to the end of the episode).
 
 **Decoding:**
-- \\(G_t\\): the total discounted return from time t onward, summed over the rest of the episode
-- \\(\log \pi(a_t \mid s_t; \theta)\\): the log of the probability the policy assigned to the action it actually took
-- \\(\nabla_\theta\\): gradient with respect to the policy parameters
+- \(G_t\): the total discounted return from time t onward, summed over the rest of the episode
+- \(\log \pi(a_t \mid s_t; \theta)\): the log of the probability the policy assigned to the action it actually took
+- \(\nabla_\theta\): gradient with respect to the policy parameters
 
 This formula has a beautiful interpretation. To increase expected return:
-- For actions that led to high return (large \\(G_t\\)), increase their log-probability
+- For actions that led to high return (large \(G_t\)), increase their log-probability
 - For actions that led to low or negative return, decrease their log-probability
 
 Each transition contributes a "policy gradient direction" that is the gradient of its log-probability, scaled by how much return that action contributed to.
 
-The proof of this formula relies on a calculus trick called the "log-derivative trick" (\\(\nabla \log f = \nabla f / f\\)). You do not need to derive it. What you need to know is that this is the formula and it gives an unbiased estimator of \\(\nabla J\\).
+The proof of this formula relies on a calculus trick called the "log-derivative trick" (\(\nabla \log f = \nabla f / f\)). You do not need to derive it. What you need to know is that this is the formula and it gives an unbiased estimator of \(\nabla J\).
 
 ### The Monte Carlo estimator
 
-Since the formula is an expectation, we can estimate it by sampling: run an episode, compute \\(G_t\\) for each step, and form the empirical average:
+Since the formula is an expectation, we can estimate it by sampling: run an episode, compute \(G_t\) for each step, and form the empirical average:
 
-\\[ \hat{\nabla} J(\theta) = \sum_t G_t \nabla_\theta \log \pi(a_t \mid s_t; \theta) \\]
+\[ \hat{\nabla} J(\theta) = \sum_t G_t \nabla_\theta \log \pi(a_t \mid s_t; \theta) \]
 
 For one episode, drop the average and use the sum directly. For multiple episodes, average across episodes.
 
@@ -173,7 +173,7 @@ The key parts:
 
 **`Categorical(logits=logits)`**: PyTorch's distribution class. Pass logits and it handles the softmax internally. `dist.sample()` samples an action; `dist.log_prob(action)` returns the log probability of that action under the current policy parameters.
 
-**Computing returns backwards**: \\(G_t = R_{t+1} + \gamma G_{t+1}\\). Starting from the end (where \\(G_T = 0\\)), work backwards through the episode. This is computationally efficient.
+**Computing returns backwards**: \(G_t = R_{t+1} + \gamma G_{t+1}\). Starting from the end (where \(G_T = 0\)), work backwards through the episode. This is computationally efficient.
 
 **The loss**: `-(log_probs * returns).sum()`. The negative sign converts gradient ascent (on the objective) into gradient descent (on the negated objective), which is what PyTorch optimizers do.
 
@@ -181,9 +181,9 @@ The key parts:
 
 The term comes from statistics. The "score" of a probability distribution is the gradient of its log-likelihood:
 
-\\[ \text{score}(\theta) = \nabla_\theta \log p(x; \theta) \\]
+\[ \text{score}(\theta) = \nabla_\theta \log p(x; \theta) \]
 
-In our case, the score is \\(\nabla_\theta \log \pi(a \mid s; \theta)\\): how much does changing the policy parameters change the log-probability of the action we took? The estimator weights each score by the return achieved.
+In our case, the score is \(\nabla_\theta \log \pi(a \mid s; \theta)\): how much does changing the policy parameters change the log-probability of the action we took? The estimator weights each score by the return achieved.
 
 You will sometimes see this called the "REINFORCE trick" or the "log-derivative trick" or the "likelihood ratio estimator." All the same thing.
 
@@ -191,7 +191,7 @@ You will sometimes see this called the "REINFORCE trick" or the "log-derivative 
 
 REINFORCE has a serious problem: the gradient estimates have very high variance.
 
-Why? Because the return \\(G_t\\) can be very different across episodes, depending on which actions were taken (chance) and which environments were sampled. One episode might give G = 100; the next might give G = -50. The policy gradient updates are scaled by these G values, so they swing wildly.
+Why? Because the return \(G_t\) can be very different across episodes, depending on which actions were taken (chance) and which environments were sampled. One episode might give G = 100; the next might give G = -50. The policy gradient updates are scaled by these G values, so they swing wildly.
 
 High variance means slow learning: many of your gradient steps point in directions that are mostly noise. You need many samples to average out the noise enough to make consistent progress.
 
@@ -199,13 +199,13 @@ There are several variance reduction techniques. The most important one is **bas
 
 ## Baseline subtraction
 
-Subtract a baseline \\(b(s_t)\\) from \\(G_t\\) before using it in the policy gradient:
+Subtract a baseline \(b(s_t)\) from \(G_t\) before using it in the policy gradient:
 
-\\[ \nabla_\theta J = \mathbb{E}\left[ \sum_t (G_t - b(s_t)) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \\]
+\[ \nabla_\theta J = \mathbb{E}\left[ \sum_t (G_t - b(s_t)) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \]
 
-This is mathematically valid: subtracting any function of the state (one that does not depend on the action) does not change the expected gradient. (The proof uses the fact that the expectation of \\(\nabla \log \pi(a | s)\\) over the policy distribution is zero, so subtracting a state-only constant does not bias the estimator.) But it can drastically reduce variance.
+This is mathematically valid: subtracting any function of the state (one that does not depend on the action) does not change the expected gradient. (The proof uses the fact that the expectation of \(\nabla \log \pi(a | s)\) over the policy distribution is zero, so subtracting a state-only constant does not bias the estimator.) But it can drastically reduce variance.
 
-A natural choice for the baseline is the value function \\(V(s_t)\\): the expected return from state \\(s_t\\). The quantity \\(G_t - V(s_t)\\) is called the **advantage**: how much better was this trajectory than what we would expect on average from this state?
+A natural choice for the baseline is the value function \(V(s_t)\): the expected return from state \(s_t\). The quantity \(G_t - V(s_t)\) is called the **advantage**: how much better was this trajectory than what we would expect on average from this state?
 
 This leads naturally to actor-critic methods (next lesson), where we maintain both a policy network (the "actor") and a value network (the "critic" providing the baseline).
 
@@ -235,13 +235,13 @@ For our SSA-flavored problems, REINFORCE alone would be too noisy and sample-ine
 
 ## The advantage of continuous action spaces
 
-One of the most compelling reasons to use policy gradients over DQN is their natural handling of **continuous action spaces**. DQN requires computing \\(\arg\max_a Q(s, a)\\) — a discrete search over all possible actions. With 5 discrete actions that is trivial; with an infinite continuous action space it is intractable.
+One of the most compelling reasons to use policy gradients over DQN is their natural handling of **continuous action spaces**. DQN requires computing \(\arg\max_a Q(s, a)\) — a discrete search over all possible actions. With 5 discrete actions that is trivial; with an infinite continuous action space it is intractable.
 
 Policy gradients sidestep this entirely. Instead of learning Q-values and deriving a policy, we directly parameterize the policy as a probability distribution. For continuous actions, that distribution is typically a **multivariate Gaussian**: the network outputs a mean vector and a standard deviation vector, and actions are sampled from that Gaussian.
 
 ### SSA example: satellite delta-v maneuver
 
-Consider a satellite orbit-raising maneuver. The satellite must decide on a delta-v vector at each thrust opportunity — a continuous 3D vector \\((\Delta v_x, \Delta v_y, \Delta v_z)\\) in the RTN (radial-tangential-normal) frame. DQN would require discretizing this space — say, 10 values per axis — giving 1,000 discrete actions, each requiring a separate Q-value output from the network. Policy gradients make this a single forward pass producing six scalars: three means and three standard deviations.
+Consider a satellite orbit-raising maneuver. The satellite must decide on a delta-v vector at each thrust opportunity — a continuous 3D vector \((\Delta v_x, \Delta v_y, \Delta v_z)\) in the RTN (radial-tangential-normal) frame. DQN would require discretizing this space — say, 10 values per axis — giving 1,000 discrete actions, each requiring a separate Q-value output from the network. Policy gradients make this a single forward pass producing six scalars: three means and three standard deviations.
 
 ```python
 import torch
@@ -338,8 +338,8 @@ print(f"  Continuous policy: 1 forward pass, exact sampling, no discretization e
 
 **Decoding the key differences from the discrete case:**
 
-- \\(\text{Normal}(\mu, \sigma)\\): a Gaussian distribution parameterized by mean \\(\mu\\) and standard deviation \\(\sigma\\). We use `Normal` from `torch.distributions` which handles log-probability computation automatically.
-- `dist.rsample()`: the "reparameterization sample." Unlike `dist.sample()`, this version lets gradients flow through the sampling operation by writing the sample as \\(a = \mu + \sigma \cdot \epsilon\\) where \\(\epsilon \sim \mathcal{N}(0, 1)\\). Essential for certain policy gradient variants.
+- \(\text{Normal}(\mu, \sigma)\): a Gaussian distribution parameterized by mean \(\mu\) and standard deviation \(\sigma\). We use `Normal` from `torch.distributions` which handles log-probability computation automatically.
+- `dist.rsample()`: the "reparameterization sample." Unlike `dist.sample()`, this version lets gradients flow through the sampling operation by writing the sample as \(a = \mu + \sigma \cdot \epsilon\) where \(\epsilon \sim \mathcal{N}(0, 1)\). Essential for certain policy gradient variants.
 - `log_prob(action).sum(dim=-1)`: for a multivariate action, the log-probability of the full action vector is the sum of log-probabilities along each dimension (since dimensions are independent in a diagonal Gaussian).
 - `log_std` instead of `std`: learning the log of the standard deviation prevents the network from producing negative values and stabilizes training. The clamp keeps exploration alive but bounded.
 
@@ -353,16 +353,16 @@ The core weakness of REINFORCE is **high variance** in the gradient estimates. U
 
 ### Why variance is high
 
-The return \\(G_t\\) on which each gradient update is scaled varies enormously across episodes. Consider a satellite sensor scheduling agent: in one episode it happens to observe the most important RSO early (large positive reward), while in another episode it misses all priority targets (near-zero reward). The gradient for the same action might be scaled by G = +800 in one episode and G = +5 in another — a ratio of 160:1. When the policy updates by \\(\alpha G_t \nabla \log \pi\\), the update magnitude swings wildly.
+The return \(G_t\) on which each gradient update is scaled varies enormously across episodes. Consider a satellite sensor scheduling agent: in one episode it happens to observe the most important RSO early (large positive reward), while in another episode it misses all priority targets (near-zero reward). The gradient for the same action might be scaled by G = +800 in one episode and G = +5 in another — a ratio of 160:1. When the policy updates by \(\alpha G_t \nabla \log \pi\), the update magnitude swings wildly.
 
-Formally, the variance of the REINFORCE gradient estimator scales as \\(\text{Var}(G_t)\\). The standard error of the gradient estimate from K episodes is:
+Formally, the variance of the REINFORCE gradient estimator scales as \(\text{Var}(G_t)\). The standard error of the gradient estimate from K episodes is:
 
-\\[ \text{SE}(\hat{\nabla} J) \approx \frac{\text{Std}(G)}{\sqrt{K}} \\]
+\[ \text{SE}(\hat{\nabla} J) \approx \frac{\text{Std}(G)}{\sqrt{K}} \]
 
 **Decoding:**
-- \\(\text{Std}(G)\\): the standard deviation of episode returns. If returns range from 0 to 1000, this is on the order of hundreds.
-- \\(\sqrt{K}\\): the number of episodes helps, but only as a square root. To cut the error in half, you need four times the episodes.
-- The ratio \\(\text{Std}(G) / \sqrt{K}\\): tells you how noisy your gradient estimate is. When this is large relative to the true gradient signal, most update steps point in unhelpful directions.
+- \(\text{Std}(G)\): the standard deviation of episode returns. If returns range from 0 to 1000, this is on the order of hundreds.
+- \(\sqrt{K}\): the number of episodes helps, but only as a square root. To cut the error in half, you need four times the episodes.
+- The ratio \(\text{Std}(G) / \sqrt{K}\): tells you how noisy your gradient estimate is. When this is large relative to the true gradient signal, most update steps point in unhelpful directions.
 
 ```python
 import torch
@@ -438,9 +438,9 @@ The coefficient of variation (Std/Mean) tells you what fraction of the mean retu
 
 ### The 1/sqrt(N) averaging argument
 
-When you average gradient estimates over \\(K\\) episodes, the standard error of the average shrinks as \\(1/\sqrt{K}\\). This is the same Central Limit Theorem convergence from Module 1. Intuitively: some episodes have returns above the mean (pushing the gradient estimate positive) and some are below (pushing negative), and they partially cancel.
+When you average gradient estimates over \(K\) episodes, the standard error of the average shrinks as \(1/\sqrt{K}\). This is the same Central Limit Theorem convergence from Module 1. Intuitively: some episodes have returns above the mean (pushing the gradient estimate positive) and some are below (pushing negative), and they partially cancel.
 
-The problem is that \\(\text{Std}(G)\\) is typically large — potentially hundreds of reward units — while the true gradient signal might be small. The signal-to-noise ratio is low, so even after averaging over many episodes, the noisy component dominates. Baseline subtraction reduces \\(\text{Std}(G_t - b)\\) directly, which is a more effective lever than increasing K.
+The problem is that \(\text{Std}(G)\) is typically large — potentially hundreds of reward units — while the true gradient signal might be small. The signal-to-noise ratio is low, so even after averaging over many episodes, the noisy component dominates. Baseline subtraction reduces \(\text{Std}(G_t - b)\) directly, which is a more effective lever than increasing K.
 
 ---
 
@@ -450,28 +450,28 @@ The claim in the baseline subtraction section is strong: "subtracting any functi
 
 ### The mathematical proof sketch
 
-We want to show that for any state-dependent function \\(b(s_t)\\):
+We want to show that for any state-dependent function \(b(s_t)\):
 
-\\[ \mathbb{E}\left[ b(s_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] = 0 \\]
+\[ \mathbb{E}\left[ b(s_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] = 0 \]
 
-If this is zero, subtracting \\(b(s_t)\\) from \\(G_t\\) does not change the expected gradient.
+If this is zero, subtracting \(b(s_t)\) from \(G_t\) does not change the expected gradient.
 
 **Proof:**
 
-Fix state \\(s_t\\). Since \\(b(s_t)\\) does not depend on \\(a_t\\), we can factor it out of the expectation over actions:
+Fix state \(s_t\). Since \(b(s_t)\) does not depend on \(a_t\), we can factor it out of the expectation over actions:
 
-\\[ \mathbb{E}_{a_t \sim \pi(\cdot | s_t)}\left[ b(s_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] = b(s_t) \cdot \mathbb{E}_{a_t \sim \pi(\cdot | s_t)}\left[ \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \\]
+\[ \mathbb{E}_{a_t \sim \pi(\cdot | s_t)}\left[ b(s_t) \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] = b(s_t) \cdot \mathbb{E}_{a_t \sim \pi(\cdot | s_t)}\left[ \nabla_\theta \log \pi(a_t \mid s_t; \theta) \right] \]
 
 Now, the inner expectation:
 
-\\[ \mathbb{E}_{a \sim \pi}\left[ \nabla_\theta \log \pi(a \mid s; \theta) \right] = \sum_a \pi(a \mid s) \cdot \frac{\nabla_\theta \pi(a \mid s)}{\pi(a \mid s)} = \sum_a \nabla_\theta \pi(a \mid s) = \nabla_\theta \underbrace{\sum_a \pi(a \mid s)}_{= 1} = \nabla_\theta 1 = 0 \\]
+\[ \mathbb{E}_{a \sim \pi}\left[ \nabla_\theta \log \pi(a \mid s; \theta) \right] = \sum_a \pi(a \mid s) \cdot \frac{\nabla_\theta \pi(a \mid s)}{\pi(a \mid s)} = \sum_a \nabla_\theta \pi(a \mid s) = \nabla_\theta \underbrace{\sum_a \pi(a \mid s)}_{= 1} = \nabla_\theta 1 = 0 \]
 
 **Decoding:**
-- \\(\nabla_\theta \log \pi = \nabla_\theta \pi / \pi\\): the log-derivative trick, applied in reverse
-- \\(\sum_a \pi(a | s) = 1\\): probabilities sum to one, always
-- \\(\nabla_\theta 1 = 0\\): gradient of a constant is zero
+- \(\nabla_\theta \log \pi = \nabla_\theta \pi / \pi\): the log-derivative trick, applied in reverse
+- \(\sum_a \pi(a | s) = 1\): probabilities sum to one, always
+- \(\nabla_\theta 1 = 0\): gradient of a constant is zero
 
-The entire expression collapses to \\(b(s_t) \cdot 0 = 0\\). This holds for any baseline \\(b(s_t)\\) that does not depend on the action — a constant, the mean return, or the value function \\(V(s_t)\\).
+The entire expression collapses to \(b(s_t) \cdot 0 = 0\). This holds for any baseline \(b(s_t)\) that does not depend on the action — a constant, the mean return, or the value function \(V(s_t)\).
 
 ```python
 import torch
@@ -546,15 +546,15 @@ The key observation: the **means** of the two gradient estimates should be appro
 
 ## Normalized returns
 
-A practical trick that improves training stability is **return normalization**: before using returns \\(G_t\\) to scale gradient updates, subtract their mean and divide by their standard deviation.
+A practical trick that improves training stability is **return normalization**: before using returns \(G_t\) to scale gradient updates, subtract their mean and divide by their standard deviation.
 
-\\[ \tilde{G}_t = \frac{G_t - \bar{G}}{\sigma_G + \epsilon} \\]
+\[ \tilde{G}_t = \frac{G_t - \bar{G}}{\sigma_G + \epsilon} \]
 
 **Decoding:**
-- \\(\bar{G}\\): the mean of returns in this episode (or batch of episodes)
-- \\(\sigma_G\\): the standard deviation of returns in this episode
-- \\(\epsilon\\): a small constant (typically \\(10^{-8}\\)) that prevents division by zero when all returns are identical
-- \\(\tilde{G}_t\\): the normalized return, which has mean ≈ 0 and std ≈ 1
+- \(\bar{G}\): the mean of returns in this episode (or batch of episodes)
+- \(\sigma_G\): the standard deviation of returns in this episode
+- \(\epsilon\): a small constant (typically \(10^{-8}\)) that prevents division by zero when all returns are identical
+- \(\tilde{G}_t\): the normalized return, which has mean ≈ 0 and std ≈ 1
 
 This is not the same as a value-function baseline — it is a simpler, episode-local normalization. It does **not** guarantee unbiasedness in the same rigorous way (the normalization itself introduces a small bias), but it provides two practical benefits:
 
@@ -633,9 +633,9 @@ Both policy gradient methods and Q-learning are valid RL approaches, and the cho
 
 ### Concrete SSA application decisions
 
-**Satellite sensor scheduling (discrete):** At each timestep, choose which of N satellites to task. The action space is \\(\{1, \ldots, N\}\\). DQN is appropriate. The argmax operation over Q-values is cheap and the policy can be deterministic (always task the highest-priority satellite given current state).
+**Satellite sensor scheduling (discrete):** At each timestep, choose which of N satellites to task. The action space is \(\{1, \ldots, N\}\). DQN is appropriate. The argmax operation over Q-values is cheap and the policy can be deterministic (always task the highest-priority satellite given current state).
 
-**Orbital maneuver planning (continuous):** Choose a delta-v vector \\((\Delta v_x, \Delta v_y, \Delta v_z)\\) for an orbit correction. Action space is \\(\mathbb{R}^3\\). Policy gradients with `Normal` output are appropriate. DQN cannot handle this without severe discretization loss.
+**Orbital maneuver planning (continuous):** Choose a delta-v vector \((\Delta v_x, \Delta v_y, \Delta v_z)\) for an orbit correction. Action space is \(\mathbb{R}^3\). Policy gradients with `Normal` output are appropriate. DQN cannot handle this without severe discretization loss.
 
 **Conjunction avoidance (stochastic preferred):** Multiple operators observe the same RSO and must decide simultaneously whether to maneuver. Game-theoretic reasoning suggests a mixed strategy (sometimes maneuver, sometimes hold) to avoid symmetric deadlocks. Policy gradients naturally represent stochastic policies; DQN's greedy policy is pure strategy.
 
@@ -645,10 +645,10 @@ Both policy gradient methods and Q-learning are valid RL approaches, and the cho
 
 ## Key Takeaways
 
-- **Policy gradients parameterize the policy directly** as a neural network \\(\pi(a \mid s; \theta)\\) and use the REINFORCE gradient \\(\nabla J = \mathbb{E}[G_t \nabla \log \pi]\\) to improve it. The agent optimizes the policy itself, not a value function from which a policy is derived.
+- **Policy gradients parameterize the policy directly** as a neural network \(\pi(a \mid s; \theta)\) and use the REINFORCE gradient \(\nabla J = \mathbb{E}[G_t \nabla \log \pi]\) to improve it. The agent optimizes the policy itself, not a value function from which a policy is derived.
 - **Continuous action spaces** are handled naturally by outputting distribution parameters (mean and std of a Gaussian) from the policy network and sampling via `torch.distributions.Normal`. DQN cannot extend to continuous actions without expensive discretization; REINFORCE handles satellite delta-v maneuvers with a single forward pass.
-- **REINFORCE has high variance** because returns \\(G_t\\) vary enormously across episodes. Standard error shrinks as \\(\text{Std}(G)/\sqrt{K}\\) where \\(K\\) is the number of episodes — the 1/√K convergence rate means you often need hundreds of episodes before gradient estimates are reliable.
-- **Baseline subtraction is zero-bias variance reduction**: subtracting any state-dependent function \\(b(s_t)\\) from returns does not change the expected gradient because \\(\mathbb{E}[\nabla \log \pi] = 0\\). Using the value function as baseline gives the advantage \\(A_t = G_t - V(s_t)\\), the foundation for actor-critic.
+- **REINFORCE has high variance** because returns \(G_t\) vary enormously across episodes. Standard error shrinks as \(\text{Std}(G)/\sqrt{K}\) where \(K\) is the number of episodes — the 1/√K convergence rate means you often need hundreds of episodes before gradient estimates are reliable.
+- **Baseline subtraction is zero-bias variance reduction**: subtracting any state-dependent function \(b(s_t)\) from returns does not change the expected gradient because \(\mathbb{E}[\nabla \log \pi] = 0\). Using the value function as baseline gives the advantage \(A_t = G_t - V(s_t)\), the foundation for actor-critic.
 - **Return normalization** (subtract mean, divide by std within each episode) is a practical stabilization trick that keeps gradient updates at a consistent scale regardless of reward magnitude, preventing the learning rate from becoming effectively too large or too small across different reward regimes.
 - **Policy gradients vs. Q-learning** is a design choice: use Q-learning when the action space is discrete and a deterministic policy suffices; use policy gradients when the action space is continuous, a stochastic policy is needed (multi-agent mixed strategies, exploration), or the problem naturally frames as direct policy optimization.
 

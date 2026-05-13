@@ -32,7 +32,7 @@ This lesson builds the geometric intuition and PyTorch mechanics for all three, 
 
 For a square matrix A ∈ ℝⁿˣⁿ that has n linearly independent eigenvectors, the eigendecomposition is:
 
-\\[ A = Q \Lambda Q^{-1} \\]
+\[ A = Q \Lambda Q^{-1} \]
 
 **Decoding:**
 
@@ -52,7 +52,7 @@ Symmetric matrices — where A = Aᵀ — have two additional guarantees:
 
 When eigenvectors are orthogonal and unit-length, Q is an orthogonal matrix: Q⁻¹ = Qᵀ. The decomposition simplifies to:
 
-\\[ \Sigma = Q \Lambda Q^T \\]
+\[ \Sigma = Q \Lambda Q^T \]
 
 This is exactly the form of a covariance matrix. In SSA, a 3 × 3 position-uncertainty covariance matrix Σ (entries in km²) encodes how uncertain we are about where an RSO (Resident Space Object) actually is. Its eigendecomposition reveals the principal axes and magnitudes of that uncertainty ellipsoid:
 
@@ -109,7 +109,7 @@ The formula A = Q Λ Q⁻¹ requires Q to be invertible, which requires Q to be 
 
 For any symmetric positive-definite (SPD) matrix Σ, there exists a unique lower-triangular matrix L such that:
 
-\\[ \Sigma = L L^T \\]
+\[ \Sigma = L L^T \]
 
 **Decoding:**
 
@@ -247,7 +247,7 @@ The jitter ε effectively says "add ε variance in all directions," which moves 
 
 Any matrix A ∈ ℝᵐˣⁿ — regardless of shape — can be written as:
 
-\\[ A = U \Sigma V^T \\]
+\[ A = U \Sigma V^T \]
 
 where:
 
@@ -380,7 +380,7 @@ print(f"\nEffective rank (threshold = 1% of sigma_1): {effective_rank}")
 
 The **Eckart-Young theorem** states that the best rank-k approximation of A in the Frobenius norm is:
 
-\\[ A_k = \sum_{i=1}^{k} \sigma_i \mathbf{u}_i \mathbf{v}_i^T = U_k \Sigma_k V_k^T \\]
+\[ A_k = \sum_{i=1}^{k} \sigma_i \mathbf{u}_i \mathbf{v}_i^T = U_k \Sigma_k V_k^T \]
 
 where Uₖ keeps only the first k columns of U, Σₖ is the k × k upper-left block of Σ, and Vₖᵀ keeps only the first k rows of Vᵀ.
 
@@ -455,7 +455,7 @@ The table shows a characteristic pattern: for data with true rank-4 structure, t
 
 For a general (possibly rectangular) matrix A ∈ ℝᵐˣⁿ, the **Moore-Penrose pseudoinverse** is:
 
-\\[ A^+ = V \Sigma^+ U^T \\]
+\[ A^+ = V \Sigma^+ U^T \]
 
 where Σ⁺ is obtained from Σ by taking the reciprocal of each nonzero singular value and leaving zero entries as zero.
 

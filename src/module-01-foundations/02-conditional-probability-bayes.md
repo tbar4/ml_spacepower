@@ -42,11 +42,11 @@ That question is Bayes' rule.
 
 **Conditional probability** is the probability of one thing given that you know another thing has happened.
 
-The notation is \\(P(A \mid B)\\), read as "probability of A given B." The vertical bar means "given that."
+The notation is \(P(A \mid B)\), read as "probability of A given B." The vertical bar means "given that."
 
 For your RCS example:
-- \\(P(\text{debris} \mid \text{medium-small RCS})\\) means: "what is the probability that this is debris, given that we observed a medium-small RCS return?"
-- \\(P(\text{medium-small RCS} \mid \text{debris})\\) means: "if this were debris, how likely is this particular RCS reading?"
+- \(P(\text{debris} \mid \text{medium-small RCS})\) means: "what is the probability that this is debris, given that we observed a medium-small RCS return?"
+- \(P(\text{medium-small RCS} \mid \text{debris})\) means: "if this were debris, how likely is this particular RCS reading?"
 
 These look similar but they are answering completely different questions. The first is what you want to know. The second is what your sensor model gives you. Bayes' rule connects them.
 
@@ -69,15 +69,15 @@ Now your sensor reports a medium-small RCS. **How many objects in the catalog sh
 
 Of those 520 objects, how many were active satellites? 420. So:
 
-\\(P(\text{active sat} \mid \text{medium-small RCS}) = 420 / 520 \approx 0.808\\)
+\(P(\text{active sat} \mid \text{medium-small RCS}) = 420 / 520 \approx 0.808\)
 
 How many were debris? 60. So:
 
-\\(P(\text{debris} \mid \text{medium-small RCS}) = 60 / 520 \approx 0.115\\)
+\(P(\text{debris} \mid \text{medium-small RCS}) = 60 / 520 \approx 0.115\)
 
 How many were rocket bodies? 40. So:
 
-\\(P(\text{rocket body} \mid \text{medium-small RCS}) = 40 / 520 \approx 0.077\\)
+\(P(\text{rocket body} \mid \text{medium-small RCS}) = 40 / 520 \approx 0.077\)
 
 Your belief shifted. You started at 60% / 30% / 10%. After seeing the medium-small RCS, you are now at 80.8% / 11.5% / 7.7%. The measurement strongly favored active satellites (because satellites produce this return 70% of the time, while debris produce it only 20% of the time), so the satellite probability went up and debris went down.
 
@@ -89,9 +89,9 @@ Your belief shifted. You started at 60% / 30% / 10%. After seeing the medium-sma
 
 **Formal definition**: events A and B are independent if and only if:
 
-\\[ P(A \mid B) = P(A) \\]
+\[ P(A \mid B) = P(A) \]
 
-**Decoding**: "the probability of A, given that B happened, is the same as the probability of A before you knew about B." B is irrelevant to A. You can also write independence as \\(P(A \cap B) = P(A) \times P(B)\\) — which is where the product rule from lesson 1 comes from. Both formulations say the same thing.
+**Decoding**: "the probability of A, given that B happened, is the same as the probability of A before you knew about B." B is irrelevant to A. You can also write independence as \(P(A \cap B) = P(A) \times P(B)\) — which is where the product rule from lesson 1 comes from. Both formulations say the same thing.
 
 ### Conditional dependence
 
@@ -101,9 +101,9 @@ Dependence is the normal situation. Independence is a simplifying assumption you
 
 ### The SSA independence question: two radars vs. one atmosphere
 
-Consider two independent radar sites, Site A (Colorado) and Site B (Alaska), each measuring the same RSO. If their noise processes are independent, you can use the product rule: the probability of both sites producing measurement errors above threshold is \\(P(\text{A error}) \times P(\text{B error})\\). That product is small, which is why multi-site fusion reduces false alarm rates.
+Consider two independent radar sites, Site A (Colorado) and Site B (Alaska), each measuring the same RSO. If their noise processes are independent, you can use the product rule: the probability of both sites producing measurement errors above threshold is \(P(\text{A error}) \times P(\text{B error})\). That product is small, which is why multi-site fusion reduces false alarm rates.
 
-But independence fails when both sites share a common cause. **Correlated noise from the same atmospheric layer** is a real failure mode: if a large ionospheric disturbance affects the entire continental US, both Site A and Site B will experience elevated range errors simultaneously. Their errors are now dependent — \\(P(\text{B error} \mid \text{A error}) > P(\text{B error})\\) — and treating them as independent will underestimate the probability of simultaneous bad measurements at both sites.
+But independence fails when both sites share a common cause. **Correlated noise from the same atmospheric layer** is a real failure mode: if a large ionospheric disturbance affects the entire continental US, both Site A and Site B will experience elevated range errors simultaneously. Their errors are now dependent — \(P(\text{B error} \mid \text{A error}) > P(\text{B error})\) — and treating them as independent will underestimate the probability of simultaneous bad measurements at both sites.
 
 The operational implication is significant: if you design a conjunction assessment protocol that requires "two independent radar confirmations" to flag a high-priority conjunction, and your two radars are correlated by shared atmosphere, you are getting less confirmation than you think. The assumption of independence is a model choice, and it should be tested rather than assumed.
 
@@ -136,18 +136,18 @@ When independence fails and you do not know it, your probability estimates are w
 
 ## The total probability formula
 
-Bayes' rule has a denominator — \\(P(E)\\) — that often looks mysterious. The **law of total probability** makes it concrete.
+Bayes' rule has a denominator — \(P(E)\) — that often looks mysterious. The **law of total probability** makes it concrete.
 
 **The formula**:
 
-\\[ P(E) = \sum_{i} P(E \mid H_i) \cdot P(H_i) \\]
+\[ P(E) = \sum_{i} P(E \mid H_i) \cdot P(H_i) \]
 
 **Decoding**:
 
-- \\(H_1, H_2, \ldots\\): a complete, mutually exclusive set of hypotheses. "Complete" means at least one is true. "Mutually exclusive" means at most one is true. Together they partition the space of possibilities.
-- \\(P(E \mid H_i)\\): the likelihood of the evidence under hypothesis \\(i\\).
-- \\(P(H_i)\\): the prior probability of hypothesis \\(i\\).
-- The sum adds up contributions to \\(P(E)\\) from each hypothesis, weighted by how probable that hypothesis is.
+- \(H_1, H_2, \ldots\): a complete, mutually exclusive set of hypotheses. "Complete" means at least one is true. "Mutually exclusive" means at most one is true. Together they partition the space of possibilities.
+- \(P(E \mid H_i)\): the likelihood of the evidence under hypothesis \(i\).
+- \(P(H_i)\): the prior probability of hypothesis \(i\).
+- The sum adds up contributions to \(P(E)\) from each hypothesis, weighted by how probable that hypothesis is.
 
 The law of total probability is the denominator in Bayes' rule because it answers: "what is the probability of seeing this evidence at all, summed over every possible explanation?" When you normalize the unnormalized posteriors, you are dividing by exactly this sum.
 
@@ -155,14 +155,14 @@ The law of total probability is the denominator in Bayes' rule because it answer
 
 Extend the catalog scenario. Now there are three object types in the catalog, and you have received a specific RCS reading. What is the total probability of that reading?
 
-| Hypothesis \\(H_i\\) | Prior \\(P(H_i)\\) | Likelihood \\(P(E \mid H_i)\\) | Joint \\(P(E, H_i)\\) |
+| Hypothesis \(H_i\) | Prior \(P(H_i)\) | Likelihood \(P(E \mid H_i)\) | Joint \(P(E, H_i)\) |
 |---|---|---|---|
 | Active satellite | 0.60 | 0.70 | 0.420 |
 | Debris | 0.30 | 0.20 | 0.060 |
 | Rocket body | 0.10 | 0.40 | 0.040 |
 | **Total** | **1.00** | — | **0.520** |
 
-\\(P(E) = 0.420 + 0.060 + 0.040 = 0.520\\)
+\(P(E) = 0.420 + 0.060 + 0.040 = 0.520\)
 
 This says: if you sampled a random contact from this orbital regime and ran the RCS sensor, you would get a medium-small reading 52% of the time — across all the different object types combined.
 
@@ -212,24 +212,24 @@ Here it is, first in words:
 
 Now with symbols. We call the hypothesis H (e.g., "this is debris") and the evidence E (e.g., "medium-small RCS reading"):
 
-\\[ P(H \mid E) = \frac{P(E \mid H) \cdot P(H)}{P(E)} \\]
+\[ P(H \mid E) = \frac{P(E \mid H) \cdot P(H)}{P(E)} \]
 
 **Decoding each piece:**
 
-**\\(P(H \mid E)\\)**: The **posterior**. This is what we want: the probability of hypothesis H after seeing evidence E. "Posterior" means "after." Before the evidence, we had a prior. After the evidence, we have a posterior.
+**\(P(H \mid E)\)**: The **posterior**. This is what we want: the probability of hypothesis H after seeing evidence E. "Posterior" means "after." Before the evidence, we had a prior. After the evidence, we have a posterior.
 
-**\\(P(H)\\)**: The **prior**. This is what we believed about H before seeing the evidence. In the catalog example, this was 0.60 for active satellite, 0.30 for debris, 0.10 for rocket body. The word "prior" means "before."
+**\(P(H)\)**: The **prior**. This is what we believed about H before seeing the evidence. In the catalog example, this was 0.60 for active satellite, 0.30 for debris, 0.10 for rocket body. The word "prior" means "before."
 
-**\\(P(E \mid H)\\)**: The **likelihood**. This is how probable the evidence is, assuming H is true. Your sensor model gives you this. "If this contact is debris, how likely is this RCS reading?" That is a likelihood.
+**\(P(E \mid H)\)**: The **likelihood**. This is how probable the evidence is, assuming H is true. Your sensor model gives you this. "If this contact is debris, how likely is this RCS reading?" That is a likelihood.
 
-**\\(P(E)\\)**: The **marginal probability of the evidence**, sometimes called the normalizing constant. This is the total probability of seeing this evidence, regardless of which hypothesis is true. In the catalog, it was 520/1000 = 0.52 (the fraction of contacts that produced a medium-small reading at all).
+**\(P(E)\)**: The **marginal probability of the evidence**, sometimes called the normalizing constant. This is the total probability of seeing this evidence, regardless of which hypothesis is true. In the catalog, it was 520/1000 = 0.52 (the fraction of contacts that produced a medium-small reading at all).
 
-You calculate \\(P(E)\\) by summing over all hypotheses:
-\\[ P(E) = P(E \mid H_1) \cdot P(H_1) + P(E \mid H_2) \cdot P(H_2) + P(E \mid H_3) \cdot P(H_3) + \ldots \\]
+You calculate \(P(E)\) by summing over all hypotheses:
+\[ P(E) = P(E \mid H_1) \cdot P(H_1) + P(E \mid H_2) \cdot P(H_2) + P(E \mid H_3) \cdot P(H_3) + \ldots \]
 
 This just says: the total probability of seeing this evidence is the sum over each possible explanation, weighted by how likely each explanation was.
 
-**The shortcut**: you usually do not compute \\(P(E)\\) directly. Instead, compute the numerator (\\(P(E \mid H) \cdot P(H)\\)) for every hypothesis, then divide each by the sum. That sum is \\(P(E)\\), and you get it for free as a byproduct of normalization.
+**The shortcut**: you usually do not compute \(P(E)\) directly. Instead, compute the numerator (\(P(E \mid H) \cdot P(H)\)) for every hypothesis, then divide each by the sum. That sum is \(P(E)\), and you get it for free as a byproduct of normalization.
 
 ## Applying Bayes' rule step by step
 
@@ -237,7 +237,7 @@ Let us walk through the calculation systematically.
 
 **Step 1: Write down your priors.**
 
-| Hypothesis \\(H\\) | Prior \\(P(H)\\) |
+| Hypothesis \(H\) | Prior \(P(H)\) |
 |---------------------|------------------|
 | Active satellite    | 0.60             |
 | Debris              | 0.30             |
@@ -245,7 +245,7 @@ Let us walk through the calculation systematically.
 
 **Step 2: Write down the likelihoods.** For each hypothesis, how probable is the evidence (medium-small RCS)?
 
-| Hypothesis \\(H\\) | Likelihood \\(P(E \mid H)\\) |
+| Hypothesis \(H\) | Likelihood \(P(E \mid H)\) |
 |---------------------|-------------------------------|
 | Active satellite    | 0.70                          |
 | Debris              | 0.20                          |
@@ -260,9 +260,9 @@ Let us walk through the calculation systematically.
 | Rocket body         | 0.10 × 0.40 = 0.040   | 0.040                  |
 | **Total**           |                       | **0.520**              |
 
-**Step 4: Divide each unnormalized posterior by the total.** The total (0.520) is \\(P(E)\\). Dividing by it makes the posteriors sum to 1.
+**Step 4: Divide each unnormalized posterior by the total.** The total (0.520) is \(P(E)\). Dividing by it makes the posteriors sum to 1.
 
-| Hypothesis          | Posterior \\(P(H \mid E)\\) |
+| Hypothesis          | Posterior \(P(H \mid E)\) |
 |---------------------|------------------------------|
 | Active satellite    | 0.420 / 0.520 ≈ **0.808**   |
 | Debris              | 0.060 / 0.520 ≈ **0.115**   |
@@ -419,13 +419,13 @@ Even though the likelihood ratio strongly favors debris (0.80 vs 0.05 — a 16-t
 
 ### How many observations to overcome a strong prior
 
-To overcome a prior of 99:1 (\\(P(H) = 0.99\\)), you need evidence strong enough that the cumulative likelihood ratio exceeds 99. If each observation has a likelihood ratio of 16:1 in favor of debris, you need approximately:
+To overcome a prior of 99:1 (\(P(H) = 0.99\)), you need evidence strong enough that the cumulative likelihood ratio exceeds 99. If each observation has a likelihood ratio of 16:1 in favor of debris, you need approximately:
 
-\\[ \text{number of observations} \approx \frac{\log(99)}{\log(16)} \approx \frac{4.6}{2.8} \approx 1.6 \\]
+\[ \text{number of observations} \approx \frac{\log(99)}{\log(16)} \approx \frac{4.6}{2.8} \approx 1.6 \]
 
 So about two observations with that likelihood ratio would flip the belief. But if the likelihood ratio per observation is weaker — say 2:1 — you need:
 
-\\[ \frac{\log(99)}{\log(2)} \approx \frac{4.6}{0.69} \approx 6.6 \\]
+\[ \frac{\log(99)}{\log(2)} \approx \frac{4.6}{0.69} \approx 6.6 \]
 
 About seven observations with a modest 2:1 likelihood ratio are needed.
 
@@ -488,7 +488,7 @@ Suppose someone tells you "our sensor has a 90% detection rate for rocket bodies
 
 If rocket bodies represent only 1% of all objects in this orbital regime (prior = 0.01), then even with a 90% detection rate, most signals will not be rocket bodies. The vast majority of the time, the sensor is detecting one of the 99% non-rocket-body objects at whatever rate that detection applies.
 
-Bayes' rule mechanically prevents this error because the prior appears explicitly in the formula. The moment you write down \\(P(H) = 0.01\\) before doing the calculation, you cannot forget it.
+Bayes' rule mechanically prevents this error because the prior appears explicitly in the formula. The moment you write down \(P(H) = 0.01\) before doing the calculation, you cannot forget it.
 
 For SSA, this matters practically. If you are looking for adversarial satellite maneuvers and only 1 in 1,000 maneuvers is adversarial (with 999 being routine station-keeping), a detector that is 95% accurate at identifying adversarial maneuvers will still produce many false positives if you ignore the base rate.
 
@@ -504,9 +504,9 @@ When you eventually read code that says `belief_state.update(observation)` or `r
 
 ## Key Takeaways
 
-- **Conditional probability restricts your universe.** \\(P(A \mid B)\\) asks: among all worlds where B is true, how many also have A? This mental model — filtering down to the relevant subset — is the right way to reason about any sensor measurement or game observation that updates your beliefs.
+- **Conditional probability restricts your universe.** \(P(A \mid B)\) asks: among all worlds where B is true, how many also have A? This mental model — filtering down to the relevant subset — is the right way to reason about any sensor measurement or game observation that updates your beliefs.
 - **Independence is a model choice, not a fact.** Two sensors may be independent under normal conditions and highly correlated during atmospheric events. Treating correlated measurements as independent underestimates the probability of simultaneous failures. Always ask what shared causes could violate your independence assumptions.
-- **The law of total probability makes the Bayes denominator concrete.** \\(P(E) = \sum_i P(E \mid H_i) P(H_i)\\) is not a formula to memorize — it is the answer to "what fraction of all contacts would produce this reading?" If your hypothesis set is incomplete, your denominator is wrong, and so are all your posteriors.
+- **The law of total probability makes the Bayes denominator concrete.** \(P(E) = \sum_i P(E \mid H_i) P(H_i)\) is not a formula to memorize — it is the answer to "what fraction of all contacts would produce this reading?" If your hypothesis set is incomplete, your denominator is wrong, and so are all your posteriors.
 - **Sequential Bayesian updates are order-independent** (given conditionally independent measurements). You can apply observations as they arrive without waiting to batch them. This is what makes online tracking filters practical: each new sensor report is a Bayes step, and the running posterior is always the best current estimate.
 - **Strong priors resist correction.** A catalog entry reinforced by thousands of observations may take dozens of anomalous readings to overturn. This is mathematically correct but operationally dangerous: catalog errors persist. Active anomaly detection — looking for objects whose posterior is drifting unexpectedly — matters more than assuming the catalog will self-correct through routine observations.
 - **The base-rate error is the most common mistake.** Likelihoods are not posteriors. A sensor that is "90% accurate" does not produce 90% correct classifications if the prior for the target class is 1%. Bayes' rule with an explicit prior is the only reliable protection against this mistake.

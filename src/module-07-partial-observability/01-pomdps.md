@@ -27,92 +27,92 @@ POMDPs fix this by making uncertainty a first-class citizen. The agent maintains
 
 A POMDP is defined by a 7-tuple:
 
-\\[ \langle S, A, \Omega, T, R, O, \gamma \rangle \\]
+\[ \langle S, A, \Omega, T, R, O, \gamma \rangle \]
 
 **Decoding** (extending the MDP 5-tuple with the two new pieces):
 
-- \\(S\\): state space. The true world state, which the agent does *not* observe directly. For our telescope network, this is the true orbital elements of all five RSOs — a vector of position, velocity, and timestamp for each object.
-- \\(A\\): action space. What the agent can do: which RSO to point the telescope at this timestep.
-- \\(\Omega\\): observation space. What the agent actually receives: a noisy RA/Dec pair corresponding to the RSO currently being observed, or a null observation for unobserved RSOs.
-- \\(T(s' \mid s, a)\\): transition function. The same as in an MDP. The true orbital mechanics propagate all five RSOs forward regardless of which one was observed. Observations do not affect the true state.
-- \\(R(s, a)\\): reward function. Reward for catching high-risk conjunctions; penalties for missing them.
-- \\(O(o \mid s', a)\\): observation function. The probability of receiving observation \\(o\\) given that the true state is \\(s'\\) and action \\(a\\) was taken. For the telescope, this is a Gaussian around the predicted RA/Dec of whichever RSO was pointed at, with measurement noise \\(\sigma_{\text{obs}}\\).
-- \\(\gamma\\): discount factor, same as in an MDP.
+- \(S\): state space. The true world state, which the agent does *not* observe directly. For our telescope network, this is the true orbital elements of all five RSOs — a vector of position, velocity, and timestamp for each object.
+- \(A\): action space. What the agent can do: which RSO to point the telescope at this timestep.
+- \(\Omega\): observation space. What the agent actually receives: a noisy RA/Dec pair corresponding to the RSO currently being observed, or a null observation for unobserved RSOs.
+- \(T(s' \mid s, a)\): transition function. The same as in an MDP. The true orbital mechanics propagate all five RSOs forward regardless of which one was observed. Observations do not affect the true state.
+- \(R(s, a)\): reward function. Reward for catching high-risk conjunctions; penalties for missing them.
+- \(O(o \mid s', a)\): observation function. The probability of receiving observation \(o\) given that the true state is \(s'\) and action \(a\) was taken. For the telescope, this is a Gaussian around the predicted RA/Dec of whichever RSO was pointed at, with measurement noise \(\sigma_{\text{obs}}\).
+- \(\gamma\): discount factor, same as in an MDP.
 
-The observation function \\(O\\) is the new piece. It explicitly models the noise and incompleteness of what the agent sees.
+The observation function \(O\) is the new piece. It explicitly models the noise and incompleteness of what the agent sees.
 
 ### The SSA telescope scenario in detail
 
-State \\(s\\) at time \\(t\\): the true orbital elements of five RSOs, represented as five 6-vectors (position and velocity in the ECI frame, km and km/s). The state space is 30-dimensional and continuous.
+State \(s\) at time \(t\): the true orbital elements of five RSOs, represented as five 6-vectors (position and velocity in the ECI frame, km and km/s). The state space is 30-dimensional and continuous.
 
-Action \\(a \in \{0, 1, 2, 3, 4\}\\): which RSO the telescope is pointed at for this hour-long observation window.
+Action \(a \in \{0, 1, 2, 3, 4\}\): which RSO the telescope is pointed at for this hour-long observation window.
 
-Observation \\(o \in \mathbb{R}^2 \cup \{\text{null}\}\\): if you pointed at RSO \\(i\\), you receive a noisy RA/Dec pair for RSO \\(i\\). For all other RSOs, you receive null. This is the fundamental partial observability: at any timestep, four of the five RSOs are completely unobserved.
+Observation \(o \in \mathbb{R}^2 \cup \{\text{null}\}\): if you pointed at RSO \(i\), you receive a noisy RA/Dec pair for RSO \(i\). For all other RSOs, you receive null. This is the fundamental partial observability: at any timestep, four of the five RSOs are completely unobserved.
 
 Transition: orbital propagation (Keplerian or J2-perturbed) moves each RSO's true state forward by one hour. Stochastic perturbations model atmospheric drag uncertainty and undetected micro-maneuvers.
 
-Observation model: if RSO \\(i\\) is pointed at and its true state is \\(s\\), the observation is:
+Observation model: if RSO \(i\) is pointed at and its true state is \(s\), the observation is:
 
-\\[ o = \text{RA\_Dec}(s_i) + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma_{\text{obs}}^2 I) \\]
+\[ o = \text{RA\_Dec}(s_i) + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma_{\text{obs}}^2 I) \]
 
-where \\(\text{RA\_Dec}(s_i)\\) is the deterministic projection of the true orbital elements to sky coordinates, and \\(\epsilon\\) is Gaussian measurement noise.
+where \(\text{RA\_Dec}(s_i)\) is the deterministic projection of the true orbital elements to sky coordinates, and \(\epsilon\) is Gaussian measurement noise.
 
 ## The belief state: sufficient statistic for the history
 
-The agent cannot observe the true state \\(s\\). But it can maintain a **belief state**:
+The agent cannot observe the true state \(s\). But it can maintain a **belief state**:
 
-\\[ b(s) = P(s \mid h) \\]
+\[ b(s) = P(s \mid h) \]
 
-where \\(h = (a_0, o_0, a_1, o_1, \ldots, a_t, o_t)\\) is the full history of actions and observations.
+where \(h = (a_0, o_0, a_1, o_1, \ldots, a_t, o_t)\) is the full history of actions and observations.
 
-**Theorem (Astrom 1965):** The belief state \\(b\\) is a *sufficient statistic* for the history. That is, any additional information in \\(h\\) beyond what is encoded in \\(b(s)\\) is irrelevant for future decision-making.
+**Theorem (Astrom 1965):** The belief state \(b\) is a *sufficient statistic* for the history. That is, any additional information in \(h\) beyond what is encoded in \(b(s)\) is irrelevant for future decision-making.
 
-**Decoding:** "Sufficient statistic" means: the optimal policy only needs to look at \\(b\\), not the raw history. Histories of different lengths and content that produce the same belief state should produce the same action. This is the analog of the Markov property for POMDPs. It says: maintain the belief distribution carefully and you lose nothing by discarding the raw history.
+**Decoding:** "Sufficient statistic" means: the optimal policy only needs to look at \(b\), not the raw history. Histories of different lengths and content that produce the same belief state should produce the same action. This is the analog of the Markov property for POMDPs. It says: maintain the belief distribution carefully and you lose nothing by discarding the raw history.
 
-**The consequence:** a POMDP over states \\(S\\) reduces to an MDP over belief states \\(\mathcal{B} = \Delta(S)\\) (the simplex of probability distributions over \\(S\\)). The belief-space MDP has:
-- States: beliefs \\(b \in \mathcal{B}\\)
+**The consequence:** a POMDP over states \(S\) reduces to an MDP over belief states \(\mathcal{B} = \Delta(S)\) (the simplex of probability distributions over \(S\)). The belief-space MDP has:
+- States: beliefs \(b \in \mathcal{B}\)
 - Actions: same as before
 - Transition: the belief update (derived below)
-- Reward: \\(\rho(b, a) = \sum_s b(s) R(s, a)\\) (expected reward under current belief)
+- Reward: \(\rho(b, a) = \sum_s b(s) R(s, a)\) (expected reward under current belief)
 
-The problem: \\(\mathcal{B}\\) is continuous and, for a 30-dimensional continuous state space, infinite-dimensional. Exact solution is computationally intractable. The rest of this lesson and the next are about making this tractable.
+The problem: \(\mathcal{B}\) is continuous and, for a 30-dimensional continuous state space, infinite-dimensional. Exact solution is computationally intractable. The rest of this lesson and the next are about making this tractable.
 
 ## The belief update formula
 
-When the agent takes action \\(a\\) and receives observation \\(o\\), the belief must be updated. This is Bayes' rule applied to the POMDP structure.
+When the agent takes action \(a\) and receives observation \(o\), the belief must be updated. This is Bayes' rule applied to the POMDP structure.
 
 The exact belief update is:
 
-\\[ b'(s') = \frac{O(o \mid s', a) \sum_s T(s' \mid s, a)\, b(s)}{P(o \mid b, a)} \\]
+\[ b'(s') = \frac{O(o \mid s', a) \sum_s T(s' \mid s, a)\, b(s)}{P(o \mid b, a)} \]
 
 where the normalizing constant is:
 
-\\[ P(o \mid b, a) = \sum_{s'} O(o \mid s', a) \sum_s T(s' \mid s, a)\, b(s) \\]
+\[ P(o \mid b, a) = \sum_{s'} O(o \mid s', a) \sum_s T(s' \mid s, a)\, b(s) \]
 
 **Decoding, term by term:**
 
-- \\(b'(s')\\): the updated belief probability assigned to state \\(s'\\) after taking action \\(a\\) and receiving observation \\(o\\).
-- \\(O(o \mid s', a)\\): the likelihood of observation \\(o\\) if the true state were \\(s'\\). High if \\(o\\) is consistent with \\(s'\\), near zero if it contradicts \\(s'\\). This is the "evidence" term, the same structure as the likelihood in Bayes' rule from Module 1.
-- \\(\sum_s T(s' \mid s, a)\, b(s)\\): the **prediction step**. Before seeing \\(o\\), we predict the distribution of the next state \\(s'\\) by marginalizing over the current belief \\(b(s)\\) and the transition dynamics \\(T\\). This is the prior over \\(s'\\) before the observation arrives.
-- \\(P(o \mid b, a)\\): normalization constant, ensuring \\(b'\\) sums to 1. This is the probability of seeing observation \\(o\\) from all possible true states, weighted by the current belief and transitions.
+- \(b'(s')\): the updated belief probability assigned to state \(s'\) after taking action \(a\) and receiving observation \(o\).
+- \(O(o \mid s', a)\): the likelihood of observation \(o\) if the true state were \(s'\). High if \(o\) is consistent with \(s'\), near zero if it contradicts \(s'\). This is the "evidence" term, the same structure as the likelihood in Bayes' rule from Module 1.
+- \(\sum_s T(s' \mid s, a)\, b(s)\): the **prediction step**. Before seeing \(o\), we predict the distribution of the next state \(s'\) by marginalizing over the current belief \(b(s)\) and the transition dynamics \(T\). This is the prior over \(s'\) before the observation arrives.
+- \(P(o \mid b, a)\): normalization constant, ensuring \(b'\) sums to 1. This is the probability of seeing observation \(o\) from all possible true states, weighted by the current belief and transitions.
 
 **Connection to Bayes' rule:** The structure is identical to what you saw in Module 1:
 
-\\[ \text{posterior} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}} \\]
+\[ \text{posterior} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}} \]
 
-Here, the "prior" is \\(\sum_s T(s' \mid s, a)\, b(s)\\) (predicted next state distribution), the "likelihood" is \\(O(o \mid s', a)\\) (how surprising is this observation given each possible next state), and the "evidence" is the normalizing constant.
+Here, the "prior" is \(\sum_s T(s' \mid s, a)\, b(s)\) (predicted next state distribution), the "likelihood" is \(O(o \mid s', a)\) (how surprising is this observation given each possible next state), and the "evidence" is the normalizing constant.
 
 ### Two-step interpretation
 
 The belief update happens in two phases, which is helpful computationally:
 
 **Step 1 — Predict:** propagate the current belief through the dynamics, ignoring the new observation:
-\\[ \bar{b}(s') = \sum_s T(s' \mid s, a)\, b(s) \\]
+\[ \bar{b}(s') = \sum_s T(s' \mid s, a)\, b(s) \]
 
 This is the "prediction step" in a Kalman filter (or any Bayesian filter). Before seeing the new observation, we advance our uncertainty forward in time using the known physics.
 
 **Step 2 — Update:** weight the predicted distribution by the observation likelihood and renormalize:
-\\[ b'(s') = \frac{O(o \mid s', a)\, \bar{b}(s')}{\sum_{s''} O(o \mid s'', a)\, \bar{b}(s'')} \\]
+\[ b'(s') = \frac{O(o \mid s', a)\, \bar{b}(s')}{\sum_{s''} O(o \mid s'', a)\, \bar{b}(s'')} \]
 
 For our telescope problem: Step 1 propagates all five RSOs forward one hour via orbital mechanics, increasing position uncertainty. Step 2 collapses the uncertainty on whichever RSO was observed (using the RA/Dec measurement), while leaving the unobserved RSOs' uncertainties untouched.
 
@@ -122,11 +122,11 @@ The fully optimal solution to a POMDP is value iteration in belief space. It is 
 
 ### Exact: belief-space value iteration
 
-The value of a belief state \\(b\\) satisfies the Bellman equation:
+The value of a belief state \(b\) satisfies the Bellman equation:
 
-\\[ V^*(b) = \max_a \left[ \rho(b, a) + \gamma \sum_o P(o \mid b, a)\, V^*(\tau(b, a, o)) \right] \\]
+\[ V^*(b) = \max_a \left[ \rho(b, a) + \gamma \sum_o P(o \mid b, a)\, V^*(\tau(b, a, o)) \right] \]
 
-where \\(\tau(b, a, o)\\) is the belief update operator (the formula above). It can be shown that \\(V^*\\) is piecewise-linear and convex over the belief simplex, and is the upper envelope of finitely many hyperplanes (alpha vectors). This is the PWLC representation.
+where \(\tau(b, a, o)\) is the belief update operator (the formula above). It can be shown that \(V^*\) is piecewise-linear and convex over the belief simplex, and is the upper envelope of finitely many hyperplanes (alpha vectors). This is the PWLC representation.
 
 For small discrete state spaces (say, fewer than 50 states), this can be computed exactly. For continuous or large discrete spaces, it is intractable. The orbital mechanics problem has a continuous, 30-dimensional state space — exact methods do not apply.
 
@@ -151,7 +151,7 @@ observation_t --> [embedding layer] --> LSTM --> [Q-head] --> Q(a_1), ..., Q(a_k
                                   (carries memory across steps)
 ```
 
-The LSTM's hidden state \\(h_t\\) plays the role of the belief \\(b_t\\). It is not an explicit probability distribution — it is a learned, dense representation trained end-to-end to produce good Q-values. The memory it maintains captures exactly what is needed to make good decisions, no more and no less.
+The LSTM's hidden state \(h_t\) plays the role of the belief \(b_t\). It is not an explicit probability distribution — it is a learned, dense representation trained end-to-end to produce good Q-values. The memory it maintains captures exactly what is needed to make good decisions, no more and no less.
 
 When to use each:
 
@@ -434,8 +434,8 @@ This is the key POMDP insight: **maintaining calibrated uncertainty over unseen 
 
 The belief-space MDP has a continuous, infinite-dimensional state space (all probability distributions over the original state space). Value iteration in this space:
 
-- For \\(|S|\\) states and \\(|A|\\) actions over \\(|\Omega|\\) observations, each backup generates \\(|A| \cdot |\Omega|\\) new alpha vectors.
-- After \\(n\\) iterations, the value function is represented by up to \\(|A|^n \cdot |\Omega|^n\\) alpha vectors — exponential growth.
+- For \(|S|\) states and \(|A|\) actions over \(|\Omega|\) observations, each backup generates \(|A| \cdot |\Omega|\) new alpha vectors.
+- After \(n\) iterations, the value function is represented by up to \(|A|^n \cdot |\Omega|^n\) alpha vectors — exponential growth.
 - Pruning removes dominated alpha vectors, but the worst case is still exponential.
 
 For continuous state spaces (like our orbital mechanics problem), even the first iteration of belief-space value iteration requires integrating over an infinite state space. Exact methods fail entirely.
@@ -444,8 +444,8 @@ This is why the practical path is either (a) approximate belief representations 
 
 ## Key Takeaways
 
-- A POMDP extends an MDP with an observation function \\(O(o \mid s', a)\\) that separates the true world state from what the agent actually sees. In SSA, the true orbital state of all RSOs always exists, but you only partially observe it.
-- The belief state \\(b(s) = P(s \mid \text{history})\\) is the sufficient statistic for the observation history. Any policy that conditions on the raw history can be replaced by one that conditions on the belief, without loss.
+- A POMDP extends an MDP with an observation function \(O(o \mid s', a)\) that separates the true world state from what the agent actually sees. In SSA, the true orbital state of all RSOs always exists, but you only partially observe it.
+- The belief state \(b(s) = P(s \mid \text{history})\) is the sufficient statistic for the observation history. Any policy that conditions on the raw history can be replaced by one that conditions on the belief, without loss.
 - The belief update is two-step: predict (propagate through dynamics) then update (reweight by observation likelihood). This is Bayes' rule applied sequentially, identical in structure to the Bayesian updating from Module 1.
 - Exact POMDP solutions are computationally intractable except for small discrete problems. Practical approaches use particle filters for moderate-scale problems or recurrent neural networks (DRQN) for large-scale continuous problems.
 - Ignoring partial observability — treating the most recent observation as the full state — causes systematic errors. Unobserved parts of the state are not frozen; the world evolves while you are looking elsewhere, and a correct agent represents that uncertainty.

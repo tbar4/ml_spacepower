@@ -25,8 +25,8 @@ Those questions require knowing SGP4's accuracy envelope. That is what this less
 SGP4 (Simplified General Perturbations model 4) is a **semi-analytical propagator** designed specifically to work with TLE mean elements. "Semi-analytical" means it is not a numerical integrator — it does not step forward in time using differential equations. Instead, it is a closed-form analytical solution that computes position and velocity directly at any specified epoch without stepping through intermediate states.
 
 This distinction matters for your pipeline architecture:
-- **Numerical integrators** (like Runge-Kutta methods used in high-fidelity propagators) compute state at time \\(t + \Delta t\\) from state at time \\(t\\). They are more accurate but slower — typically microseconds to milliseconds per state evaluation, and they require careful tuning of step sizes.
-- **SGP4** computes the state at any time \\(t\\) from the TLE epoch in a single pass. The computation is extremely fast — microseconds per evaluation — making catalog-scale propagation of 50,000+ objects computationally trivial.
+- **Numerical integrators** (like Runge-Kutta methods used in high-fidelity propagators) compute state at time \(t + \Delta t\) from state at time \(t\). They are more accurate but slower — typically microseconds to milliseconds per state evaluation, and they require careful tuning of step sizes.
+- **SGP4** computes the state at any time \(t\) from the TLE epoch in a single pass. The computation is extremely fast — microseconds per evaluation — making catalog-scale propagation of 50,000+ objects computationally trivial.
 
 This speed advantage is why SGP4 dominates public SSA applications. The entire catalog can be propagated to any epoch in seconds on a single CPU core.
 

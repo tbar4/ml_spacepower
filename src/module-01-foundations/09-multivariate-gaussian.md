@@ -25,38 +25,38 @@ This lesson builds directly on the covariance intuition from Lesson 6, the matri
 
 ## The covariance matrix
 
-Start with the 2D case. Suppose you are tracking the position of an RSO in a cross-sectional plane (cross-track and radial, for example), and you have two uncertain measurements: \\(X_1\\) (cross-track position error, km) and \\(X_2\\) (radial position error, km).
+Start with the 2D case. Suppose you are tracking the position of an RSO in a cross-sectional plane (cross-track and radial, for example), and you have two uncertain measurements: \(X_1\) (cross-track position error, km) and \(X_2\) (radial position error, km).
 
 For each variable, you already know the concept of variance from Lesson 1:
 
-\\[ \text{Var}(X_1) = \mathbb{E}[(X_1 - \mu_1)^2] \\]
-\\[ \text{Var}(X_2) = \mathbb{E}[(X_2 - \mu_2)^2] \\]
+\[ \text{Var}(X_1) = \mathbb{E}[(X_1 - \mu_1)^2] \]
+\[ \text{Var}(X_2) = \mathbb{E}[(X_2 - \mu_2)^2] \]
 
 But when you have two variables, there is a third quantity: the **covariance**, which measures how much the two variables move together:
 
-\\[ \text{Cov}(X_1, X_2) = \mathbb{E}[(X_1 - \mu_1)(X_2 - \mu_2)] \\]
+\[ \text{Cov}(X_1, X_2) = \mathbb{E}[(X_1 - \mu_1)(X_2 - \mu_2)] \]
 
 **Decoding:**
 
-- \\((X_1 - \mu_1)\\): how far \\(X_1\\) deviates from its mean on a given trial.
-- \\((X_2 - \mu_2)\\): how far \\(X_2\\) deviates from its mean on the same trial.
+- \((X_1 - \mu_1)\): how far \(X_1\) deviates from its mean on a given trial.
+- \((X_2 - \mu_2)\): how far \(X_2\) deviates from its mean on the same trial.
 - Multiplied together and averaged: if they tend to deviate in the same direction (both high or both low at the same time), the product is positive on average, so covariance is positive. If they tend to deviate in opposite directions, the product is negative on average, so covariance is negative. If they are uncorrelated, the positive and negative products cancel, giving covariance near zero.
 
-The **covariance matrix** \\(\Sigma\\) assembles all variances and covariances into a single matrix. For a 2D random vector \\(\mathbf{x} = [X_1, X_2]^T\\):
+The **covariance matrix** \(\Sigma\) assembles all variances and covariances into a single matrix. For a 2D random vector \(\mathbf{x} = [X_1, X_2]^T\):
 
-\\[
-\Sigma = \begin{pmatrix} \text{Var}(X_1) & \text{Cov}(X_1, X_2) \\\\ \text{Cov}(X_2, X_1) & \text{Var}(X_2) \end{pmatrix}
-= \begin{pmatrix} \sigma_1^2 & \sigma_{12} \\\\ \sigma_{12} & \sigma_2^2 \end{pmatrix}
-\\]
+\[
+\Sigma = \begin{pmatrix} \text{Var}(X_1) & \text{Cov}(X_1, X_2) \\ \text{Cov}(X_2, X_1) & \text{Var}(X_2) \end{pmatrix}
+= \begin{pmatrix} \sigma_1^2 & \sigma_{12} \\ \sigma_{12} & \sigma_2^2 \end{pmatrix}
+\]
 
 **Decoding the structure:**
 
-- **Diagonal entries** \\(\Sigma_{ii} = \sigma_i^2\\): the variance of variable \\(i\\). These are always non-negative.
-- **Off-diagonal entries** \\(\Sigma_{ij} = \text{Cov}(X_i, X_j)\\) for \\(i \neq j\\): how much variable \\(i\\) and variable \\(j\\) move together. Positive means they increase together; negative means they move oppositely; zero means uncorrelated.
-- **Symmetry**: \\(\Sigma_{ij} = \Sigma_{ji}\\) always. Covariance of \\(X_i\\) with \\(X_j\\) is the same as covariance of \\(X_j\\) with \\(X_i\\).
-- **Positive semi-definiteness**: for any vector \\(\mathbf{v}\\), \\(\mathbf{v}^T \Sigma \mathbf{v} \geq 0\\). Geometrically this means the uncertainty ellipse cannot have negative volume. All eigenvalues of \\(\Sigma\\) are non-negative.
+- **Diagonal entries** \(\Sigma_{ii} = \sigma_i^2\): the variance of variable \(i\). These are always non-negative.
+- **Off-diagonal entries** \(\Sigma_{ij} = \text{Cov}(X_i, X_j)\) for \(i \neq j\): how much variable \(i\) and variable \(j\) move together. Positive means they increase together; negative means they move oppositely; zero means uncorrelated.
+- **Symmetry**: \(\Sigma_{ij} = \Sigma_{ji}\) always. Covariance of \(X_i\) with \(X_j\) is the same as covariance of \(X_j\) with \(X_i\).
+- **Positive semi-definiteness**: for any vector \(\mathbf{v}\), \(\mathbf{v}^T \Sigma \mathbf{v} \geq 0\). Geometrically this means the uncertainty ellipse cannot have negative volume. All eigenvalues of \(\Sigma\) are non-negative.
 
-**SSA example**: In an orbital slot, the cross-track and radial position errors of an RSO often have non-zero covariance. When the estimated orbital inclination is uncertain, the object can appear anywhere along a tilted arc in the cross-track/radial plane. If the inclination is too low, both the radial position (perigee too close) and cross-track position (below the equatorial plane at a longitude where you expected the object to be above it) will be off simultaneously in the same direction. That correlation is exactly what a positive \\(\sigma_{12}\\) encodes.
+**SSA example**: In an orbital slot, the cross-track and radial position errors of an RSO often have non-zero covariance. When the estimated orbital inclination is uncertain, the object can appear anywhere along a tilted arc in the cross-track/radial plane. If the inclination is too low, both the radial position (perigee too close) and cross-track position (below the equatorial plane at a longitude where you expected the object to be above it) will be off simultaneously in the same direction. That correlation is exactly what a positive \(\sigma_{12}\) encodes.
 
 ```python
 import torch
@@ -129,37 +129,37 @@ Note that `torch.linalg.eigvalsh` is the right function here: it is specialized 
 
 ## The multivariate Gaussian PDF
 
-For a \\(d\\)-dimensional random vector \\(\mathbf{x} \in \mathbb{R}^d\\), the multivariate Gaussian distribution with mean \\(\boldsymbol{\mu}\\) and covariance \\(\Sigma\\) has probability density:
+For a \(d\)-dimensional random vector \(\mathbf{x} \in \mathbb{R}^d\), the multivariate Gaussian distribution with mean \(\boldsymbol{\mu}\) and covariance \(\Sigma\) has probability density:
 
-\\[
+\[
 p(\mathbf{x}) = (2\pi)^{-d/2} \, |\Sigma|^{-1/2} \, \exp\!\left( -\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu}) \right)
-\\]
+\]
 
 **Decoding each piece:**
 
-**\\((2\pi)^{-d/2}\\)**: a normalization constant that grows with dimension. It ensures the density integrates to 1 over all of \\(\mathbb{R}^d\\). In 1D (d=1), this is \\(\frac{1}{\sqrt{2\pi}}\\), which you recognize from the 1D Gaussian.
+**\((2\pi)^{-d/2}\)**: a normalization constant that grows with dimension. It ensures the density integrates to 1 over all of \(\mathbb{R}^d\). In 1D (d=1), this is \(\frac{1}{\sqrt{2\pi}}\), which you recognize from the 1D Gaussian.
 
-**\\(|\Sigma|^{-1/2}\\)**: the inverse square root of the determinant of \\(\Sigma\\). The determinant \\(|\Sigma|\\) measures the "volume" of the uncertainty ellipsoid. A large determinant (spread-out distribution) makes the density lower overall; a small determinant (tight distribution) makes the density higher, concentrating probability mass more sharply. Dividing by this ensures the total probability is 1 regardless of how spread out \\(\Sigma\\) is.
+**\(|\Sigma|^{-1/2}\)**: the inverse square root of the determinant of \(\Sigma\). The determinant \(|\Sigma|\) measures the "volume" of the uncertainty ellipsoid. A large determinant (spread-out distribution) makes the density lower overall; a small determinant (tight distribution) makes the density higher, concentrating probability mass more sharply. Dividing by this ensures the total probability is 1 regardless of how spread out \(\Sigma\) is.
 
-**\\(\exp(\cdots)\\)**: the exponential is always positive and equals 1 at its maximum (when \\(\mathbf{x} = \boldsymbol{\mu}\\)), decaying toward zero as \\(\mathbf{x}\\) moves away from \\(\boldsymbol{\mu}\\).
+**\(\exp(\cdots)\)**: the exponential is always positive and equals 1 at its maximum (when \(\mathbf{x} = \boldsymbol{\mu}\)), decaying toward zero as \(\mathbf{x}\) moves away from \(\boldsymbol{\mu}\).
 
-**\\((\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\\)**: this is the **Mahalanobis distance squared**. It is the scalar quantity inside the exponent, and it is the key to understanding how the multivariate Gaussian differs from a simple product of independent Gaussians.
+**\((\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\)**: this is the **Mahalanobis distance squared**. It is the scalar quantity inside the exponent, and it is the key to understanding how the multivariate Gaussian differs from a simple product of independent Gaussians.
 
 ### The Mahalanobis distance
 
-The **Mahalanobis distance** of a point \\(\mathbf{x}\\) from the mean \\(\boldsymbol{\mu}\\) is:
+The **Mahalanobis distance** of a point \(\mathbf{x}\) from the mean \(\boldsymbol{\mu}\) is:
 
-\\[
+\[
 d_M(\mathbf{x}, \boldsymbol{\mu}) = \sqrt{(\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})}
-\\]
+\]
 
 **Decoding:**
 
-- If \\(\Sigma = I\\) (identity matrix, all dimensions independent with unit variance), then \\(\Sigma^{-1} = I\\) and \\(d_M = \|\mathbf{x} - \boldsymbol{\mu}\|_2\\): the ordinary Euclidean distance.
-- When \\(\Sigma\\) is not the identity, \\(\Sigma^{-1}\\) rescales and rotates the difference vector so that dimensions with larger variance are "shrunk" before computing the distance. An observation 2 km away along a direction with 4 km standard deviation is "closer" (in Mahalanobis terms) than one 2 km away along a direction with 1 km standard deviation.
-- The Mahalanobis distance answers: "How many standard deviations (accounting for the full correlation structure) is \\(\mathbf{x}\\) from the mean?" It is the multivariate generalization of "how many sigmas away is this?"
+- If \(\Sigma = I\) (identity matrix, all dimensions independent with unit variance), then \(\Sigma^{-1} = I\) and \(d_M = \|\mathbf{x} - \boldsymbol{\mu}\|_2\): the ordinary Euclidean distance.
+- When \(\Sigma\) is not the identity, \(\Sigma^{-1}\) rescales and rotates the difference vector so that dimensions with larger variance are "shrunk" before computing the distance. An observation 2 km away along a direction with 4 km standard deviation is "closer" (in Mahalanobis terms) than one 2 km away along a direction with 1 km standard deviation.
+- The Mahalanobis distance answers: "How many standard deviations (accounting for the full correlation structure) is \(\mathbf{x}\) from the mean?" It is the multivariate generalization of "how many sigmas away is this?"
 
-**SSA example**: your RSO tracking system reports a mean position \\(\boldsymbol{\mu}\\) and covariance \\(\Sigma\\) for an object in GEO. A ground telescope reports a candidate detection at position \\(\mathbf{x}_A\\) (2 km from \\(\boldsymbol{\mu}\\) in the radial direction) and another candidate at \\(\mathbf{x}_B\\) (2 km from \\(\boldsymbol{\mu}\\) in the along-track direction). Euclidean distance calls these equal. But if radial uncertainty is 5 km (large, common in GEO) while along-track uncertainty is 0.5 km (tight), then \\(\mathbf{x}_A\\) is only 0.4 Mahalanobis sigmas away while \\(\mathbf{x}_B\\) is 4 Mahalanobis sigmas away. Candidate \\(\mathbf{x}_B\\) is a much more surprising observation; it is far less likely to be the same object.
+**SSA example**: your RSO tracking system reports a mean position \(\boldsymbol{\mu}\) and covariance \(\Sigma\) for an object in GEO. A ground telescope reports a candidate detection at position \(\mathbf{x}_A\) (2 km from \(\boldsymbol{\mu}\) in the radial direction) and another candidate at \(\mathbf{x}_B\) (2 km from \(\boldsymbol{\mu}\) in the along-track direction). Euclidean distance calls these equal. But if radial uncertainty is 5 km (large, common in GEO) while along-track uncertainty is 0.5 km (tight), then \(\mathbf{x}_A\) is only 0.4 Mahalanobis sigmas away while \(\mathbf{x}_B\) is 4 Mahalanobis sigmas away. Candidate \(\mathbf{x}_B\) is a much more surprising observation; it is far less likely to be the same object.
 
 ```python
 import torch
@@ -244,15 +244,15 @@ fn main() {
 
 ## The uncertainty ellipse and ellipsoid
 
-The Mahalanobis distance gives a natural way to describe the shape of a multivariate Gaussian. The set of all points \\(\mathbf{x}\\) at Mahalanobis distance exactly \\(k\\) from \\(\boldsymbol{\mu}\\) satisfies:
+The Mahalanobis distance gives a natural way to describe the shape of a multivariate Gaussian. The set of all points \(\mathbf{x}\) at Mahalanobis distance exactly \(k\) from \(\boldsymbol{\mu}\) satisfies:
 
-\\[
+\[
 (\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu}) = k^2
-\\]
+\]
 
-In 2D, this is an **ellipse**. In 3D, it is an **ellipsoid**. The axes of this ellipse/ellipsoid are the eigenvectors of \\(\Sigma\\), and the half-lengths of the axes are proportional to \\(\sqrt{\lambda_i}\\) where \\(\lambda_i\\) are the eigenvalues. A large eigenvalue means the distribution is spread far in that eigenvector direction.
+In 2D, this is an **ellipse**. In 3D, it is an **ellipsoid**. The axes of this ellipse/ellipsoid are the eigenvectors of \(\Sigma\), and the half-lengths of the axes are proportional to \(\sqrt{\lambda_i}\) where \(\lambda_i\) are the eigenvalues. A large eigenvalue means the distribution is spread far in that eigenvector direction.
 
-**Decoding:** The eigenvectors of \\(\Sigma\\) point in the "natural axes" of the uncertainty. If the covariance matrix is diagonal, those axes align with the coordinate axes. If \\(\Sigma\\) has off-diagonal entries, the ellipse is tilted — the natural axes of uncertainty are rotated relative to the coordinate frame.
+**Decoding:** The eigenvectors of \(\Sigma\) point in the "natural axes" of the uncertainty. If the covariance matrix is diagonal, those axes align with the coordinate axes. If \(\Sigma\) has off-diagonal entries, the ellipse is tilted — the natural axes of uncertainty are rotated relative to the coordinate frame.
 
 ### The 68-95-99.7 rule does not directly generalize to multiple dimensions
 
@@ -260,9 +260,9 @@ In 1D, 68% of probability mass falls within 1 sigma of the mean. In multiple dim
 
 - In **2D**: the 1-sigma ellipse contains approximately **39%** of the probability mass.
 - In **3D**: the 1-sigma ellipsoid contains approximately **20%** of the probability mass.
-- In **d** dimensions, the fraction inside the k-sigma ellipsoid is the chi-squared CDF with d degrees of freedom evaluated at \\(k^2\\).
+- In **d** dimensions, the fraction inside the k-sigma ellipsoid is the chi-squared CDF with d degrees of freedom evaluated at \(k^2\).
 
-The reason: in higher dimensions, most of the probability mass concentrates in a shell away from the center (the "curse of dimensionality" for Gaussians). The 95% containment ellipse in 2D has Mahalanobis radius \\(\sqrt{5.99} \approx 2.45\\), not 2.
+The reason: in higher dimensions, most of the probability mass concentrates in a shell away from the center (the "curse of dimensionality" for Gaussians). The 95% containment ellipse in 2D has Mahalanobis radius \(\sqrt{5.99} \approx 2.45\), not 2.
 
 **SSA example**: a conjunction message reports the combined position uncertainty covariance of two RSOs in the conjunction plane. The reported 1-sigma ellipse encloses only about 39% of possible relative-position outcomes. When analysts speak of "the 3-sigma ellipse" they typically mean the ellipse with Mahalanobis radius 3, which in 2D encloses about 98.9% of probability mass. Conflating this with the 1D rule (where 3-sigma captures 99.7%) leads to underestimates of conjunction risk.
 
@@ -312,45 +312,45 @@ One of the most important properties of the multivariate Gaussian is that it is 
 
 ### Marginalizing out dimensions
 
-Suppose \\(\mathbf{x} = [\mathbf{x}_a, \mathbf{x}_b]^T \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\\) where we partition the vector into two parts. The marginal distribution over \\(\mathbf{x}_a\\) is:
+Suppose \(\mathbf{x} = [\mathbf{x}_a, \mathbf{x}_b]^T \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\) where we partition the vector into two parts. The marginal distribution over \(\mathbf{x}_a\) is:
 
-\\[
+\[
 p(\mathbf{x}_a) = \mathcal{N}(\mathbf{x}_a \mid \boldsymbol{\mu}_a, \Sigma_{aa})
-\\]
+\]
 
-where \\(\boldsymbol{\mu}_a\\) is the subvector of \\(\boldsymbol{\mu}\\) corresponding to the \\(\mathbf{x}_a\\) dimensions, and \\(\Sigma_{aa}\\) is the corresponding submatrix of \\(\Sigma\\). You literally just extract the relevant rows and columns — no integration required.
+where \(\boldsymbol{\mu}_a\) is the subvector of \(\boldsymbol{\mu}\) corresponding to the \(\mathbf{x}_a\) dimensions, and \(\Sigma_{aa}\) is the corresponding submatrix of \(\Sigma\). You literally just extract the relevant rows and columns — no integration required.
 
 ### Conditioning on observations
 
-Now suppose you observe \\(\mathbf{x}_b = \mathbf{b}\\) (you measure part of the state). The conditional distribution of \\(\mathbf{x}_a\\) given this observation is:
+Now suppose you observe \(\mathbf{x}_b = \mathbf{b}\) (you measure part of the state). The conditional distribution of \(\mathbf{x}_a\) given this observation is:
 
-\\[
+\[
 p(\mathbf{x}_a \mid \mathbf{x}_b = \mathbf{b}) = \mathcal{N}(\mathbf{x}_a \mid \boldsymbol{\mu}_{a|b}, \Sigma_{a|b})
-\\]
+\]
 
 where the conditional mean and covariance are:
 
-\\[
+\[
 \boldsymbol{\mu}_{a|b} = \boldsymbol{\mu}_a + \Sigma_{ab} \Sigma_{bb}^{-1} (\mathbf{b} - \boldsymbol{\mu}_b)
-\\]
+\]
 
-\\[
+\[
 \Sigma_{a|b} = \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
-\\]
+\]
 
 **Decoding the conditional mean:**
 
-- \\((\mathbf{b} - \boldsymbol{\mu}_b)\\): the innovation — how far the observed \\(\mathbf{b}\\) is from what you expected.
-- \\(\Sigma_{bb}^{-1}(\mathbf{b} - \boldsymbol{\mu}_b)\\): the innovation normalized by the prior uncertainty in \\(\mathbf{b}\\).
-- \\(\Sigma_{ab} \Sigma_{bb}^{-1}(\mathbf{b} - \boldsymbol{\mu}_b)\\): "how much does observing a deviation in \\(\mathbf{b}\\) tell me to shift my estimate of \\(\mathbf{a}\\)?" The cross-covariance \\(\Sigma_{ab}\\) propagates the information.
-- If \\(\Sigma_{ab} = 0\\) (the two parts are uncorrelated), the observation of \\(\mathbf{b}\\) tells you nothing about \\(\mathbf{a}\\) and the mean does not shift.
+- \((\mathbf{b} - \boldsymbol{\mu}_b)\): the innovation — how far the observed \(\mathbf{b}\) is from what you expected.
+- \(\Sigma_{bb}^{-1}(\mathbf{b} - \boldsymbol{\mu}_b)\): the innovation normalized by the prior uncertainty in \(\mathbf{b}\).
+- \(\Sigma_{ab} \Sigma_{bb}^{-1}(\mathbf{b} - \boldsymbol{\mu}_b)\): "how much does observing a deviation in \(\mathbf{b}\) tell me to shift my estimate of \(\mathbf{a}\)?" The cross-covariance \(\Sigma_{ab}\) propagates the information.
+- If \(\Sigma_{ab} = 0\) (the two parts are uncorrelated), the observation of \(\mathbf{b}\) tells you nothing about \(\mathbf{a}\) and the mean does not shift.
 
 **Decoding the conditional covariance:**
 
-- \\(\Sigma_{aa}\\): your prior uncertainty about \\(\mathbf{a}\\).
-- \\(\Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}\\): the uncertainty reduction from observing \\(\mathbf{b}\\). This is always non-negative (the subtracted term is positive semi-definite), so the posterior is always at least as certain as the prior. Observing correlated variables can only reduce uncertainty.
+- \(\Sigma_{aa}\): your prior uncertainty about \(\mathbf{a}\).
+- \(\Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}\): the uncertainty reduction from observing \(\mathbf{b}\). This is always non-negative (the subtracted term is positive semi-definite), so the posterior is always at least as certain as the prior. Observing correlated variables can only reduce uncertainty.
 
-**SSA example**: you have a 4D state uncertainty over (range, range-rate, azimuth, elevation) for an RSO. Your telescope reports a measurement of azimuth and elevation. Conditioning the 4D Gaussian on the observed (azimuth, elevation) = \\(\mathbf{b}\\) gives you an updated 2D distribution over (range, range-rate). This is precisely the Kalman filter measurement update step — the formulas above are the Kalman update in disguise when the measurement model is linear.
+**SSA example**: you have a 4D state uncertainty over (range, range-rate, azimuth, elevation) for an RSO. Your telescope reports a measurement of azimuth and elevation. Conditioning the 4D Gaussian on the observed (azimuth, elevation) = \(\mathbf{b}\) gives you an updated 2D distribution over (range, range-rate). This is precisely the Kalman filter measurement update step — the formulas above are the Kalman update in disguise when the measurement model is linear.
 
 ```python
 import torch
@@ -417,22 +417,22 @@ print(f"\nPosterior eigenvalues (all >= 0): {evals.tolist()}")
 
 ## Sampling via Cholesky decomposition
 
-To draw samples from \\(\mathcal{N}(\boldsymbol{\mu}, \Sigma)\\), the standard approach uses the **Cholesky decomposition** of \\(\Sigma\\): find the lower triangular matrix \\(L\\) such that \\(LL^T = \Sigma\\). This is the matrix "square root" of \\(\Sigma\\).
+To draw samples from \(\mathcal{N}(\boldsymbol{\mu}, \Sigma)\), the standard approach uses the **Cholesky decomposition** of \(\Sigma\): find the lower triangular matrix \(L\) such that \(LL^T = \Sigma\). This is the matrix "square root" of \(\Sigma\).
 
 The sampling algorithm is:
-1. Compute \\(L = \text{cholesky}(\Sigma)\\)
-2. Draw \\(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\\) (a vector of independent standard normals — trivial to sample)
-3. Return \\(\mathbf{x} = L\mathbf{z} + \boldsymbol{\mu}\\)
+1. Compute \(L = \text{cholesky}(\Sigma)\)
+2. Draw \(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\) (a vector of independent standard normals — trivial to sample)
+3. Return \(\mathbf{x} = L\mathbf{z} + \boldsymbol{\mu}\)
 
 **Why this works — decoding the linear transformation rule:**
 
-If \\(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\\) and \\(\mathbf{x} = L\mathbf{z} + \boldsymbol{\mu}\\), then:
-- Mean of \\(\mathbf{x}\\): \\(\mathbb{E}[\mathbf{x}] = L \cdot \mathbf{0} + \boldsymbol{\mu} = \boldsymbol{\mu}\\). Correct.
-- Covariance of \\(\mathbf{x}\\): \\(\text{Cov}(\mathbf{x}) = L \cdot I \cdot L^T = LL^T = \Sigma\\). Correct.
+If \(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\) and \(\mathbf{x} = L\mathbf{z} + \boldsymbol{\mu}\), then:
+- Mean of \(\mathbf{x}\): \(\mathbb{E}[\mathbf{x}] = L \cdot \mathbf{0} + \boldsymbol{\mu} = \boldsymbol{\mu}\). Correct.
+- Covariance of \(\mathbf{x}\): \(\text{Cov}(\mathbf{x}) = L \cdot I \cdot L^T = LL^T = \Sigma\). Correct.
 
-So \\(\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\\), exactly as desired. The Cholesky factor \\(L\\) stretches and rotates the isotropic (spherical) samples from \\(\mathcal{N}(\mathbf{0}, I)\\) into the correct elongated, correlated shape.
+So \(\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\), exactly as desired. The Cholesky factor \(L\) stretches and rotates the isotropic (spherical) samples from \(\mathcal{N}(\mathbf{0}, I)\) into the correct elongated, correlated shape.
 
-The Cholesky decomposition is covered in Deisenroth et al. Chapter 4.3. Computationally, it is much faster than forming \\(\Sigma^{1/2}\\) via eigendecomposition, and it is numerically stable for well-conditioned covariance matrices. PyTorch exposes it as `torch.linalg.cholesky`.
+The Cholesky decomposition is covered in Deisenroth et al. Chapter 4.3. Computationally, it is much faster than forming \(\Sigma^{1/2}\) via eigendecomposition, and it is numerically stable for well-conditioned covariance matrices. PyTorch exposes it as `torch.linalg.cholesky`.
 
 ```python
 import torch
@@ -497,25 +497,25 @@ print(f"\nMax absolute difference between manual and builtin sample covariances:
 # Should be very small -- both are Monte Carlo estimates of the same quantity
 ```
 
-**Connection to Module 07**: when the particle filter is initialized, it draws N particles from the prior belief distribution \\(\mathcal{N}(\boldsymbol{\mu}_0, \Sigma_0)\\). The Cholesky sampling algorithm above is exactly how that initialization works. Each particle is one sample from the prior — a plausible initial state for the tracked object, consistent with the initial uncertainty.
+**Connection to Module 07**: when the particle filter is initialized, it draws N particles from the prior belief distribution \(\mathcal{N}(\boldsymbol{\mu}_0, \Sigma_0)\). The Cholesky sampling algorithm above is exactly how that initialization works. Each particle is one sample from the prior — a plausible initial state for the tracked object, consistent with the initial uncertainty.
 
 ---
 
 ## Linear transformations of a Gaussian
 
-The Cholesky argument generalized: if \\(\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\\) and \\(\mathbf{y} = A\mathbf{x} + \mathbf{b}\\) for some matrix \\(A\\) and vector \\(\mathbf{b}\\), then:
+The Cholesky argument generalized: if \(\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\) and \(\mathbf{y} = A\mathbf{x} + \mathbf{b}\) for some matrix \(A\) and vector \(\mathbf{b}\), then:
 
-\\[
+\[
 \mathbf{y} \sim \mathcal{N}(A\boldsymbol{\mu} + \mathbf{b}, \, A\Sigma A^T)
-\\]
+\]
 
 **Decoding:**
 
-- **Mean transforms linearly**: \\(\mathbb{E}[\mathbf{y}] = A\boldsymbol{\mu} + \mathbf{b}\\). The mean just gets the same transformation as any individual point.
-- **Covariance transforms as \\(A\Sigma A^T\\)**: the \\(A\\) on the left and \\(A^T\\) on the right "wrap around" the original covariance. The transpose appears because covariance is a quadratic object — it involves products of deviations, and each deviation gets transformed by \\(A\\).
-- **The bias \\(\mathbf{b}\\) does not affect the covariance**: shifting every sample by the same constant does not change how spread out they are.
+- **Mean transforms linearly**: \(\mathbb{E}[\mathbf{y}] = A\boldsymbol{\mu} + \mathbf{b}\). The mean just gets the same transformation as any individual point.
+- **Covariance transforms as \(A\Sigma A^T\)**: the \(A\) on the left and \(A^T\) on the right "wrap around" the original covariance. The transpose appears because covariance is a quadratic object — it involves products of deviations, and each deviation gets transformed by \(A\).
+- **The bias \(\mathbf{b}\) does not affect the covariance**: shifting every sample by the same constant does not change how spread out they are.
 
-**SSA application — frame transformation**: conjunction probability is computed in the conjunction plane frame (the RSW or B-plane frame), not in the ECI frame where orbital state is propagated. To convert a covariance from ECI to RSW frame, you apply a rotation matrix \\(R\\). Since rotation matrices are orthogonal (\\(R^T = R^{-1}\\)), the transformed covariance is \\(R\Sigma R^T\\).
+**SSA application — frame transformation**: conjunction probability is computed in the conjunction plane frame (the RSW or B-plane frame), not in the ECI frame where orbital state is propagated. To convert a covariance from ECI to RSW frame, you apply a rotation matrix \(R\). Since rotation matrices are orthogonal (\(R^T = R^{-1}\)), the transformed covariance is \(R\Sigma R^T\).
 
 This is the standard preprocessing step in any conjunction probability computation: propagate the state in ECI with its full 6×6 covariance, then rotate to the conjunction plane to get the 2D covariance that governs the collision geometry.
 
@@ -614,43 +614,43 @@ The marginal/conditional formulas from Section 5 are the heart of the Kalman fil
 
 **Prior**: your current belief about the state is:
 
-\\[
+\[
 \mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{prior}}, \Sigma_{\text{prior}})
-\\]
+\]
 
-**Observation model**: the measurement \\(\mathbf{y}\\) is a noisy linear function of the state:
+**Observation model**: the measurement \(\mathbf{y}\) is a noisy linear function of the state:
 
-\\[
+\[
 \mathbf{y} = H\mathbf{x} + \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, R)
-\\]
+\]
 
-where \\(H\\) is the measurement matrix and \\(R\\) is the measurement noise covariance.
+where \(H\) is the measurement matrix and \(R\) is the measurement noise covariance.
 
-**Posterior**: after observing \\(\mathbf{y} = \mathbf{y}_\text{obs}\\), the posterior is also Gaussian:
+**Posterior**: after observing \(\mathbf{y} = \mathbf{y}_\text{obs}\), the posterior is also Gaussian:
 
-\\[
+\[
 \mathbf{x} \mid \mathbf{y}_\text{obs} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{post}}, \Sigma_{\text{post}})
-\\]
+\]
 
 with the **Kalman update equations**:
 
-\\[
+\[
 K = \Sigma_{\text{prior}} H^T (H \Sigma_{\text{prior}} H^T + R)^{-1}
-\\]
+\]
 
-\\[
+\[
 \boldsymbol{\mu}_{\text{post}} = \boldsymbol{\mu}_{\text{prior}} + K(\mathbf{y}_\text{obs} - H\boldsymbol{\mu}_{\text{prior}})
-\\]
+\]
 
-\\[
+\[
 \Sigma_{\text{post}} = (I - KH)\Sigma_{\text{prior}}
-\\]
+\]
 
-The matrix \\(K\\) is the **Kalman gain**: it controls how much the observation shifts the estimate. Compare this to the conditional mean formula from Section 5 — they are the same update, written in terms of the cross-covariance \\(\Sigma_{\text{prior}} H^T\\) and the innovation variance \\(H\Sigma_{\text{prior}} H^T + R\\).
+The matrix \(K\) is the **Kalman gain**: it controls how much the observation shifts the estimate. Compare this to the conditional mean formula from Section 5 — they are the same update, written in terms of the cross-covariance \(\Sigma_{\text{prior}} H^T\) and the innovation variance \(H\Sigma_{\text{prior}} H^T + R\).
 
 **Why the Gaussian is special**: it is the only continuous distribution that stays Gaussian under two operations simultaneously:
 
-1. **Linear transformations**: \\(A\mathbf{x} + \mathbf{b}\\) is Gaussian if \\(\mathbf{x}\\) is Gaussian (shown above).
+1. **Linear transformations**: \(A\mathbf{x} + \mathbf{b}\) is Gaussian if \(\mathbf{x}\) is Gaussian (shown above).
 2. **Gaussian likelihoods**: multiplying a Gaussian prior by a Gaussian likelihood (as in Bayesian updating with additive Gaussian noise) gives a Gaussian posterior.
 
 This "closed under linear-Gaussian operations" property is precisely why the Kalman filter has exact analytical solutions. If either the dynamics or the noise were non-Gaussian, you would need numerical approximations (particle filters, unscented Kalman filters, etc.) — exactly what Module 07 covers.
@@ -667,13 +667,13 @@ This "closed under linear-Gaussian operations" property is precisely why the Kal
 
 - **The Mahalanobis distance is the right measure of "how surprising is this observation."** It accounts for the shape of the uncertainty ellipsoid, unlike Euclidean distance. An observation that is 3 km away in a direction with 5 km standard deviation is closer (in Mahalanobis terms) than one 3 km away in a direction with 0.5 km standard deviation. Any data association task in SSA — matching sensor observations to catalog objects — should use Mahalanobis distance, not Euclidean distance.
 
-- **The uncertainty ellipsoid is the geometric picture of the covariance.** Its axes are the eigenvectors of \\(\Sigma\\); its axis half-lengths are \\(\sqrt{\lambda_i}\\). The 68-95-99.7 rule for 1D Gaussians does not transfer directly to multiple dimensions: the 1-sigma ellipse in 2D contains only about 39% of probability mass. In d dimensions, containment probabilities follow the chi-squared distribution with d degrees of freedom.
+- **The uncertainty ellipsoid is the geometric picture of the covariance.** Its axes are the eigenvectors of \(\Sigma\); its axis half-lengths are \(\sqrt{\lambda_i}\). The 68-95-99.7 rule for 1D Gaussians does not transfer directly to multiple dimensions: the 1-sigma ellipse in 2D contains only about 39% of probability mass. In d dimensions, containment probabilities follow the chi-squared distribution with d degrees of freedom.
 
-- **Marginals and conditionals of a Gaussian are Gaussian.** Marginalizing out dimensions is trivially done by extracting the relevant submatrix of \\(\Sigma\\). Conditioning on observations applies the Gaussian conditioning formulas and reduces uncertainty in the remaining dimensions. This is the mathematical core of the Kalman filter: Bayesian updating with a linear observation model and Gaussian noise has a closed-form Gaussian solution.
+- **Marginals and conditionals of a Gaussian are Gaussian.** Marginalizing out dimensions is trivially done by extracting the relevant submatrix of \(\Sigma\). Conditioning on observations applies the Gaussian conditioning formulas and reduces uncertainty in the remaining dimensions. This is the mathematical core of the Kalman filter: Bayesian updating with a linear observation model and Gaussian noise has a closed-form Gaussian solution.
 
-- **Cholesky decomposition is the standard way to sample from a multivariate Gaussian.** Factor \\(\Sigma = LL^T\\), draw \\(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\\), return \\(L\mathbf{z} + \boldsymbol{\mu}\\). The linear transformation rule — \\(\text{Cov}(L\mathbf{z}) = LL^T = \Sigma\\) — explains why this works. In Module 07, this is the exact algorithm used to initialize particle clouds around the prior belief state.
+- **Cholesky decomposition is the standard way to sample from a multivariate Gaussian.** Factor \(\Sigma = LL^T\), draw \(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)\), return \(L\mathbf{z} + \boldsymbol{\mu}\). The linear transformation rule — \(\text{Cov}(L\mathbf{z}) = LL^T = \Sigma\) — explains why this works. In Module 07, this is the exact algorithm used to initialize particle clouds around the prior belief state.
 
-- **Linear transformations map Gaussians to Gaussians via the \\(A\Sigma A^T\\) rule.** The mean transforms linearly; the covariance "wraps around" the transformation matrix. Rotating a covariance from ECI to RSW frame, propagating uncertainty through a linear dynamics model, or projecting a 3D covariance onto the 2D conjunction plane all follow this rule. It is the single most-used formula in the computational pipeline for SSA conjunction probability.
+- **Linear transformations map Gaussians to Gaussians via the \(A\Sigma A^T\) rule.** The mean transforms linearly; the covariance "wraps around" the transformation matrix. Rotating a covariance from ECI to RSW frame, propagating uncertainty through a linear dynamics model, or projecting a 3D covariance onto the 2D conjunction plane all follow this rule. It is the single most-used formula in the computational pipeline for SSA conjunction probability.
 
 ---
 

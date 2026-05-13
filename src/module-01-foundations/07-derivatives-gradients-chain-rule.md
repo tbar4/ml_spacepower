@@ -28,32 +28,32 @@ That is the question a derivative answers. The **derivative** of h with respect 
 
 "If I change t by a tiny amount Δt (delta-t, a small change), the altitude changes by approximately h'(t) × Δt."
 
-The notation \\(h'(t)\\) (read "h prime of t") is one way to write the derivative. Another common notation is \\(\frac{dh}{dt}\\) (read "dh by dt"), which emphasizes that we are asking how much h changes per unit change in t.
+The notation \(h'(t)\) (read "h prime of t") is one way to write the derivative. Another common notation is \(\frac{dh}{dt}\) (read "dh by dt"), which emphasizes that we are asking how much h changes per unit change in t.
 
 ### A concrete simple example
 
-Let the altitude function be \\(h(t) = t^2\\) (a simple made-up example for illustration).
+Let the altitude function be \(h(t) = t^2\) (a simple made-up example for illustration).
 
-At \\(t = 3\\) seconds:
-- Current altitude: \\(h(3) = 3^2 = 9\\) km
-- One second later: \\(h(4) = 4^2 = 16\\) km
+At \(t = 3\) seconds:
+- Current altitude: \(h(3) = 3^2 = 9\) km
+- One second later: \(h(4) = 4^2 = 16\) km
 - Change over 1 second: 16 - 9 = 7 km
 
 If we zoom in to a much smaller interval (0.01 seconds):
-- \\(h(3.01) = 3.01^2 = 9.0601\\) km
+- \(h(3.01) = 3.01^2 = 9.0601\) km
 - Change over 0.01 seconds: 9.0601 - 9 = 0.0601 km
 - Rate of change: 0.0601 / 0.01 = 6.01 km/s
 
 If we zoom in even more (0.001 seconds):
-- \\(h(3.001) = 3.001^2 = 9.006001\\) km
+- \(h(3.001) = 3.001^2 = 9.006001\) km
 - Change over 0.001 seconds: 9.006001 - 9 = 0.006001 km
 - Rate of change: 0.006001 / 0.001 = 6.001 km/s
 
-As we take smaller and smaller intervals, the rate of change converges to exactly 6 km/s. **The derivative of \\(h(t) = t^2\\) at \\(t = 3\\) is 6.**
+As we take smaller and smaller intervals, the rate of change converges to exactly 6 km/s. **The derivative of \(h(t) = t^2\) at \(t = 3\) is 6.**
 
-This derivative can be computed using calculus rules that you do not need to derive yourself. For the function \\(h(t) = t^2\\), the derivative is \\(h'(t) = 2t\\). At \\(t = 3\\): \\(h'(3) = 2 \times 3 = 6\\). This matches what we computed numerically.
+This derivative can be computed using calculus rules that you do not need to derive yourself. For the function \(h(t) = t^2\), the derivative is \(h'(t) = 2t\). At \(t = 3\): \(h'(3) = 2 \times 3 = 6\). This matches what we computed numerically.
 
-**The derivative as slope**: if you plotted \\(h(t)\\) on a graph and drew a tangent line at \\(t = 3\\), the slope of that tangent line would be 6. That is all a derivative is: the slope of the function at a specific point.
+**The derivative as slope**: if you plotted \(h(t)\) on a graph and drew a tangent line at \(t = 3\), the slope of that tangent line would be 6. That is all a derivative is: the slope of the function at a specific point.
 
 Key interpretations of the derivative:
 
@@ -67,23 +67,23 @@ Key interpretations of the derivative:
 
 The "zooming in" process in the example above has a formal mathematical expression. The derivative is defined as:
 
-\\[ h'(t) = \lim_{\Delta t \to 0} \frac{h(t + \Delta t) - h(t)}{\Delta t} \\]
+\[ h'(t) = \lim_{\Delta t \to 0} \frac{h(t + \Delta t) - h(t)}{\Delta t} \]
 
 **Decoding:**
 
-**\\(\lim_{\Delta t \to 0}\\)**: "The limit as Δt approaches zero." We are taking the ratio \\(\frac{h(t + \Delta t) - h(t)}{\Delta t}\\) and seeing what value it converges to as Δt gets arbitrarily small.
+**\(\lim_{\Delta t \to 0}\)**: "The limit as Δt approaches zero." We are taking the ratio \(\frac{h(t + \Delta t) - h(t)}{\Delta t}\) and seeing what value it converges to as Δt gets arbitrarily small.
 
-**\\(h(t + \Delta t) - h(t)\\)**: The change in h when t increases by Δt — the numerator of the ratio.
+**\(h(t + \Delta t) - h(t)\)**: The change in h when t increases by Δt — the numerator of the ratio.
 
-**\\(\Delta t\\)**: The change in t — the denominator.
+**\(\Delta t\)**: The change in t — the denominator.
 
 **The whole fraction**: the average rate of change of h over a small interval [t, t + Δt]. As Δt → 0, this converges to the instantaneous rate of change: the derivative.
 
 This formula is not just academic. It is exactly what **numerical gradient checking** computes — an approximation of the derivative by using a very small but finite Δt (called epsilon). The **central difference approximation** is more accurate than the one-sided formula above:
 
-\\[ h'(t) \approx \frac{h(t + \varepsilon) - h(t - \varepsilon)}{2\varepsilon} \\]
+\[ h'(t) \approx \frac{h(t + \varepsilon) - h(t - \varepsilon)}{2\varepsilon} \]
 
-**Decoding:** By using \\(t + \varepsilon\\) and \\(t - \varepsilon\\) symmetrically around \\(t\\), we cancel the first-order error term. The result is accurate to \\(O(\varepsilon^2)\\) rather than \\(O(\varepsilon)\\).
+**Decoding:** By using \(t + \varepsilon\) and \(t - \varepsilon\) symmetrically around \(t\), we cancel the first-order error term. The result is accurate to \(O(\varepsilon^2)\) rather than \(O(\varepsilon)\).
 
 ```python
 import torch
@@ -146,7 +146,7 @@ fn main() {
 }
 ```
 
-Functions are passed as `impl Fn(f64) -> f64` — any closure or named function fits. `(-t).exp()` computes \\(e^{-t}\\) using `f64::exp`.
+Functions are passed as `impl Fn(f64) -> f64` — any closure or named function fits. `(-t).exp()` computes \(e^{-t}\) using `f64::exp`.
 
 Kneusel's *Math for Deep Learning* Ch. 8 covers numerical differentiation in depth and explains when the finite difference approximation can fail due to floating-point precision (when ε is too small, subtraction of nearly equal numbers loses precision).
 
@@ -163,7 +163,7 @@ score = f(x₁, x₂, x₃, x₄)
 
 The output depends on all four inputs simultaneously. A derivative asks "how does the output change if I vary one input?" When there are multiple inputs, we need to specify which input we are varying. That is what a **partial derivative** does.
 
-The partial derivative of \\(f\\) with respect to \\(x_1\\) is written \\(\frac{\partial f}{\partial x_1}\\) (using the curly ∂ instead of d to indicate "partial"). It means: "how does f change if I vary \\(x_1\\) while holding \\(x_2, x_3, x_4\\) fixed?"
+The partial derivative of \(f\) with respect to \(x_1\) is written \(\frac{\partial f}{\partial x_1}\) (using the curly ∂ instead of d to indicate "partial"). It means: "how does f change if I vary \(x_1\) while holding \(x_2, x_3, x_4\) fixed?"
 
 The curly ∂ symbol (called "del" or "partial") is just a stylistic convention to distinguish partial derivatives from regular derivatives. It means the same thing: rate of change, but with respect to one specific variable.
 
@@ -171,36 +171,36 @@ The curly ∂ symbol (called "del" or "partial") is just a stylistic convention 
 
 Let us use a simple two-variable function: the combined risk score:
 
-\\[ \text{risk} = f(c, d) = c^2 + 2cd + d \\]
+\[ \text{risk} = f(c, d) = c^2 + 2cd + d \]
 
 where c = conjunction_risk and d = debris_density.
 
 At the point (c = 0.5, d = 0.3):
-- \\(f(0.5, 0.3) = 0.5^2 + 2(0.5)(0.3) + 0.3 = 0.25 + 0.30 + 0.30 = 0.85\\)
+- \(f(0.5, 0.3) = 0.5^2 + 2(0.5)(0.3) + 0.3 = 0.25 + 0.30 + 0.30 = 0.85\)
 
 **Partial derivative with respect to c** (∂f/∂c):
 
 Treat d as a constant and differentiate with respect to c:
-- \\(c^2\\) differentiates to \\(2c\\)
-- \\(2cd\\) differentiates to \\(2d\\) (since d is treated as a constant)
-- \\(d\\) differentiates to \\(0\\) (no c dependence)
+- \(c^2\) differentiates to \(2c\)
+- \(2cd\) differentiates to \(2d\) (since d is treated as a constant)
+- \(d\) differentiates to \(0\) (no c dependence)
 
-Result: \\(\frac{\partial f}{\partial c} = 2c + 2d\\)
+Result: \(\frac{\partial f}{\partial c} = 2c + 2d\)
 
-At our point: \\(2(0.5) + 2(0.3) = 1.0 + 0.6 = 1.6\\)
+At our point: \(2(0.5) + 2(0.3) = 1.0 + 0.6 = 1.6\)
 
 This means: if I increase conjunction_risk by a small amount while keeping debris_density fixed, the risk score increases by approximately 1.6 times that amount.
 
 **Partial derivative with respect to d** (∂f/∂d):
 
 Treat c as a constant:
-- \\(c^2\\) → 0 (no d dependence)
-- \\(2cd\\) → 2c (c is constant)
-- \\(d\\) → 1
+- \(c^2\) → 0 (no d dependence)
+- \(2cd\) → 2c (c is constant)
+- \(d\) → 1
 
-Result: \\(\frac{\partial f}{\partial d} = 2c + 1\\)
+Result: \(\frac{\partial f}{\partial d} = 2c + 1\)
 
-At our point: \\(2(0.5) + 1 = 2.0\\)
+At our point: \(2(0.5) + 1 = 2.0\)
 
 This means: if I increase debris_density by a small amount while keeping conjunction_risk fixed, the risk score increases by approximately 2.0 times that amount.
 
@@ -212,25 +212,25 @@ You do not need to re-derive derivatives from the limit definition every time. C
 
 | Rule | Formula | Example |
 |------|---------|---------|
-| **Power rule** | \\(\frac{d}{dx}[x^n] = n x^{n-1}\\) | \\(\frac{d}{dx}[x^3] = 3x^2\\) |
-| **Constant rule** | \\(\frac{d}{dx}[c] = 0\\) | \\(\frac{d}{dx}[5] = 0\\) |
-| **Sum rule** | \\(\frac{d}{dx}[f + g] = f' + g'\\) | \\(\frac{d}{dx}[x^2 + x] = 2x + 1\\) |
-| **Product rule** | \\(\frac{d}{dx}[f \cdot g] = f'g + fg'\\) | \\(\frac{d}{dx}[x^2 \cdot \sin x] = 2x\sin x + x^2 \cos x\\) |
-| **Chain rule** | \\(\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}\\) | \\(\frac{d}{dx}[(2x+1)^2] = 2(2x+1) \cdot 2\\) |
-| **Exponential** | \\(\frac{d}{dx}[e^x] = e^x\\) | The exponential is its own derivative |
-| **Natural log** | \\(\frac{d}{dx}[\ln x] = \frac{1}{x}\\) | \\(\frac{d}{dx}[\ln(wx)] = \frac{1}{x}\\) for constant w |
+| **Power rule** | \(\frac{d}{dx}[x^n] = n x^{n-1}\) | \(\frac{d}{dx}[x^3] = 3x^2\) |
+| **Constant rule** | \(\frac{d}{dx}[c] = 0\) | \(\frac{d}{dx}[5] = 0\) |
+| **Sum rule** | \(\frac{d}{dx}[f + g] = f' + g'\) | \(\frac{d}{dx}[x^2 + x] = 2x + 1\) |
+| **Product rule** | \(\frac{d}{dx}[f \cdot g] = f'g + fg'\) | \(\frac{d}{dx}[x^2 \cdot \sin x] = 2x\sin x + x^2 \cos x\) |
+| **Chain rule** | \(\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}\) | \(\frac{d}{dx}[(2x+1)^2] = 2(2x+1) \cdot 2\) |
+| **Exponential** | \(\frac{d}{dx}[e^x] = e^x\) | The exponential is its own derivative |
+| **Natural log** | \(\frac{d}{dx}[\ln x] = \frac{1}{x}\) | \(\frac{d}{dx}[\ln(wx)] = \frac{1}{x}\) for constant w |
 
 **Derivatives of common ML activation functions:**
 
 | Function | Definition | Derivative |
 |----------|-----------|-----------|
-| **Sigmoid** \\(\sigma(x)\\) | \\(\frac{1}{1 + e^{-x}}\\) | \\(\sigma(x)(1 - \sigma(x))\\) |
-| **ReLU** | \\(\max(0, x)\\) | \\(1\\) if \\(x > 0\\), else \\(0\\) |
-| **Tanh** | \\(\frac{e^x - e^{-x}}{e^x + e^{-x}}\\) | \\(1 - \tanh^2(x)\\) |
-| **Leaky ReLU** | \\(x\\) if \\(x > 0\\), else \\(\alpha x\\) | \\(1\\) if \\(x > 0\\), else \\(\alpha\\) |
-| **Softplus** | \\(\ln(1 + e^x)\\) | \\(\sigma(x)\\) (sigmoid!) |
+| **Sigmoid** \(\sigma(x)\) | \(\frac{1}{1 + e^{-x}}\) | \(\sigma(x)(1 - \sigma(x))\) |
+| **ReLU** | \(\max(0, x)\) | \(1\) if \(x > 0\), else \(0\) |
+| **Tanh** | \(\frac{e^x - e^{-x}}{e^x + e^{-x}}\) | \(1 - \tanh^2(x)\) |
+| **Leaky ReLU** | \(x\) if \(x > 0\), else \(\alpha x\) | \(1\) if \(x > 0\), else \(\alpha\) |
+| **Softplus** | \(\ln(1 + e^x)\) | \(\sigma(x)\) (sigmoid!) |
 
-Two key observations: (1) The derivative of sigmoid is expressible in terms of sigmoid itself — very convenient for backpropagation, since you already have \\(\sigma(x)\\) from the forward pass. (2) ReLU's derivative is undefined exactly at 0, but in practice PyTorch returns 0 there, and it does not matter numerically.
+Two key observations: (1) The derivative of sigmoid is expressible in terms of sigmoid itself — very convenient for backpropagation, since you already have \(\sigma(x)\) from the forward pass. (2) ReLU's derivative is undefined exactly at 0, but in practice PyTorch returns 0 there, and it does not matter numerically.
 
 ```python
 import torch
@@ -302,23 +302,23 @@ The PyTorch autograd verification (`.backward()`) has no equivalent here — tha
 
 ## The gradient: all partial derivatives together
 
-The **gradient** collects all the partial derivatives of a function into a single vector. For a function \\(f(x_1, x_2, \ldots, x_n)\\), the gradient is:
+The **gradient** collects all the partial derivatives of a function into a single vector. For a function \(f(x_1, x_2, \ldots, x_n)\), the gradient is:
 
-\\[ \nabla f = \left( \frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, \ldots, \frac{\partial f}{\partial x_n} \right) \\]
+\[ \nabla f = \left( \frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, \ldots, \frac{\partial f}{\partial x_n} \right) \]
 
 **Decoding:**
 
-**\\(\nabla f\\)**: The gradient of f. The symbol ∇ is called "nabla" or "del." Read it as "the gradient of f" or "grad f."
+**\(\nabla f\)**: The gradient of f. The symbol ∇ is called "nabla" or "del." Read it as "the gradient of f" or "grad f."
 
-**\\(\left( \ldots \right)\\)**: A vector (the parentheses enclose the components of the gradient vector).
+**\(\left( \ldots \right)\)**: A vector (the parentheses enclose the components of the gradient vector).
 
-**\\(\frac{\partial f}{\partial x_i}\\)**: The partial derivative with respect to the i-th input. This is one component of the gradient vector.
+**\(\frac{\partial f}{\partial x_i}\)**: The partial derivative with respect to the i-th input. This is one component of the gradient vector.
 
 **Reading in English**: "The gradient is a vector containing the partial derivative of f with respect to each of its inputs."
 
 For our risk function at (c = 0.5, d = 0.3):
 
-\\[ \nabla f = \left( \frac{\partial f}{\partial c}, \frac{\partial f}{\partial d} \right) = (1.6, 2.0) \\]
+\[ \nabla f = \left( \frac{\partial f}{\partial c}, \frac{\partial f}{\partial d} \right) = (1.6, 2.0) \]
 
 **What the gradient tells you**: the gradient points in the direction that increases f most steeply. Each component of the gradient tells you how sensitive f is to changes in that input. A large gradient component means f is very sensitive to that input. A small component means f barely changes when that input changes.
 
@@ -328,23 +328,23 @@ For gradient descent (the training algorithm for neural networks), you want to m
 
 ## The chain rule: derivatives through compositions
 
-Neural networks are compositions of functions. The input goes through layer 1, then layer 2, then layer 3, and so on. Each layer applies \\(W\mathbf{x} + \mathbf{b}\\) followed by a nonlinearity. If you want to compute how the final output (the loss) changes as you change a weight in layer 1, you need to trace the effect all the way through every subsequent layer.
+Neural networks are compositions of functions. The input goes through layer 1, then layer 2, then layer 3, and so on. Each layer applies \(W\mathbf{x} + \mathbf{b}\) followed by a nonlinearity. If you want to compute how the final output (the loss) changes as you change a weight in layer 1, you need to trace the effect all the way through every subsequent layer.
 
 The **chain rule** tells you how to do this.
 
 **Simple case: two composed functions**
 
-If \\(y = f(u)\\) and \\(u = g(x)\\), so overall \\(y = f(g(x))\\), then:
+If \(y = f(u)\) and \(u = g(x)\), so overall \(y = f(g(x))\), then:
 
-\\[ \frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx} \\]
+\[ \frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx} \]
 
 **Decoding:**
 
-**\\(\frac{dy}{dx}\\)**: How much does y change per unit change in x? This is what we want.
+**\(\frac{dy}{dx}\)**: How much does y change per unit change in x? This is what we want.
 
-**\\(\frac{dy}{du}\\)**: How much does y change per unit change in u? We can compute this from the definition of f.
+**\(\frac{dy}{du}\)**: How much does y change per unit change in u? We can compute this from the definition of f.
 
-**\\(\frac{du}{dx}\\)**: How much does u change per unit change in x? We can compute this from the definition of g.
+**\(\frac{du}{dx}\)**: How much does u change per unit change in x? We can compute this from the definition of g.
 
 **The multiplication**: the rate of change of y with respect to x is the product of these two rates.
 
@@ -352,36 +352,36 @@ If \\(y = f(u)\\) and \\(u = g(x)\\), so overall \\(y = f(g(x))\\), then:
 
 ### Working through an example
 
-Let \\(y = (2x + 1)^2\\).
+Let \(y = (2x + 1)^2\).
 
 We can split this into two operations:
-1. \\(u = 2x + 1\\) (the inner function g)
-2. \\(y = u^2\\) (the outer function f)
+1. \(u = 2x + 1\) (the inner function g)
+2. \(y = u^2\) (the outer function f)
 
 **Step 1: find du/dx**
 
-\\(u = 2x + 1\\). The derivative of 2x is 2 (constant times x), and the derivative of 1 is 0. So:
+\(u = 2x + 1\). The derivative of 2x is 2 (constant times x), and the derivative of 1 is 0. So:
 
-\\[ \frac{du}{dx} = 2 \\]
+\[ \frac{du}{dx} = 2 \]
 
 **Step 2: find dy/du**
 
-\\(y = u^2\\). The derivative of \\(u^2\\) with respect to u is \\(2u\\):
+\(y = u^2\). The derivative of \(u^2\) with respect to u is \(2u\):
 
-\\[ \frac{dy}{du} = 2u \\]
+\[ \frac{dy}{du} = 2u \]
 
 **Step 3: apply the chain rule**
 
-\\[ \frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx} = 2u \cdot 2 = 4u = 4(2x + 1) \\]
+\[ \frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx} = 2u \cdot 2 = 4u = 4(2x + 1) \]
 
 **Step 4: verify with a numerical check**
 
-At \\(x = 1\\): \\(y = (2 \cdot 1 + 1)^2 = 9\\)
-At \\(x = 1.001\\): \\(y = (2 \cdot 1.001 + 1)^2 = (3.002)^2 = 9.012\\)
+At \(x = 1\): \(y = (2 \cdot 1 + 1)^2 = 9\)
+At \(x = 1.001\): \(y = (2 \cdot 1.001 + 1)^2 = (3.002)^2 = 9.012\)
 
 Rate of change ≈ (9.012 - 9) / 0.001 = 12.0
 
-Analytic answer at x = 1: \\(4(2 \cdot 1 + 1) = 4 \times 3 = 12\\). They match.
+Analytic answer at x = 1: \(4(2 \cdot 1 + 1) = 4 \times 3 = 12\). They match.
 
 ```python
 import torch
@@ -403,9 +403,9 @@ The idea: compute the gradient analytically (via your code or autograd), then co
 
 **The test statistic:**
 
-\\[ \text{relative error} = \frac{|\text{grad}_{analytic} - \text{grad}_{numeric}|}{\max(|\text{grad}_{analytic}|, |\text{grad}_{numeric}|)} \\]
+\[ \text{relative error} = \frac{|\text{grad}_{analytic} - \text{grad}_{numeric}|}{\max(|\text{grad}_{analytic}|, |\text{grad}_{numeric}|)} \]
 
-If this is below \\(10^{-5}\\), your gradients are almost certainly correct. Between \\(10^{-5}\\) and \\(10^{-3}\\), suspect a bug. Above \\(10^{-3}\\), you have a bug.
+If this is below \(10^{-5}\), your gradients are almost certainly correct. Between \(10^{-5}\) and \(10^{-3}\), suspect a bug. Above \(10^{-3}\), you have a bug.
 
 ```python
 import torch
@@ -507,7 +507,7 @@ In practice, when implementing a new loss function or custom layer for SSA (for 
 
 When you write `y.backward()`, PyTorch walks backward through the computational graph it recorded during the forward pass, applying the chain rule at each operation. This is **backpropagation**.
 
-The graph for \\(y = (2x + 1)^2\\) looks like:
+The graph for \(y = (2x + 1)^2\) looks like:
 
 ```
 x → [multiply by 2] → [add 1] → u → [square] → y
@@ -528,13 +528,13 @@ Every neural network, regardless of how many layers, uses this same backward wal
 
 So far we have taken derivatives of scalar-valued functions: one number in, one number out (or a vector in, one number out). But what if the function maps a vector to a vector?
 
-For a function \\(f: \mathbb{R}^n \to \mathbb{R}^m\\) (n inputs, m outputs), the derivative is a matrix called the **Jacobian**:
+For a function \(f: \mathbb{R}^n \to \mathbb{R}^m\) (n inputs, m outputs), the derivative is a matrix called the **Jacobian**:
 
-\\[ J_{ij} = \frac{\partial f_i}{\partial x_j} \\]
+\[ J_{ij} = \frac{\partial f_i}{\partial x_j} \]
 
 The Jacobian is an m × n matrix. Row i corresponds to output i. Column j corresponds to input j. Entry [i, j] is the partial derivative of output i with respect to input j.
 
-**Decoding:** The Jacobian generalizes "slope" to vector-valued functions. Where a scalar derivative tells you "how much does this one output change per unit change in this one input?", the Jacobian tells you "how does each output change per unit change in each input?" The gradient \\(\nabla f\\) is the special case where m = 1 (one output): it is a 1 × n Jacobian, which we normally write as a length-n vector.
+**Decoding:** The Jacobian generalizes "slope" to vector-valued functions. Where a scalar derivative tells you "how much does this one output change per unit change in this one input?", the Jacobian tells you "how does each output change per unit change in each input?" The gradient \(\nabla f\) is the special case where m = 1 (one output): it is a 1 × n Jacobian, which we normally write as a length-n vector.
 
 In backpropagation, when a layer transforms a vector (not a scalar), the Jacobian appears in the gradient calculation. The gradient of the loss with respect to the layer's input is the layer's Jacobian transposed, times the gradient of the loss with respect to the layer's output.
 
@@ -574,7 +574,7 @@ The Jacobian of coordinate transformations between reference frames (Cartesian t
 
 Here is a full gradient descent step on a simple problem, showing every part:
 
-**Problem**: find the value of x that minimizes \\(L(x) = (x - 3)^2\\). The minimum is clearly at x = 3, but we will find it by gradient descent.
+**Problem**: find the value of x that minimizes \(L(x) = (x - 3)^2\). The minimum is clearly at x = 3, but we will find it by gradient descent.
 
 ```python
 import torch
@@ -626,7 +626,7 @@ Each step, x gets closer to 3 and L gets closer to 0. By step 10, x is very clos
 
 In the single-variable example above, we computed the gradient using the entire problem (one point). In realistic ML problems, you have a dataset of N examples and a loss that averages over them:
 
-\\[ L(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell(\theta; x_i, y_i) \\]
+\[ L(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell(\theta; x_i, y_i) \]
 
 There are three strategies for computing this gradient:
 
@@ -703,7 +703,7 @@ for epoch in range(5):
 # vs. full-batch's 1 update. More updates per epoch → faster convergence.
 ```
 
-The mini-batch approach updates the model parameters \\(\lfloor N / \text{batch\_size} \rfloor\\) times per pass through the data. Those frequent updates — even though each one uses a noisy gradient estimate — typically produce faster overall convergence than the single precise update of full-batch GD. The noise also helps: noisy gradient descent tends to escape local minima more readily than exact gradient descent.
+The mini-batch approach updates the model parameters \(\lfloor N / \text{batch\_size} \rfloor\) times per pass through the data. Those frequent updates — even though each one uses a noisy gradient estimate — typically produce faster overall convergence than the single precise update of full-batch GD. The noise also helps: noisy gradient descent tends to escape local minima more readily than exact gradient descent.
 
 ---
 
@@ -735,7 +735,7 @@ Kneusel's *Math for Deep Learning* Ch. 7–8 goes deeper on both the calculus an
 
 ## Key Takeaways
 
-* **The derivative is the slope at a point.** The formal limit definition is what numerical gradient checking computes using a finite ε. The central difference approximation \\((f(x+\varepsilon) - f(x-\varepsilon)) / 2\varepsilon\\) is more accurate than one-sided differences and is the standard for gradient checking.
+* **The derivative is the slope at a point.** The formal limit definition is what numerical gradient checking computes using a finite ε. The central difference approximation \((f(x+\varepsilon) - f(x-\varepsilon)) / 2\varepsilon\) is more accurate than one-sided differences and is the standard for gradient checking.
 
 * **Partial derivatives hold all other inputs fixed.** The gradient vector collects all partial derivatives of a scalar function. It points in the direction of steepest ascent. Gradient descent steps in the opposite direction.
 
@@ -743,7 +743,7 @@ Kneusel's *Math for Deep Learning* Ch. 7–8 goes deeper on both the calculus an
 
 * **The differentiation rules cheat sheet is your constant companion.** Power rule, sum rule, product rule, chain rule, and the derivatives of sigmoid/ReLU/tanh are enough to analyze any standard network architecture analytically.
 
-* **Gradient checking is your first debugging tool for custom components.** If the relative error between numerical and analytical gradients exceeds \\(10^{-5}\\), there is a bug in your gradient code. Use double precision (float64) for gradient checks to reduce numerical noise.
+* **Gradient checking is your first debugging tool for custom components.** If the relative error between numerical and analytical gradients exceeds \(10^{-5}\), there is a bug in your gradient code. Use double precision (float64) for gradient checks to reduce numerical noise.
 
 * **The Jacobian generalizes the gradient to vector-valued functions.** It is an m × n matrix of partial derivatives. In backprop, the Jacobian of each layer appears in the gradient calculation. In orbit determination, the Jacobian of the measurement model is the H matrix in the extended Kalman filter.
 

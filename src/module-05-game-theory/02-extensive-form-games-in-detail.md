@@ -76,16 +76,16 @@ Bob has 4 information sets total. He gets more information than Alice (he sees h
 
 In CFR and other extensive-form game algorithms, a player's **strategy** is a function from their information sets to probability distributions over actions:
 
-\\[ \sigma_i(I) \in \Delta(A(I)) \\]
+\[ \sigma_i(I) \in \Delta(A(I)) \]
 
 **Decoding:**
-- \\(\sigma_i\\): the strategy of player i (sigma is conventional notation for a strategy)
-- \\(I\\): an information set
-- \\(\Delta(A(I))\\): the set of probability distributions over the actions available at information set I
+- \(\sigma_i\): the strategy of player i (sigma is conventional notation for a strategy)
+- \(I\): an information set
+- \(\Delta(A(I))\): the set of probability distributions over the actions available at information set I
 
 For our game, Alice's strategy is two probability distributions:
-- \\(\sigma_A(\text{Alice high}) = (p_M, p_H)\\): probability of maneuver and hold when Alice has high mission
-- \\(\sigma_A(\text{Alice low}) = (q_M, q_H)\\): probability of maneuver and hold when Alice has low mission
+- \(\sigma_A(\text{Alice high}) = (p_M, p_H)\): probability of maneuver and hold when Alice has high mission
+- \(\sigma_A(\text{Alice low}) = (q_M, q_H)\): probability of maneuver and hold when Alice has low mission
 
 Bob's strategy is four probability distributions, one per information set.
 
@@ -108,9 +108,9 @@ For a node deep in the tree, the reach probability is the product of:
 - The strategy probabilities of the actions along the path (each player's strategy applied to the relevant action)
 
 Formally, the reach probability is decomposed:
-- \\(\pi^c(h)\\): chance reach probability (product of chance probabilities on path to h)
-- \\(\pi_i^\sigma(h)\\): player i's reach probability (product of player i's strategy probabilities on path to h)
-- \\(\pi^\sigma(h) = \pi^c(h) \cdot \prod_i \pi_i^\sigma(h)\\): total reach probability
+- \(\pi^c(h)\): chance reach probability (product of chance probabilities on path to h)
+- \(\pi_i^\sigma(h)\): player i's reach probability (product of player i's strategy probabilities on path to h)
+- \(\pi^\sigma(h) = \pi^c(h) \cdot \prod_i \pi_i^\sigma(h)\): total reach probability
 
 The reach probability tells you how much the game "weights" each node when computing expected payoffs. Nodes with high reach probability contribute more to expected outcomes than nodes with low reach probability.
 
@@ -120,7 +120,7 @@ Here is a concept that is crucial for CFR but takes some unpacking. The **counte
 
 Specifically, it is the product of chance probabilities and all OTHER players' strategy probabilities along the path:
 
-\\[ \pi_{-i}^\sigma(I) = \pi^c(I) \cdot \prod_{j \neq i} \pi_j^\sigma(I) \\]
+\[ \pi_{-i}^\sigma(I) = \pi^c(I) \cdot \prod_{j \neq i} \pi_j^\sigma(I) \]
 
 The "-i" subscript means "everyone except player i." We are computing the probability of reaching this information set assuming player i played to reach it, while all other players played their strategies normally.
 
@@ -132,9 +132,9 @@ The math gets thick here. The intuition: we want to update strategies based on h
 
 The **expected payoff** for player i under strategy profile σ is the average payoff over all terminal nodes, weighted by reach probability:
 
-\\[ u_i(\sigma) = \sum_{z \in Z} \pi^\sigma(z) \cdot u_i(z) \\]
+\[ u_i(\sigma) = \sum_{z \in Z} \pi^\sigma(z) \cdot u_i(z) \]
 
-where Z is the set of terminal nodes and \\(u_i(z)\\) is player i's payoff at terminal node z.
+where Z is the set of terminal nodes and \(u_i(z)\) is player i's payoff at terminal node z.
 
 Players try to maximize this expected payoff. CFR's job is to find a strategy profile σ where everyone is approximately maximizing simultaneously: a Nash equilibrium.
 
@@ -212,18 +212,18 @@ The SPE analysis correctly identifies that credibility depends on the actual pay
 
 ### Formal definition of an information set
 
-An **information set** \\(I\\) for player \\(i\\) is a set of decision nodes \\(\{h_1, h_2, \ldots, h_k\}\\) such that:
-1. All nodes in \\(I\\) belong to player \\(i\\) (same player moves at each).
-2. The same actions are available at every node in \\(I\\).
-3. Player \\(i\\) cannot distinguish between the nodes within \\(I\\) based on their observable history.
+An **information set** \(I\) for player \(i\) is a set of decision nodes \(\{h_1, h_2, \ldots, h_k\}\) such that:
+1. All nodes in \(I\) belong to player \(i\) (same player moves at each).
+2. The same actions are available at every node in \(I\).
+3. Player \(i\) cannot distinguish between the nodes within \(I\) based on their observable history.
 
-**Decoding:** condition 3 is the key one. It says that if the game reaches any node in \\(I\\), player \\(i\\) only knows "I am at some node in \\(I\\)" but not which specific node. Their strategy must therefore be the same at all nodes in \\(I\\) — they cannot condition on information they do not have.
+**Decoding:** condition 3 is the key one. It says that if the game reaches any node in \(I\), player \(i\) only knows "I am at some node in \(I\)" but not which specific node. Their strategy must therefore be the same at all nodes in \(I\) — they cannot condition on information they do not have.
 
 In our Alice–Bob conjunction game, Alice's information set 1 contains two nodes: (chance says A=high, B=high, Alice's turn) and (chance says A=high, B=low, Alice's turn). Alice knows she is high-priority but not whether Bob is high or low priority. Both nodes are in the same information set because, from Alice's perspective, they are indistinguishable.
 
 ### Perfect recall
 
-A player has **perfect recall** if they always remember their own past actions and observations. Formally, within an information set, all nodes must have identical sequences of (player \\(i\\)'s actions, information sets) along the path from the root.
+A player has **perfect recall** if they always remember their own past actions and observations. Formally, within an information set, all nodes must have identical sequences of (player \(i\)'s actions, information sets) along the path from the root.
 
 Perfect recall is standard in game theory and in CFR: it ensures that information sets have a well-behaved structure that supports the counterfactual reasoning CFR relies on.
 
@@ -245,14 +245,14 @@ In SSA, the classic partial observability scenario is a satellite-vs-jammer hide
 
 ## Reach probabilities: detailed computation
 
-Given a strategy profile \\(\sigma\\), the reach probability \\(\pi^\sigma(h)\\) of a history \\(h\\) is computed as a product over all actions taken along the path from the root to \\(h\\):
+Given a strategy profile \(\sigma\), the reach probability \(\pi^\sigma(h)\) of a history \(h\) is computed as a product over all actions taken along the path from the root to \(h\):
 
-\\[ \pi^\sigma(h) = \prod_{h' \cdot a \sqsubseteq h} \sigma_{P(h')}(h', a) \\]
+\[ \pi^\sigma(h) = \prod_{h' \cdot a \sqsubseteq h} \sigma_{P(h')}(h', a) \]
 
 **Decoding:**
-- \\(h' \cdot a \sqsubseteq h\\): "the action \\(a\\) taken from history \\(h'\\) is a prefix of \\(h\\)" — this iterates over all (history, action) pairs on the path from root to \\(h\\)
-- \\(P(h')\\): the player (or chance) whose turn it is at \\(h'\\)
-- \\(\sigma_{P(h')}(h', a)\\): the probability that player \\(P(h')\\) takes action \\(a\\) at \\(h'\\) under strategy \\(\sigma\\)
+- \(h' \cdot a \sqsubseteq h\): "the action \(a\) taken from history \(h'\) is a prefix of \(h\)" — this iterates over all (history, action) pairs on the path from root to \(h\)
+- \(P(h')\): the player (or chance) whose turn it is at \(h'\)
+- \(\sigma_{P(h')}(h', a)\): the probability that player \(P(h')\) takes action \(a\) at \(h'\) under strategy \(\sigma\)
 
 The product telescopes through the tree: each edge on the path contributes a factor equal to the probability of the action that edge represents.
 
@@ -262,7 +262,7 @@ Reach probabilities perform two roles in CFR:
 
 1. **Weighting the contribution of terminal nodes to expected payoffs.** Terminal nodes with high reach probability matter more; nodes that are never reached (probability 0) do not matter at all.
 
-2. **Weighting the counterfactual regret updates.** When computing regret at information set \\(I\\) for player \\(i\\), CFR weights the update by the counterfactual reach \\(\pi_{-i}^\sigma(I)\\). Information sets that are reachable mostly because of the opponent's and chance's play get more weight in the regret update than sets the opponent actively avoids.
+2. **Weighting the counterfactual regret updates.** When computing regret at information set \(I\) for player \(i\), CFR weights the update by the counterfactual reach \(\pi_{-i}^\sigma(I)\). Information sets that are reachable mostly because of the opponent's and chance's play get more weight in the regret update than sets the opponent actively avoids.
 
 ## Code: an extensive-form game class
 
@@ -494,7 +494,7 @@ Running this code reveals the structure:
 - **Subgame perfect equilibrium** refines Nash equilibrium by requiring that strategies remain Nash equilibria in every subgame — this eliminates non-credible threats by applying backward induction throughout the tree.
 - **Perfect recall** means players remember their own past actions and observations; without it, information sets can become internally inconsistent, breaking the standard CFR assumptions and making Nash equilibrium computation significantly harder.
 - The **reach probability** of a node is the product of all action probabilities (both chance and players) along the path from the root; it determines how much each terminal node contributes to expected payoffs.
-- The **counterfactual reach probability** \\(\pi_{-i}^\sigma(I)\\) is the product of chance and all opponents' action probabilities — it is the key weighting factor in CFR's regret updates, capturing how often an information set would be reached if player \\(i\\) were trying to reach it.
+- The **counterfactual reach probability** \(\pi_{-i}^\sigma(I)\) is the product of chance and all opponents' action probabilities — it is the key weighting factor in CFR's regret updates, capturing how often an information set would be reached if player \(i\) were trying to reach it.
 - Strategies in extensive-form games are functions from **information sets** (not individual nodes) to action distributions; this distinction from RL policies is what allows CFR to handle imperfect-information games.
 
 ## Quiz

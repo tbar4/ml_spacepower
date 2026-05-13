@@ -116,13 +116,13 @@ for epoch in range(num_epochs):
 
 Instead of a step function, the LR oscillates smoothly from `eta_max` down to `eta_min` following a cosine curve over `T_max` epochs. This is one of the most reliable schedules in practice: it explores broadly at the start, refines carefully at the end, and restarts are optional.
 
-\\[ \eta_t = \eta_{\min} + \frac{1}{2}(\eta_{\max} - \eta_{\min})\left(1 + \cos\left(\frac{t \cdot \pi}{T_{\max}}\right)\right) \\]
+\[ \eta_t = \eta_{\min} + \frac{1}{2}(\eta_{\max} - \eta_{\min})\left(1 + \cos\left(\frac{t \cdot \pi}{T_{\max}}\right)\right) \]
 
 **Decoding:**
-- **\\(\eta_{\max}\\)**: the starting (maximum) learning rate
-- **\\(\eta_{\min}\\)**: the floor (minimum) learning rate — commonly 0 or a small fraction of \\(\eta_{\max}\\)
-- **\\(T_{\max}\\)**: the number of epochs for one full cosine cycle
-- **\\(\cos(\cdot)\\)**: the cosine function decays from 1 to -1 over \\([0, \pi]\\), mapping to LR decaying from \\(\eta_{\max}\\) to \\(\eta_{\min}\\)
+- **\(\eta_{\max}\)**: the starting (maximum) learning rate
+- **\(\eta_{\min}\)**: the floor (minimum) learning rate — commonly 0 or a small fraction of \(\eta_{\max}\)
+- **\(T_{\max}\)**: the number of epochs for one full cosine cycle
+- **\(\cos(\cdot)\)**: the cosine function decays from 1 to -1 over \([0, \pi]\), mapping to LR decaying from \(\eta_{\max}\) to \(\eta_{\min}\)
 
 ```python
 optimizer  = torch.optim.Adam(model.parameters(), lr=1e-3)

@@ -29,7 +29,7 @@ The answer is almost certainly that you forgot to convert from TEME to J2000. Th
 
 ## Why coordinate frames matter
 
-A Cartesian position vector \\((x, y, z)\\) implicitly assumes three things:
+A Cartesian position vector \((x, y, z)\) implicitly assumes three things:
 
 1. An **origin** — the point (0, 0, 0) is "here"
 2. An **orientation** — the x, y, z axes point in specific directions
@@ -37,7 +37,7 @@ A Cartesian position vector \\((x, y, z)\\) implicitly assumes three things:
 
 All the orbital mechanics frames we care about share Earth's center as origin and use kilometers. The differences are entirely in axis orientation — which directions do x, y, and z point?
 
-The practical consequence: if you have a position vector \\(\mathbf{r}_1\\) in frame A and a position vector \\(\mathbf{r}_2\\) in frame B, the difference \\(\mathbf{r}_1 - \mathbf{r}_2\\) tells you nothing about the actual spatial separation between the objects unless A and B are the same frame. Converting between frames requires a rotation matrix (and sometimes an additional correction for Earth's rotation).
+The practical consequence: if you have a position vector \(\mathbf{r}_1\) in frame A and a position vector \(\mathbf{r}_2\) in frame B, the difference \(\mathbf{r}_1 - \mathbf{r}_2\) tells you nothing about the actual spatial separation between the objects unless A and B are the same frame. Converting between frames requires a rotation matrix (and sometimes an additional correction for Earth's rotation).
 
 ---
 
@@ -74,9 +74,9 @@ The specific ECI frame used in modern SDA work is the **GCRF (Geocentric Celesti
 
 **Converting ECI to ECEF**: the transformation requires knowing the Earth's rotation angle at the specific epoch. The key quantity is the **Greenwich Mean Sidereal Time (GMST)** — the angle between the prime meridian and the vernal equinox direction. GMST rotates at approximately 360°/86164 seconds (one sidereal day). The conversion is a single rotation around the Z axis by the GMST angle:
 
-\\[ \mathbf{r}_\text{ECEF} = R_z(\theta_\text{GMST}) \cdot \mathbf{r}_\text{ECI} \\]
+\[ \mathbf{r}_\text{ECEF} = R_z(\theta_\text{GMST}) \cdot \mathbf{r}_\text{ECI} \]
 
-where \\(R_z(\theta)\\) is a rotation matrix around the Z axis. For more precise conversions, polar motion corrections and Earth rotation irregularities are included (IERS corrections), but for SDA applications the GMST rotation is usually sufficient.
+where \(R_z(\theta)\) is a rotation matrix around the Z axis. For more precise conversions, polar motion corrections and Earth rotation irregularities are included (IERS corrections), but for SDA applications the GMST rotation is usually sufficient.
 
 ---
 
@@ -115,9 +115,9 @@ The RTN frame (also called RIC: Radial-In-track-Cross-track) is the frame in whi
 - **Radial (R) uncertainty** is typically the smallest for well-tracked objects — direct radar ranging constrains the radial distance well.
 - **Cross-track (N) uncertainty** is typically intermediate.
 
-This structure means the CDM covariance matrix in RTN is nearly diagonal, with \\(C_{TT} \gg C_{NN} > C_{RR}\\) in the position block. In ECI, the same covariance would be dense and rotation-dependent — harder to interpret and harder to validate.
+This structure means the CDM covariance matrix in RTN is nearly diagonal, with \(C_{TT} \gg C_{NN} > C_{RR}\) in the position block. In ECI, the same covariance would be dense and rotation-dependent — harder to interpret and harder to validate.
 
-**Reading a CDM covariance matrix**: CDMs provide a 6×6 covariance matrix in RTN for each object. The matrix is ordered [R, T, N, Ṙ, Ṫ, Ṅ] — position first, then velocity. The [0,0] element is radial position variance (\\(\sigma_R^2\\)), the [1,1] element is along-track position variance (\\(\sigma_T^2\\)), and the [2,2] element is cross-track position variance (\\(\sigma_N^2\\)).
+**Reading a CDM covariance matrix**: CDMs provide a 6×6 covariance matrix in RTN for each object. The matrix is ordered [R, T, N, Ṙ, Ṫ, Ṅ] — position first, then velocity. The [0,0] element is radial position variance (\(\sigma_R^2\)), the [1,1] element is along-track position variance (\(\sigma_T^2\)), and the [2,2] element is cross-track position variance (\(\sigma_N^2\)).
 
 **The conjunction plane**: for Pc calculation, the combined position uncertainty is projected onto the conjunction plane — the plane perpendicular to the relative velocity vector at TCA. In a typical LEO head-on encounter, the relative velocity is nearly along the T direction of one of the objects. The large along-track uncertainty (T) projects primarily along the relative velocity direction, which — because objects pass through this direction quickly — has relatively little effect on Pc. The cross-track and radial uncertainties, which are smaller in magnitude, determine how spread the position PDF is in the conjunction plane.
 

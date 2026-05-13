@@ -11,9 +11,9 @@ The previous lesson showed how MCTS guided by a network produces a stronger poli
 
 The complete AlphaZero loop has three phases that repeat:
 
-**Phase 1: Self-play game generation.** Use the current network and MCTS to play complete games against itself. At each move, run MCTS to produce an improved policy distribution \\(\pi_{\text{search}}(a | s)\\), then sample an action from it. Record the state, the search policy, and (when the game ends) the final outcome.
+**Phase 1: Self-play game generation.** Use the current network and MCTS to play complete games against itself. At each move, run MCTS to produce an improved policy distribution \(\pi_{\text{search}}(a | s)\), then sample an action from it. Record the state, the search policy, and (when the game ends) the final outcome.
 
-**Phase 2: Network training.** Use the recorded games as training data. The network's policy head is trained to match \\(\pi_{\text{search}}\\) (the MCTS-improved policy) using cross-entropy loss. The value head is trained to predict the final game outcome using MSE loss.
+**Phase 2: Network training.** Use the recorded games as training data. The network's policy head is trained to match \(\pi_{\text{search}}\) (the MCTS-improved policy) using cross-entropy loss. The value head is trained to predict the final game outcome using MSE loss.
 
 **Phase 3: Iterate.** Use the newly trained network for the next round of self-play. As the network improves, MCTS produces better policies. As MCTS produces better policies, the network has better training targets. The two improve together.
 
@@ -31,9 +31,9 @@ In practice, you stop iterating when the agent stops improving (for example, whe
 
 For each game played in self-play, you store a list of training examples. Each example contains:
 
-- **State** \\(s_t\\): the position at time t
-- **Search policy** \\(\pi_t\\): the visit-count distribution from MCTS at this position
-- **Outcome** \\(z\\): the final game result (+1 if root player won, -1 if lost, 0 if draw), with appropriate sign-flipping based on whose turn it was at \\(s_t\\)
+- **State** \(s_t\): the position at time t
+- **Search policy** \(\pi_t\): the visit-count distribution from MCTS at this position
+- **Outcome** \(z\): the final game result (+1 if root player won, -1 if lost, 0 if draw), with appropriate sign-flipping based on whose turn it was at \(s_t\)
 
 A game of 50 moves produces 50 training examples. After many self-play games, you have a dataset of (state, target policy, target value) triples to train the network on.
 
@@ -41,17 +41,17 @@ A game of 50 moves produces 50 training examples. After many self-play games, yo
 
 The network is trained on a combined loss with three parts:
 
-\\[ L = L_{\text{policy}} + L_{\text{value}} + L_{\text{regularization}} \\]
+\[ L = L_{\text{policy}} + L_{\text{value}} + L_{\text{regularization}} \]
 
 **Policy loss** (cross-entropy between network policy and search policy):
 
-\\[ L_{\text{policy}} = -\sum_a \pi_t(a) \log \pi_{\text{net}}(a | s_t) \\]
+\[ L_{\text{policy}} = -\sum_a \pi_t(a) \log \pi_{\text{net}}(a | s_t) \]
 
 This pushes the network's policy output to match the MCTS search policy.
 
 **Value loss** (MSE between network value and game outcome):
 
-\\[ L_{\text{value}} = (z - V_{\text{net}}(s_t))^2 \\]
+\[ L_{\text{value}} = (z - V_{\text{net}}(s_t))^2 \]
 
 This pushes the network's value output to match the actual game outcome.
 
@@ -389,17 +389,17 @@ fn main() {
 
 The expected score (probability of winning) for player A against player B is:
 
-\\[ E_A = \frac{1}{1 + 10^{(R_B - R_A) / 400}} \\]
+\[ E_A = \frac{1}{1 + 10^{(R_B - R_A) / 400}} \]
 
 **Decoding:**
-- \\(R_A, R_B\\): Elo ratings for players A and B
-- The denominator \\(10^{(R_B - R_A) / 400}\\) maps rating differences to win probabilities
+- \(R_A, R_B\): Elo ratings for players A and B
+- The denominator \(10^{(R_B - R_A) / 400}\) maps rating differences to win probabilities
 - A rating difference of 400 means the higher-rated player wins about 91% of the time
 - A difference of 200 ≈ 75% win rate; 100 ≈ 64%
 
-After a game with actual score \\(S_A\\) (1 for win, 0.5 for draw, 0 for loss), ratings update:
+After a game with actual score \(S_A\) (1 for win, 0.5 for draw, 0 for loss), ratings update:
 
-\\[ R_A \leftarrow R_A + K \cdot (S_A - E_A) \\]
+\[ R_A \leftarrow R_A + K \cdot (S_A - E_A) \]
 
 where K is a sensitivity constant (typically 32 for fast learning, lower for stable established ratings).
 
@@ -565,7 +565,7 @@ def should_add_child(node, alpha: float = 0.5, k: float = 1.0) -> bool:
 ## Key Takeaways
 
 - **The self-play data pipeline** consists of three interlocking components — game buffer, self-play workers, and training process — with the game buffer acting as the decoupling layer that allows each component to run at its own rate.
-- **Temperature scheduling** (high \\(\tau\\) early in the game, low \\(\tau\\) late) is essential for self-play: early moves need diversity to fill the buffer with varied training examples, while late moves need precision to generate informative wins and losses.
+- **Temperature scheduling** (high \(\tau\) early in the game, low \(\tau\) late) is essential for self-play: early moves need diversity to fill the buffer with varied training examples, while late moves need precision to generate informative wins and losses.
 - **Elo rating** provides a principled, interpretable measure of training progress: by pitting each new checkpoint against the previous best, you track not just loss curves but actual head-to-head improvement, preventing false positives from noisy training metrics.
 - **The replacement threshold** (typically 55%) ensures the self-play loop replaces the best network only when there is genuine, statistically meaningful improvement, preventing training instability from noise-driven oscillation.
 - **Imperfect information** (unknown fuel reserves in SSA) breaks AlphaZero's perfect-information assumption; extensions like determinized search or information-set MCTS are needed, and this is the direct bridge to Module 5's CFR-based approaches.

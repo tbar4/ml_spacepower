@@ -70,27 +70,27 @@ Will Kurt opens *Bayesian Statistics the Fun Way* with a deceptively simple poin
 
 **When events are mutually exclusive** (at most one can happen at a time):
 
-\\[ P(A \cup B) = P(A) + P(B) \\]
+\[ P(A \cup B) = P(A) + P(B) \]
 
 **Decoding:**
 
-- \\(P(A \cup B)\\): "the probability that A or B occurs." The \\(\cup\\) symbol is the set-theory union: "either A, or B, or both."
+- \(P(A \cup B)\): "the probability that A or B occurs." The \(\cup\) symbol is the set-theory union: "either A, or B, or both."
 - For mutually exclusive events, "both" is impossible, so the formula simplifies to straight addition.
 
 **SSA example**: RSO Alpha is either an active satellite (0.80) or debris (0.15) or a dead satellite (0.05). These categories are mutually exclusive — an object cannot be two types at once. So the probability it is "active satellite or debris" is simply 0.80 + 0.15 = 0.95.
 
 **When events are not mutually exclusive** (both can happen simultaneously):
 
-\\[ P(A \cup B) = P(A) + P(B) - P(A \cap B) \\]
+\[ P(A \cup B) = P(A) + P(B) - P(A \cap B) \]
 
 **Decoding:**
 
-- \\(P(A \cap B)\\): the probability that both A and B occur. The \\(\cap\\) symbol is the intersection: "both A and B."
-- You subtract \\(P(A \cap B)\\) because you would otherwise count the overlap twice — once when you add \\(P(A)\\) and once when you add \\(P(B)\\).
+- \(P(A \cap B)\): the probability that both A and B occur. The \(\cap\) symbol is the intersection: "both A and B."
+- You subtract \(P(A \cap B)\) because you would otherwise count the overlap twice — once when you add \(P(A)\) and once when you add \(P(B)\).
 
-**SSA example**: You want to know the probability that *at least one* of two RSOs — Alpha or Beta — experiences a conjunction event in the next 24 hours. Say \\(P(\text{Alpha conjunction}) = 0.30\\) and \\(P(\text{Beta conjunction}) = 0.25\\). If the two RSOs are in different orbital planes and their events are independent, \\(P(\text{both}) = 0.30 \times 0.25 = 0.075\\). So:
+**SSA example**: You want to know the probability that *at least one* of two RSOs — Alpha or Beta — experiences a conjunction event in the next 24 hours. Say \(P(\text{Alpha conjunction}) = 0.30\) and \(P(\text{Beta conjunction}) = 0.25\). If the two RSOs are in different orbital planes and their events are independent, \(P(\text{both}) = 0.30 \times 0.25 = 0.075\). So:
 
-\\[ P(\text{Alpha or Beta}) = 0.30 + 0.25 - 0.075 = 0.475 \\]
+\[ P(\text{Alpha or Beta}) = 0.30 + 0.25 - 0.075 = 0.475 \]
 
 Without subtracting the overlap, you would overcount the scenarios where both have conjunctions.
 
@@ -98,7 +98,7 @@ Without subtracting the overlap, you would overcount the scenarios where both ha
 
 For **independent** events (the outcome of one does not change the probability of the other):
 
-\\[ P(A \cap B) = P(A) \times P(B) \\]
+\[ P(A \cap B) = P(A) \times P(B) \]
 
 **Decoding:**
 
@@ -137,7 +137,7 @@ Distributions over single variables are only the beginning. In SSA, most interes
 
 ### Joint probability
 
-**Joint probability** \\(P(X = x, Y = y)\\) is the probability that two random variables simultaneously take specific values. The comma means "and."
+**Joint probability** \(P(X = x, Y = y)\) is the probability that two random variables simultaneously take specific values. The comma means "and."
 
 Here is a joint distribution over object type (X) and orbit regime (Y) for the objects in a hypothetical SSA catalog:
 
@@ -148,19 +148,19 @@ Here is a joint distribution over object type (X) and orbit regime (Y) for the o
 | **Dead satellite** | 0.10 | 0.03 | 0.02 | 0.15 |
 | **Column total** | 0.56 | 0.18 | 0.26 | 1.00 |
 
-Each cell is a joint probability. \\(P(\text{active satellite, GEO}) = 0.23\\): 23% of tracked objects are active satellites in GEO. The sum of the entire table equals 1.
+Each cell is a joint probability. \(P(\text{active satellite, GEO}) = 0.23\): 23% of tracked objects are active satellites in GEO. The sum of the entire table equals 1.
 
 ### Marginal probability
 
 **Marginal probability** is what you get when you collapse (sum out) one variable to focus on the other.
 
-The row totals give you the marginal distribution over object type: \\(P(\text{active satellite}) = 0.50\\), \\(P(\text{debris}) = 0.35\\), \\(P(\text{dead satellite}) = 0.15\\). These are called "marginals" because, in printed tables, they traditionally appear in the margins.
+The row totals give you the marginal distribution over object type: \(P(\text{active satellite}) = 0.50\), \(P(\text{debris}) = 0.35\), \(P(\text{dead satellite}) = 0.15\). These are called "marginals" because, in printed tables, they traditionally appear in the margins.
 
-The column totals give you the marginal distribution over orbit regime: \\(P(\text{LEO}) = 0.56\\), \\(P(\text{MEO}) = 0.18\\), \\(P(\text{GEO}) = 0.26\\).
+The column totals give you the marginal distribution over orbit regime: \(P(\text{LEO}) = 0.56\), \(P(\text{MEO}) = 0.18\), \(P(\text{GEO}) = 0.26\).
 
 The relationship is:
 
-\\[ P(X = x) = \sum_{y} P(X = x, Y = y) \\]
+\[ P(X = x) = \sum_{y} P(X = x, Y = y) \]
 
 "Sum over all values of Y to get the probability that X takes value x."
 
@@ -249,19 +249,19 @@ A few things to notice:
 
 Here is the same calculation written compactly. Let us use symbols to represent the quantities:
 
-- Let \\(n\\) be the number of possible outcomes (in our case, 3)
-- Let \\(p_i\\) be the probability of outcome \\(i\\)
-- Let \\(x_i\\) be the value (priority score) for outcome \\(i\\)
+- Let \(n\) be the number of possible outcomes (in our case, 3)
+- Let \(p_i\) be the probability of outcome \(i\)
+- Let \(x_i\) be the value (priority score) for outcome \(i\)
 
 The expected value is written:
 
-\\[ \mathbb{E}[X] = \sum_{i=1}^{n} p_i \cdot x_i \\]
+\[ \mathbb{E}[X] = \sum_{i=1}^{n} p_i \cdot x_i \]
 
 **Decoding every symbol, one at a time:**
 
-**\\(\mathbb{E}[X]\\)**: Read this as "the expected value of X" or just "E of X." The double-struck capital E is a conventional notation for "take the expectation of." X is the random variable (our priority score). The brackets just mean we are asking for the expectation of that particular thing.
+**\(\mathbb{E}[X]\)**: Read this as "the expected value of X" or just "E of X." The double-struck capital E is a conventional notation for "take the expectation of." X is the random variable (our priority score). The brackets just mean we are asking for the expectation of that particular thing.
 
-**\\(\sum_{i=1}^{n}\\)**: This is the capital Greek letter sigma, used here as a summation sign. Read it as "add up the following thing for every i, starting at i = 1 and ending at i = n." It is literally a for loop:
+**\(\sum_{i=1}^{n}\)**: This is the capital Greek letter sigma, used here as a summation sign. Read it as "add up the following thing for every i, starting at i = 1 and ending at i = n." It is literally a for loop:
 
 ```python
 total = 0
@@ -269,11 +269,11 @@ for i in range(1, n + 1):
     total += p_i * x_i
 ```
 
-**\\(p_i\\)**: The probability of outcome i. The subscript i (written below and slightly to the right of p) connects this probability to the i-th outcome. When i = 1, this is the probability of outcome 1 (active satellite, 0.80). When i = 2, it is the probability of outcome 2 (debris, 0.15). And so on.
+**\(p_i\)**: The probability of outcome i. The subscript i (written below and slightly to the right of p) connects this probability to the i-th outcome. When i = 1, this is the probability of outcome 1 (active satellite, 0.80). When i = 2, it is the probability of outcome 2 (debris, 0.15). And so on.
 
-**\\(x_i\\)**: The value (priority score) for outcome i. Same subscript convention: x with subscript 1 is the priority score when outcome 1 occurs (30), x with subscript 2 is the score when outcome 2 occurs (90), and so on.
+**\(x_i\)**: The value (priority score) for outcome i. Same subscript convention: x with subscript 1 is the priority score when outcome 1 occurs (30), x with subscript 2 is the score when outcome 2 occurs (90), and so on.
 
-**\\(p_i \cdot x_i\\)**: The dot means multiplication. This is "probability of outcome i times value of outcome i."
+**\(p_i \cdot x_i\)**: The dot means multiplication. This is "probability of outcome i times value of outcome i."
 
 **Reading the whole formula in English**: "For each possible outcome (from i = 1 to i = n), multiply its probability by its value. Add up all those products. That total is the expected value."
 
@@ -283,11 +283,11 @@ That is the calculation you already did by hand.
 
 One more version you will see often. Instead of taking the expectation of a raw value, sometimes you take the expectation of a function applied to the outcome:
 
-\\[ \mathbb{E}[f(X)] = \sum_{i=1}^{n} p_i \cdot f(x_i) \\]
+\[ \mathbb{E}[f(X)] = \sum_{i=1}^{n} p_i \cdot f(x_i) \]
 
-Here \\(f(x_i)\\) means "apply the function f to outcome i, then use that result." For example, if \\(f(x) = x^2\\), then \\(f(x_i)\\) is the priority score squared.
+Here \(f(x_i)\) means "apply the function f to outcome i, then use that result." For example, if \(f(x) = x^2\), then \(f(x_i)\) is the priority score squared.
 
-In RL, \\(f\\) is usually "the total reward you collect starting from this state." In CFR, \\(f\\) is "the regret from taking this action." The structure is always the same: for each outcome, compute f of that outcome, weight by probability, sum up.
+In RL, \(f\) is usually "the total reward you collect starting from this state." In CFR, \(f\) is "the regret from taking this action." The structure is always the same: for each outcome, compute f of that outcome, weight by probability, sum up.
 
 ## Variance: how spread out is the distribution?
 
@@ -314,23 +314,23 @@ Variance will come back in lesson 3 when it determines how noisy your Monte Carl
 
 The connection between probability and long-run frequency is formalized by the **Law of Large Numbers** (LLN). Kneusel emphasizes this in *Math for Deep Learning* Chapter 2 as the justification for why sample-based methods work at all.
 
-**Formal statement**: Let \\(X_1, X_2, \ldots, X_N\\) be independent, identically distributed random variables, each with expected value \\(\mu\\). Define the sample mean:
+**Formal statement**: Let \(X_1, X_2, \ldots, X_N\) be independent, identically distributed random variables, each with expected value \(\mu\). Define the sample mean:
 
-\\[ \bar{X}_N = \frac{1}{N} \sum_{i=1}^{N} X_i \\]
+\[ \bar{X}_N = \frac{1}{N} \sum_{i=1}^{N} X_i \]
 
-As \\(N \to \infty\\), the sample mean converges to the true mean:
+As \(N \to \infty\), the sample mean converges to the true mean:
 
-\\[ \bar{X}_N \to \mu \\]
+\[ \bar{X}_N \to \mu \]
 
 **Decoding:**
 
-- \\(\bar{X}_N\\): the average of N actual observed values. This is a number you can compute from data.
-- \\(\mu\\): the true expected value \\(\mathbb{E}[X]\\). This is a property of the distribution.
+- \(\bar{X}_N\): the average of N actual observed values. This is a number you can compute from data.
+- \(\mu\): the true expected value \(\mathbb{E}[X]\). This is a property of the distribution.
 - The arrow means: as you draw more samples, the sample mean gets closer and closer to the true mean.
 
 **Why this matters for SSA**: if you run a simulation of 100 conjunction events sampled from your uncertainty distribution, the average outcome (say, expected dwell time) will be close to but not exactly equal to the true expected dwell time. If you run 100,000 simulations, it will be much closer. The LLN guarantees convergence; the convergence rate (which depends on variance) determines how many samples you actually need.
 
-**Important contrast with Monte Carlo**: the LLN tells you that the sample mean converges. It does not tell you how fast. Lesson 3 will show that Monte Carlo estimates converge at rate \\(1/\sqrt{N}\\) — halving your error requires quadrupling your sample count. This slow convergence rate is both the limitation and the operational reality of simulation-based planning.
+**Important contrast with Monte Carlo**: the LLN tells you that the sample mean converges. It does not tell you how fast. Lesson 3 will show that Monte Carlo estimates converge at rate \(1/\sqrt{N}\) — halving your error requires quadrupling your sample count. This slow convergence rate is both the limitation and the operational reality of simulation-based planning.
 
 ```python
 import torch
@@ -363,7 +363,7 @@ for n in [10, 100, 1_000, 10_000, 100_000]:
 # N=100,000: sample mean = 41.502, error = 0.002
 ```
 
-The sample mean gets steadily closer to 41.50 as N grows. Note that the improvement is not linear — going from N=10 to N=100 (10×) does not give 10× the accuracy. That \\(1/\sqrt{N}\\) convergence rate is the reason large-scale simulations are expensive.
+The sample mean gets steadily closer to 41.50 as N grows. Note that the improvement is not linear — going from N=10 to N=100 (10×) does not give 10× the accuracy. That \(1/\sqrt{N}\) convergence rate is the reason large-scale simulations are expensive.
 
 ---
 
@@ -373,13 +373,13 @@ The Gaussian distribution is the dominant model for continuous uncertainty in SS
 
 ### The 68-95-99.7 rule
 
-For a Gaussian with mean \\(\mu\\) and standard deviation \\(\sigma\\):
+For a Gaussian with mean \(\mu\) and standard deviation \(\sigma\):
 
-- **68%** of outcomes fall within \\(\mu \pm 1\sigma\\)
-- **95%** of outcomes fall within \\(\mu \pm 2\sigma\\)
-- **99.7%** of outcomes fall within \\(\mu \pm 3\sigma\\)
+- **68%** of outcomes fall within \(\mu \pm 1\sigma\)
+- **95%** of outcomes fall within \(\mu \pm 2\sigma\)
+- **99.7%** of outcomes fall within \(\mu \pm 3\sigma\)
 
-This rule lets you translate between "standard deviations" and "probability." If your conjunction analysis says the miss distance is Gaussian with mean 5.0 km and \\(\sigma = 1.5\\) km, then:
+This rule lets you translate between "standard deviations" and "probability." If your conjunction analysis says the miss distance is Gaussian with mean 5.0 km and \(\sigma = 1.5\) km, then:
 
 - 68% of conjunction geometries will have miss distance between 3.5 and 6.5 km
 - 95% will be between 2.0 and 8.0 km
@@ -395,14 +395,14 @@ When you read the standard conjunction message format (CCSDS CDM), the position 
 
 For a 1D version, the Gaussian probability density function is:
 
-\\[ f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right) \\]
+\[ f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right) \]
 
 **Decoding:**
 
-- \\(\mu\\): the mean (center of the bell curve). For a satellite position, this is the best-estimated position.
-- \\(\sigma\\): the standard deviation. Larger \\(\sigma\\) means wider uncertainty.
-- \\(\exp(\cdot)\\): the exponential function \\(e^{(\cdot)}\\). It is always positive, which keeps the density positive.
-- \\(\frac{1}{\sigma \sqrt{2\pi}}\\): a normalizing constant that ensures the total area under the curve equals 1.
+- \(\mu\): the mean (center of the bell curve). For a satellite position, this is the best-estimated position.
+- \(\sigma\): the standard deviation. Larger \(\sigma\) means wider uncertainty.
+- \(\exp(\cdot)\): the exponential function \(e^{(\cdot)}\). It is always positive, which keeps the density positive.
+- \(\frac{1}{\sigma \sqrt{2\pi}}\): a normalizing constant that ensures the total area under the curve equals 1.
 
 ```python
 import torch
@@ -490,7 +490,7 @@ expected = products.sum()
 print(f"Expected priority: {expected.item()}")  # 41.5
 ```
 
-Notice how the Python arithmetic directly mirrors the formula. `probs * priority_scores` is the elementwise multiplication of all the \\(p_i \cdot x_i\\) terms. `.sum()` is the \\(\sum\\) symbol.
+Notice how the Python arithmetic directly mirrors the formula. `probs * priority_scores` is the elementwise multiplication of all the \(p_i \cdot x_i\) terms. `.sum()` is the \(\sum\) symbol.
 
 ## Worked example: dwell time planning across two RSOs
 
@@ -554,11 +554,11 @@ print(f"Total:                {(alpha_dwell + beta_dwell).item():.1f}s")  # 21.0
 ## Key Takeaways
 
 - **Probability is a complete description of uncertainty, not just a single number.** A distribution over object types, orbit regimes, or sensor readings tells you the full range of what could be true and how likely each possibility is. Every algorithm in this curriculum manipulates distributions, not point guesses.
-- **The sum and product rules are the foundation.** \\(P(A \cup B) = P(A) + P(B) - P(A \cap B)\\) and \\(P(A \cap B) = P(A) \times P(B)\\) for independent events. Before you can do Bayes' rule or compute likelihoods, you need these two rules working fluently.
-- **Joint distributions capture correlations between variables.** \\(P(\text{object type, orbit regime})\\) is more informative than either marginal alone. Marginalizing (summing over one variable) recovers the individual distributions. In SSA, ignoring joint structure means treating orbital regime and object type as independent when they may not be.
+- **The sum and product rules are the foundation.** \(P(A \cup B) = P(A) + P(B) - P(A \cap B)\) and \(P(A \cap B) = P(A) \times P(B)\) for independent events. Before you can do Bayes' rule or compute likelihoods, you need these two rules working fluently.
+- **Joint distributions capture correlations between variables.** \(P(\text{object type, orbit regime})\) is more informative than either marginal alone. Marginalizing (summing over one variable) recovers the individual distributions. In SSA, ignoring joint structure means treating orbital regime and object type as independent when they may not be.
 - **Expectation is a planning tool, not a prediction.** The expected priority score (41.5) is not a value you will ever observe. It is the average you should plan around when facing many decisions under the same uncertainty. RL value functions are expectations; so are the cost estimates in dwell time planning.
-- **The Law of Large Numbers guarantees that sample averages converge to expectations, but slowly.** Error shrinks at rate \\(1/\sqrt{N}\\): to halve the error you must quadruple the sample count. This is why Monte Carlo methods require careful variance management — lesson 3 picks this up directly.
-- **Gaussian uncertainty is the default model for satellite position and sensor noise.** The 68-95-99.7 rule gives you fast intuition about what any \\(\sigma\\) value means in practice. When you see a conjunction probability computed from a covariance matrix, it is computing the integral of a Gaussian over the collision zone — the same math as `Normal.cdf()` in PyTorch.
+- **The Law of Large Numbers guarantees that sample averages converge to expectations, but slowly.** Error shrinks at rate \(1/\sqrt{N}\): to halve the error you must quadruple the sample count. This is why Monte Carlo methods require careful variance management — lesson 3 picks this up directly.
+- **Gaussian uncertainty is the default model for satellite position and sensor noise.** The 68-95-99.7 rule gives you fast intuition about what any \(\sigma\) value means in practice. When you see a conjunction probability computed from a covariance matrix, it is computing the integral of a Gaussian over the collision zone — the same math as `Normal.cdf()` in PyTorch.
 
 ---
 

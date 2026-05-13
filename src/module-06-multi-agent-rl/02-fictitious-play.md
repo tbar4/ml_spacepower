@@ -19,15 +19,15 @@ Fictitious play is defined for a normal-form game: two (or more) players repeate
 
 The empirical frequency after round t is a mixed strategy that reflects all observed play. As t grows, this empirical frequency converges (in well-behaved games) to a Nash equilibrium mixed strategy.
 
-More formally: let \\(\hat{\sigma}_{-i}^t\\) be the empirical frequency of player \\(-i\\)'s actions through round t. Player \\(i\\)'s strategy at round \\(t+1\\) is:
+More formally: let \(\hat{\sigma}_{-i}^t\) be the empirical frequency of player \(-i\)'s actions through round t. Player \(i\)'s strategy at round \(t+1\) is:
 
-\\[ \sigma_i^{t+1} \in \arg\max_{a_i} \; u_i(a_i, \hat{\sigma}_{-i}^t) \\]
+\[ \sigma_i^{t+1} \in \arg\max_{a_i} \; u_i(a_i, \hat{\sigma}_{-i}^t) \]
 
 **Decoding:**
-- \\(\hat{\sigma}_{-i}^t\\): the empirical frequency (count vector normalized to sum to 1) of the opponent's past actions through round \\(t\\)
-- \\(\sigma_i^{t+1}\\): the strategy player \\(i\\) will play in round \\(t+1\\)
-- \\(\arg\max_{a_i}\\): the action (or set of actions) that maximizes the expression
-- \\(u_i(a_i, \hat{\sigma}_{-i}^t)\\): the expected payoff to player \\(i\\) from action \\(a_i\\), when the opponent plays the historical average \\(\hat{\sigma}_{-i}^t\\)
+- \(\hat{\sigma}_{-i}^t\): the empirical frequency (count vector normalized to sum to 1) of the opponent's past actions through round \(t\)
+- \(\sigma_i^{t+1}\): the strategy player \(i\) will play in round \(t+1\)
+- \(\arg\max_{a_i}\): the action (or set of actions) that maximizes the expression
+- \(u_i(a_i, \hat{\sigma}_{-i}^t)\): the expected payoff to player \(i\) from action \(a_i\), when the opponent plays the historical average \(\hat{\sigma}_{-i}^t\)
 
 The key quantity tracked by each player is the **action count**: how many times each of the opponent's actions has been played. Normalizing the count gives the empirical frequency.
 
@@ -89,17 +89,17 @@ The count initialization to `np.ones(n)` rather than zeros implements a weak uni
 
 ## Why it works
 
-Intuitively: if the opponent's empirical frequency has converged to some fixed mixed strategy \\(\hat{\sigma}\\), then best-responding to \\(\hat{\sigma}\\) is also best-responding to the limit, which gives a fixed point. At a fixed point, neither player can improve their expected payoff by changing their action — that is a Nash equilibrium.
+Intuitively: if the opponent's empirical frequency has converged to some fixed mixed strategy \(\hat{\sigma}\), then best-responding to \(\hat{\sigma}\) is also best-responding to the limit, which gives a fixed point. At a fixed point, neither player can improve their expected payoff by changing their action — that is a Nash equilibrium.
 
 The formal result: **in two-player zero-sum games (and in two-player games with identical payoffs, i.e., coordination games), the time-averaged strategy profile produced by fictitious play converges to Nash equilibrium.**
 
 The time-averaged strategy at round T is:
 
-\\[ \bar{\sigma}_i^T = \frac{1}{T} \sum_{t=1}^{T} \sigma_i^t \\]
+\[ \bar{\sigma}_i^T = \frac{1}{T} \sum_{t=1}^{T} \sigma_i^t \]
 
 **Decoding:**
-- \\(\bar{\sigma}_i^T\\): the time-averaged strategy for player \\(i\\) through round \\(T\\)
-- \\(\sigma_i^t\\): the actual action played at round \\(t\\) (encoded as a one-hot vector, or as a probability distribution when ties are broken randomly)
+- \(\bar{\sigma}_i^T\): the time-averaged strategy for player \(i\) through round \(T\)
+- \(\sigma_i^t\): the actual action played at round \(t\) (encoded as a one-hot vector, or as a probability distribution when ties are broken randomly)
 - The sum averages out the variability in best responses from round to round
 
 This time-averaged strategy is what converges, not the actual actions played at each round. The actions themselves may oscillate, but the running average settles.
@@ -264,7 +264,7 @@ Both algorithms:
 - Can fail to converge in general-sum multi-player games
 - Are tabular algorithms that work with action counts or regret counts
 
-The key difference: CFR uses a more sophisticated update rule (regret matching instead of best response) that gives better convergence bounds (\\(O(1/\sqrt{T})\\) for both) and works for extensive-form games with imperfect information. Fictitious play applies only to normal-form games and uses pure best responses, which can cause oscillation in the actual actions even when the average converges.
+The key difference: CFR uses a more sophisticated update rule (regret matching instead of best response) that gives better convergence bounds (\(O(1/\sqrt{T})\) for both) and works for extensive-form games with imperfect information. Fictitious play applies only to normal-form games and uses pure best responses, which can cause oscillation in the actual actions even when the average converges.
 
 PSRO (next lesson) can be seen as a generalization of fictitious play where the "actions" are entire neural-network policies rather than individual moves. The best response computation becomes a full RL training run rather than a simple argmax.
 

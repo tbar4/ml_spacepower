@@ -162,22 +162,22 @@ It is not the only equilibrium concept (correlated equilibrium, evolutionary sta
 
 The intuition is already clear: "no one wants to deviate." Here is the precise formulation.
 
-Let \\(N = \{1, 2, \ldots, n\}\\) be the set of players. Each player \\(i\\) has a strategy space \\(\Sigma_i\\). A strategy profile is \\(\sigma = (\sigma_1, \sigma_2, \ldots, \sigma_n)\\). Let \\(\sigma_{-i}\\) denote the strategies of all players except player \\(i\\).
+Let \(N = \{1, 2, \ldots, n\}\) be the set of players. Each player \(i\) has a strategy space \(\Sigma_i\). A strategy profile is \(\sigma = (\sigma_1, \sigma_2, \ldots, \sigma_n)\). Let \(\sigma_{-i}\) denote the strategies of all players except player \(i\).
 
-A strategy \\(\sigma_i^*\\) is a **best response** to \\(\sigma_{-i}\\) if:
+A strategy \(\sigma_i^*\) is a **best response** to \(\sigma_{-i}\) if:
 
-\\[ u_i(\sigma_i^*, \sigma_{-i}) \geq u_i(\sigma_i, \sigma_{-i}) \quad \forall \sigma_i \in \Sigma_i \\]
+\[ u_i(\sigma_i^*, \sigma_{-i}) \geq u_i(\sigma_i, \sigma_{-i}) \quad \forall \sigma_i \in \Sigma_i \]
 
 **Decoding:**
-- \\(u_i(\sigma_i, \sigma_{-i})\\): the expected utility for player \\(i\\) when playing \\(\sigma_i\\) against opponents \\(\sigma_{-i}\\)
-- \\(\sigma_i^*\\): the strategy that achieves the highest expected utility for player \\(i\\) given what everyone else is doing
-- The \\(\forall \sigma_i\\) says this must hold for every alternative strategy, not just the best among a few candidates
+- \(u_i(\sigma_i, \sigma_{-i})\): the expected utility for player \(i\) when playing \(\sigma_i\) against opponents \(\sigma_{-i}\)
+- \(\sigma_i^*\): the strategy that achieves the highest expected utility for player \(i\) given what everyone else is doing
+- The \(\forall \sigma_i\) says this must hold for every alternative strategy, not just the best among a few candidates
 
-A **Nash equilibrium** is a strategy profile \\(\sigma^* = (\sigma_1^*, \ldots, \sigma_n^*)\\) where every player is simultaneously playing a best response:
+A **Nash equilibrium** is a strategy profile \(\sigma^* = (\sigma_1^*, \ldots, \sigma_n^*)\) where every player is simultaneously playing a best response:
 
-\\[ \forall i \in N: \quad u_i(\sigma_i^*, \sigma_{-i}^*) \geq u_i(\sigma_i, \sigma_{-i}^*) \quad \forall \sigma_i \in \Sigma_i \\]
+\[ \forall i \in N: \quad u_i(\sigma_i^*, \sigma_{-i}^*) \geq u_i(\sigma_i, \sigma_{-i}^*) \quad \forall \sigma_i \in \Sigma_i \]
 
-**Decoding the "no one wants to deviate" property:** the defining feature is mutual consistency. At a Nash equilibrium, player \\(i\\) cannot gain by switching strategies *holding all other players' strategies fixed*. This is the stability condition. It does not say the outcome is globally optimal or socially efficient; only that no individual player has a private unilateral incentive to change.
+**Decoding the "no one wants to deviate" property:** the defining feature is mutual consistency. At a Nash equilibrium, player \(i\) cannot gain by switching strategies *holding all other players' strategies fixed*. This is the stability condition. It does not say the outcome is globally optimal or socially efficient; only that no individual player has a private unilateral incentive to change.
 
 In our satellite operator coordination game, (M, M) satisfies this: if Op 2 is maneuvering, Op 1's payoff from M is -1 and from H is also -1 (looking at the payoff matrix: Op 1 switches to H while Op 2 stays at M gives (-3, -1), wait — actually (-3, -1) gives Op 1 a payoff of -3, not -1). Let us recheck: at (M, M) = (-1, -1). If Op 1 deviates to H (with Op 2 still at M), payoff is (-3, -1), so Op 1's payoff drops from -1 to -3. So Op 1 does not want to deviate. By symmetry, Op 2 does not want to deviate. (M, M) is a Nash equilibrium.
 
@@ -266,12 +266,12 @@ This structure appears in every zero-sum game with no pure Nash equilibrium: the
 
 For a 2×2 zero-sum game, the mixed Nash equilibrium can be computed analytically by solving the indifference condition: player 1's strategy must make player 2 indifferent between their actions, and vice versa.
 
-For the ISR sensor allocation game, let \\(p\\) be the probability the monitor chooses Sector A. The adversary is indifferent when:
+For the ISR sensor allocation game, let \(p\) be the probability the monitor chooses Sector A. The adversary is indifferent when:
 
-\\[ \text{Adversary's payoff from Sector A} = \text{Adversary's payoff from Sector B} \\]
-\\[ -1 \cdot p + 0 \cdot (1-p) = 0 \cdot p + (-1) \cdot (1-p) \\]
-\\[ -p = -(1-p) \\]
-\\[ p = 0.5 \\]
+\[ \text{Adversary's payoff from Sector A} = \text{Adversary's payoff from Sector B} \]
+\[ -1 \cdot p + 0 \cdot (1-p) = 0 \cdot p + (-1) \cdot (1-p) \]
+\[ -p = -(1-p) \]
+\[ p = 0.5 \]
 
 Similarly, the adversary must play each sector with probability 0.5 to make the monitor indifferent.
 
@@ -347,14 +347,14 @@ The key insight is that randomization is not weakness — it is the equilibrium 
 
 For two-player zero-sum games, von Neumann's minimax theorem (1928) establishes a fundamental duality:
 
-\\[ \max_{\sigma_1} \min_{\sigma_2} u_1(\sigma_1, \sigma_2) = \min_{\sigma_2} \max_{\sigma_1} u_1(\sigma_1, \sigma_2) \\]
+\[ \max_{\sigma_1} \min_{\sigma_2} u_1(\sigma_1, \sigma_2) = \min_{\sigma_2} \max_{\sigma_1} u_1(\sigma_1, \sigma_2) \]
 
 **Decoding:**
 - Left side: Player 1 chooses their strategy to maximize their worst-case payoff (maximize the minimum over Player 2's responses). This is the **maximin** value.
 - Right side: Player 2 chooses their strategy to minimize Player 1's best-case payoff (minimize the maximum over Player 1's choices). This is the **minimax** value.
-- The equality says these two quantities are the same. There is a unique **game value** \\(v\\), and both players' equilibrium strategies achieve it.
+- The equality says these two quantities are the same. There is a unique **game value** \(v\), and both players' equilibrium strategies achieve it.
 
-**Why minimax = maximin for zero-sum games:** in a zero-sum game, Player 2's payoff is \\(-u_1\\). Player 2 minimizing \\(u_1\\) is the same as Player 2 maximizing their own payoff. So the minimax formulation and Nash equilibrium formulation coincide. In non-zero-sum games this equality fails (hence the need for the more general Nash equilibrium concept).
+**Why minimax = maximin for zero-sum games:** in a zero-sum game, Player 2's payoff is \(-u_1\). Player 2 minimizing \(u_1\) is the same as Player 2 maximizing their own payoff. So the minimax formulation and Nash equilibrium formulation coincide. In non-zero-sum games this equality fails (hence the need for the more general Nash equilibrium concept).
 
 ### Connection to the minimax search tree from Module 4
 

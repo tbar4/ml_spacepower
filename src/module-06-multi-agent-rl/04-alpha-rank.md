@@ -29,18 +29,18 @@ Alpha-rank addresses all three problems by grounding strategy evaluation in evol
 
 The central equation is the **replicator dynamic**:
 
-\\[ \dot{x}_i = x_i \left( f_i(\mathbf{x}) - \bar{f}(\mathbf{x}) \right) \\]
+\[ \dot{x}_i = x_i \left( f_i(\mathbf{x}) - \bar{f}(\mathbf{x}) \right) \]
 
 **Decoding:**
-- \\(x_i\\): the fraction of the population currently using strategy \\(i\\)
-- \\(\dot{x}_i\\): the rate of change of that fraction (derivative with respect to time)
-- \\(f_i(\mathbf{x})\\): the expected fitness (payoff) of strategy \\(i\\) when the population distribution is \\(\mathbf{x}\\)
-- \\(\bar{f}(\mathbf{x}) = \sum_j x_j f_j(\mathbf{x})\\): the mean fitness across the whole population
+- \(x_i\): the fraction of the population currently using strategy \(i\)
+- \(\dot{x}_i\): the rate of change of that fraction (derivative with respect to time)
+- \(f_i(\mathbf{x})\): the expected fitness (payoff) of strategy \(i\) when the population distribution is \(\mathbf{x}\)
+- \(\bar{f}(\mathbf{x}) = \sum_j x_j f_j(\mathbf{x})\): the mean fitness across the whole population
 - The equation says: a strategy grows in the population if and only if its fitness exceeds the population mean
 
 Replicator dynamics provide a natural way to think about which strategies flourish and which go extinct when agents copy successful neighbors. They are also deeply connected to gradient descent in policy space, which makes them relevant for RL.
 
-The fixed points of replicator dynamics (where \\(\dot{x}_i = 0\\)) include all Nash equilibria, but not all fixed points are Nash equilibria. Evolutionarily stable strategies (ESS) are a refinement that selects for Nash equilibria that are robust to invasion by small numbers of mutants.
+The fixed points of replicator dynamics (where \(\dot{x}_i = 0\)) include all Nash equilibria, but not all fixed points are Nash equilibria. Evolutionarily stable strategies (ESS) are a refinement that selects for Nash equilibria that are robust to invasion by small numbers of mutants.
 
 ## Fixation probabilities: how a new strategy spreads
 
@@ -48,58 +48,58 @@ The key quantity in Alpha-rank is the **fixation probability**: given a populati
 
 If B beats A (i.e., a B-agent does better than an A-agent when playing against the current mixed population), the invasion will likely succeed and B will fix. If B loses, the invasion will likely fail and A will remain dominant.
 
-For a population of size N, the fixation probability of strategy \\(j\\) invading a population of strategy \\(i\\) is:
+For a population of size N, the fixation probability of strategy \(j\) invading a population of strategy \(i\) is:
 
-\\[ \rho_{ij} = \frac{1}{\sum_{k=0}^{N-1} \prod_{m=1}^{k} \frac{f_i(m)}{f_j(m)}} \\]
+\[ \rho_{ij} = \frac{1}{\sum_{k=0}^{N-1} \prod_{m=1}^{k} \frac{f_i(m)}{f_j(m)}} \]
 
 **Decoding:**
-- \\(\rho_{ij}\\): the probability that one individual using strategy \\(j\\) takes over a population of N individuals using strategy \\(i\\)
-- \\(f_i(m)\\): the fitness of an \\(i\\)-strategist when there are \\(m\\) invaders (\\(j\\)-strategists) in the population
-- \\(f_j(m)\\): the fitness of a \\(j\\)-strategist under the same conditions
+- \(\rho_{ij}\): the probability that one individual using strategy \(j\) takes over a population of N individuals using strategy \(i\)
+- \(f_i(m)\): the fitness of an \(i\)-strategist when there are \(m\) invaders (\(j\)-strategists) in the population
+- \(f_j(m)\): the fitness of a \(j\)-strategist under the same conditions
 - The denominator sums over all possible intermediate population states
 
-This formula comes from the theory of stochastic processes in finite populations (the Moran process). For the purpose of Alpha-rank, we only need to evaluate whether \\(\rho_{ij}\\) is greater or less than the neutral fixation probability \\(1/N\\): is strategy \\(j\\) selected for (spreads faster than neutral) or selected against?
+This formula comes from the theory of stochastic processes in finite populations (the Moran process). For the purpose of Alpha-rank, we only need to evaluate whether \(\rho_{ij}\) is greater or less than the neutral fixation probability \(1/N\): is strategy \(j\) selected for (spreads faster than neutral) or selected against?
 
-In the limit as the selection strength parameter \\(\alpha\\) grows large, the fixation probability simplifies to a step function: strategy \\(j\\) fixes with high probability if it beats \\(i\\), and with near-zero probability if it loses to \\(i\\). This is the "strong selection" limit that gives Alpha-rank its name.
+In the limit as the selection strength parameter \(\alpha\) grows large, the fixation probability simplifies to a step function: strategy \(j\) fixes with high probability if it beats \(i\), and with near-zero probability if it loses to \(i\). This is the "strong selection" limit that gives Alpha-rank its name.
 
 ## The Alpha-rank algorithm
 
 Alpha-rank computes a ranking over strategies in a multi-player, multi-population game. The inputs are:
 
 - A payoff matrix (or set of payoff matrices) from head-to-head evaluation of all strategy pairs
-- A selection pressure parameter \\(\alpha > 0\\)
+- A selection pressure parameter \(\alpha > 0\)
 
 The output is a probability distribution over strategies — the stationary distribution of a Markov chain over the strategy space. Strategies with higher stationary probability are ranked higher.
 
 The algorithm in four steps:
 
-**Step 1: Compute pairwise payoffs.** Run all pairs of strategies against each other and record average payoffs. This produces a payoff matrix \\(A\\) where \\(A_{ij}\\) is the average payoff of strategy \\(i\\) against strategy \\(j\\).
+**Step 1: Compute pairwise payoffs.** Run all pairs of strategies against each other and record average payoffs. This produces a payoff matrix \(A\) where \(A_{ij}\) is the average payoff of strategy \(i\) against strategy \(j\).
 
-**Step 2: Compute transition probabilities.** For each ordered pair \\((i, j)\\), compute the probability that the population transitions from "using strategy i" to "using strategy j." This transition is proportional to the fixation probability \\(\rho_{ij}\\), weighted by how often one agent switches to a new strategy. Under strong selection (large \\(\alpha\\)), strategies that beat the current population spread; strategies that lose do not.
+**Step 2: Compute transition probabilities.** For each ordered pair \((i, j)\), compute the probability that the population transitions from "using strategy i" to "using strategy j." This transition is proportional to the fixation probability \(\rho_{ij}\), weighted by how often one agent switches to a new strategy. Under strong selection (large \(\alpha\)), strategies that beat the current population spread; strategies that lose do not.
 
-The transition probability from state \\(i\\) to state \\(j \neq i\\) is:
+The transition probability from state \(i\) to state \(j \neq i\) is:
 
-\\[ T_{ij} = \frac{1}{n-1} \cdot \rho_{ij} \\]
+\[ T_{ij} = \frac{1}{n-1} \cdot \rho_{ij} \]
 
-where \\(n\\) is the number of strategies (not population size), and \\(1/(n-1)\\) reflects that any of the \\(n-1\\) alternative strategies might be introduced.
-
-**Decoding:**
-- \\(T_{ij}\\): probability that the population transitions from all-\\(i\\) to all-\\(j\\) in one step
-- \\(1/(n-1)\\): uniform probability of selecting strategy \\(j\\) to introduce as a mutant
-- \\(\rho_{ij}\\): fixation probability of \\(j\\) invading \\(i\\) (the evolutionary step)
-
-The diagonal: \\(T_{ii} = 1 - \sum_{j \neq i} T_{ij}\\) (probability of staying in state \\(i\\)).
-
-**Step 3: Find the stationary distribution.** Treat \\(T\\) as a Markov chain transition matrix. The stationary distribution \\(\pi\\) satisfies:
-
-\\[ \pi T = \pi, \quad \sum_i \pi_i = 1 \\]
+where \(n\) is the number of strategies (not population size), and \(1/(n-1)\) reflects that any of the \(n-1\) alternative strategies might be introduced.
 
 **Decoding:**
-- \\(\pi\\): a row vector of probabilities, one per strategy
-- \\(\pi T = \pi\\): left-multiplying the transition matrix by the stationary distribution gives the stationary distribution back (the chain does not move)
+- \(T_{ij}\): probability that the population transitions from all-\(i\) to all-\(j\) in one step
+- \(1/(n-1)\): uniform probability of selecting strategy \(j\) to introduce as a mutant
+- \(\rho_{ij}\): fixation probability of \(j\) invading \(i\) (the evolutionary step)
+
+The diagonal: \(T_{ii} = 1 - \sum_{j \neq i} T_{ij}\) (probability of staying in state \(i\)).
+
+**Step 3: Find the stationary distribution.** Treat \(T\) as a Markov chain transition matrix. The stationary distribution \(\pi\) satisfies:
+
+\[ \pi T = \pi, \quad \sum_i \pi_i = 1 \]
+
+**Decoding:**
+- \(\pi\): a row vector of probabilities, one per strategy
+- \(\pi T = \pi\): left-multiplying the transition matrix by the stationary distribution gives the stationary distribution back (the chain does not move)
 - The stationary distribution gives each strategy a probability proportional to how much time the population spends using it over the long run
 
-**Step 4: Rank by stationary probability.** Strategies with higher \\(\pi_i\\) are ranked higher. The top-ranked strategy is the one that, under evolutionary competition with all other strategies, the population spends the most time using.
+**Step 4: Rank by stationary probability.** Strategies with higher \(\pi_i\) are ranked higher. The top-ranked strategy is the one that, under evolutionary competition with all other strategies, the population spends the most time using.
 
 ## SSA example: ranking sensor tasking strategies
 
@@ -112,7 +112,7 @@ Consider a space surveillance network with six candidate sensor-tasking strategi
 - **Strategy 4 (Uniform)**: equal revisit time for all objects (baseline)
 - **Strategy 5 (Historical)**: prioritize objects with historically high conjunction frequencies
 
-A head-to-head tournament runs each strategy pair for 100 simulated 24-hour coverage windows. The payoff matrix records the coverage differential: how many more high-priority events did strategy \\(i\\) detect than strategy \\(j\\)?
+A head-to-head tournament runs each strategy pair for 100 simulated 24-hour coverage windows. The payoff matrix records the coverage differential: how many more high-priority events did strategy \(i\) detect than strategy \(j\)?
 
 ```python
 import numpy as np
@@ -284,19 +284,19 @@ This is more informative than Nash equilibrium for selecting a deployment policy
 - Nash may assign weight to multiple policies, requiring a randomized deployment
 - Alpha-rank provides a deterministic ranking that is easy to communicate to operators
 - Alpha-rank captures evolutionary robustness, not just static optimality
-- Alpha-rank is unique (for a given \\(\alpha\\)), avoiding the non-uniqueness problem of Nash
+- Alpha-rank is unique (for a given \(\alpha\)), avoiding the non-uniqueness problem of Nash
 
 ## Choosing alpha: selection pressure sensitivity
 
-The parameter \\(\alpha\\) controls how strongly fitness differences translate into fixation probability differences.
+The parameter \(\alpha\) controls how strongly fitness differences translate into fixation probability differences.
 
-- **Low \\(\alpha\\) (weak selection)**: the fixation probability of any strategy is close to \\(1/N\\) regardless of fitness differences. The Markov chain is nearly uniform; all strategies have similar Alpha-rank scores. Ranking is uninformative.
+- **Low \(\alpha\) (weak selection)**: the fixation probability of any strategy is close to \(1/N\) regardless of fitness differences. The Markov chain is nearly uniform; all strategies have similar Alpha-rank scores. Ranking is uninformative.
 
-- **High \\(\alpha\\) (strong selection)**: strategies that beat the resident fix with high probability; strategies that lose fix with near-zero probability. The Alpha-rank scores concentrate on the strategies that consistently win head-to-head.
+- **High \(\alpha\) (strong selection)**: strategies that beat the resident fix with high probability; strategies that lose fix with near-zero probability. The Alpha-rank scores concentrate on the strategies that consistently win head-to-head.
 
-- **Very high \\(\alpha\\) (dominant selection)**: the ranking approaches a pure dominance ordering. A strategy gets a high score only if it beats most other strategies.
+- **Very high \(\alpha\) (dominant selection)**: the ranking approaches a pure dominance ordering. A strategy gets a high score only if it beats most other strategies.
 
-In practice, \\(\alpha\\) is chosen to be large enough to produce a clear ranking but not so large that the Markov chain becomes poorly conditioned. A common approach is to test a range and check that rankings are stable.
+In practice, \(\alpha\) is chosen to be large enough to produce a clear ranking but not so large that the Markov chain becomes poorly conditioned. A common approach is to test a range and check that rankings are stable.
 
 ```python
 import numpy as np
@@ -331,7 +331,7 @@ sensitivity_analysis(A, strategy_names)
 
 The output will show that at low alpha, all six strategies score near 1/6 (uniform). As alpha increases, the ranking sharpens: Predictive and Balanced pull ahead, Uniform falls to the bottom. At very high alpha, one or two strategies dominate the distribution entirely.
 
-A useful diagnostic: if the ranking changes significantly between \\(\alpha = 50\\) and \\(\alpha = 500\\), there are strategies that perform only slightly better than others and the ranking is sensitive to noise. If the ranking is stable across a wide range of alpha, the dominance structure is robust.
+A useful diagnostic: if the ranking changes significantly between \(\alpha = 50\) and \(\alpha = 500\), there are strategies that perform only slightly better than others and the ranking is sensitive to noise. If the ranking is stable across a wide range of alpha, the dominance structure is robust.
 
 ## Multi-population Alpha-rank
 
@@ -339,7 +339,7 @@ The description so far assumes a single population where all strategies compete 
 
 Multi-population Alpha-rank extends the single-population version by computing a separate Markov chain for each population, with fixation probabilities that depend on the current strategy of the other population.
 
-For two populations with strategy sets of size \\(n_1\\) and \\(n_2\\), the joint state space has \\(n_1 \times n_2\\) states. The transition matrix is built similarly: the probability of population 1 transitioning from strategy \\(i\\) to strategy \\(j\\) depends on the current strategy of population 2, and vice versa.
+For two populations with strategy sets of size \(n_1\) and \(n_2\), the joint state space has \(n_1 \times n_2\) states. The transition matrix is built similarly: the probability of population 1 transitioning from strategy \(i\) to strategy \(j\) depends on the current strategy of population 2, and vice versa.
 
 The stationary distribution of this joint Markov chain gives a distribution over (strategy-for-population-1, strategy-for-population-2) pairs. Marginalizing gives the individual strategy rankings.
 
@@ -348,7 +348,7 @@ For the SSA coverage game with two operators, this would mean:
 - Blue has a population of sensor-tasking policies
 - The joint ranking captures which Red-Blue strategy pairs dominate evolutionary competition
 
-The computational cost scales as \\(O((n_1 n_2)^2)\\) for power iteration on the joint chain, which is manageable for populations of 10-20 strategies each.
+The computational cost scales as \(O((n_1 n_2)^2)\) for power iteration on the joint chain, which is manageable for populations of 10-20 strategies each.
 
 ## Full example: stationary distribution by power iteration
 
@@ -400,7 +400,7 @@ final_scores, final_ranking, final_T = alpha_rank(A, alpha=50.0)
 visualize_markov_chain(final_T, strategy_names, final_scores)
 ```
 
-The entropy of the distribution decreases as power iteration converges, starting near \\(\log(6) \approx 1.79\\) (uniform over 6 strategies) and settling to a lower value as the distribution concentrates on the top strategies. The chain summary shows the dominant evolutionary pathways: which strategies are primarily replaced by which others.
+The entropy of the distribution decreases as power iteration converges, starting near \(\log(6) \approx 1.79\) (uniform over 6 strategies) and settling to a lower value as the distribution concentrates on the top strategies. The chain summary shows the dominant evolutionary pathways: which strategies are primarily replaced by which others.
 
 ## Key Takeaways
 
@@ -408,7 +408,7 @@ The entropy of the distribution decreases as power iteration converges, starting
 - **The ranking is grounded in evolutionary dynamics, not rational-agent assumptions.** Alpha-rank asks: under evolutionary competition (better strategies spread; worse strategies die out), which strategies dominate the long run? This is more descriptive of how populations of RL agents actually evolve than Nash's rational-agent framing.
 - **The selection pressure alpha controls the sharpness of the ranking.** Low alpha gives a near-uniform distribution (all strategies similar). High alpha concentrates probability on the dominant strategies. Sensitivity analysis across alpha values reveals whether the ranking is robust or depends on the exact choice of selection strength.
 - **Alpha-rank is a natural complement to PSRO.** PSRO builds a population of policies; Alpha-rank ranks them. After PSRO produces a population, a tournament evaluation plus Alpha-rank identifies which policy is most evolutionarily robust and should be deployed.
-- **Power iteration on the Markov chain is the simplest implementation.** The transition matrix has at most \\(n^2\\) entries for \\(n\\) strategies; power iteration converges in a few thousand steps for typical problems. No special solver is required.
+- **Power iteration on the Markov chain is the simplest implementation.** The transition matrix has at most \(n^2\) entries for \(n\) strategies; power iteration converges in a few thousand steps for typical problems. No special solver is required.
 - **Multi-population Alpha-rank handles games with distinct agent types.** When different players have structurally different strategy spaces (e.g., Red and Blue operators with different assets), the joint Markov chain over all population-strategy combinations provides a unified ranking that accounts for cross-population interactions.
 
 ## Quiz

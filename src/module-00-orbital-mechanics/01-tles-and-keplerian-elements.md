@@ -99,9 +99,9 @@ Keplerian elements describe an orbit under idealized two-body gravity (Earth as 
 
 The semi-major axis is the "radius" of the ellipse — half the longest dimension. For a circular orbit, it equals the actual orbital radius. It is not stored directly in a TLE; instead TLEs store mean motion (revolutions per day), and you derive a from the relationship:
 
-\\[ n = \sqrt{\frac{GM_\oplus}{a^3}} \implies a = \left(\frac{GM_\oplus}{n^2}\right)^{1/3} \\]
+\[ n = \sqrt{\frac{GM_\oplus}{a^3}} \implies a = \left(\frac{GM_\oplus}{n^2}\right)^{1/3} \]
 
-where \\(n\\) is mean motion in radians per second and \\(GM_\oplus = 3.986 \times 10^{14}\\) m³/s² is Earth's standard gravitational parameter. For the ISS with mean motion 15.5 rev/day, this gives a ≈ 6,785 km — about 407 km above Earth's surface (Earth radius ≈ 6,378 km).
+where \(n\) is mean motion in radians per second and \(GM_\oplus = 3.986 \times 10^{14}\) m³/s² is Earth's standard gravitational parameter. For the ISS with mean motion 15.5 rev/day, this gives a ≈ 6,785 km — about 407 km above Earth's surface (Earth radius ≈ 6,378 km).
 
 **Orbit regime intuitions**:
 - LEO (Low Earth Orbit): a ≈ 6,550 to 8,375 km (170 to 2,000 km altitude)
@@ -143,9 +143,9 @@ For the ISS at 51.6° inclination and 400 km altitude, J2 causes RAAN to precess
 
 The J2 RAAN precession rate formula:
 
-\\[ \dot{\Omega} = -\frac{3}{2} n J_2 \left(\frac{R_\oplus}{a}\right)^2 \frac{\cos i}{(1 - e^2)^2} \\]
+\[ \dot{\Omega} = -\frac{3}{2} n J_2 \left(\frac{R_\oplus}{a}\right)^2 \frac{\cos i}{(1 - e^2)^2} \]
 
-where \\(J_2 = 1.08263 \times 10^{-3}\\) is Earth's second zonal harmonic coefficient, \\(R_\oplus\\) is Earth's mean equatorial radius, and \\(n\\) is mean motion. For the ISS, this evaluates to approximately -6.75°/day.
+where \(J_2 = 1.08263 \times 10^{-3}\) is Earth's second zonal harmonic coefficient, \(R_\oplus\) is Earth's mean equatorial radius, and \(n\) is mean motion. For the ISS, this evaluates to approximately -6.75°/day.
 
 ### Argument of perigee (ω): which end is closest
 
@@ -185,7 +185,7 @@ Suppose you download a TLE history for a satellite and compute the difference in
 
 **The correct approach**: propagate both TLEs to a common epoch using SGP4 and compare the resulting Cartesian position and velocity vectors. A maneuver appears as a sudden change in the propagated trajectory between two TLE epochs that exceeds what J2, drag, and other perturbations would predict. This is what the ML maneuver detection models in Module 9 do.
 
-Additionally: TLE mean elements are not interchangeable with mean elements from other propagators. The \\(GM\\) value embedded in TLE mean motion (\\(GM = 398600.4418\\) km³/s²) differs slightly from the IAU standard. High-fidelity numerical propagators use a different \\(GM\\). Mixing them without conversion introduces systematic errors.
+Additionally: TLE mean elements are not interchangeable with mean elements from other propagators. The \(GM\) value embedded in TLE mean motion (\(GM = 398600.4418\) km³/s²) differs slightly from the IAU standard. High-fidelity numerical propagators use a different \(GM\). Mixing them without conversion introduces systematic errors.
 
 ---
 

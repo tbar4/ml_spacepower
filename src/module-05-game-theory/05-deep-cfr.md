@@ -13,9 +13,9 @@ Vanilla CFR and MCCFR store regrets in a table indexed by information set. For h
 
 Deep CFR maintains:
 
-1. A **regret network** \\(R_i(I, a; \theta_R)\\) that predicts cumulative regret for player i, information set I, action a, parameterized by neural network weights \\(\theta_R\\).
+1. A **regret network** \(R_i(I, a; \theta_R)\) that predicts cumulative regret for player i, information set I, action a, parameterized by neural network weights \(\theta_R\).
 
-2. A **strategy network** \\(\sigma_i(I; \theta_\sigma)\\) that predicts the average strategy at each information set.
+2. A **strategy network** \(\sigma_i(I; \theta_\sigma)\) that predicts the average strategy at each information set.
 
 3. A **buffer** of (information set, regret estimate) training examples for the regret network.
 
@@ -51,7 +51,7 @@ training_example = (encode(I), counterfactual_regret(I, a))
 buffer.add(training_example)
 ```
 
-Then periodically train the regret network on the buffer using MSE loss. The network's prediction of \\(R(I, a)\\) becomes the target for regret matching.
+Then periodically train the regret network on the buffer using MSE loss. The network's prediction of \(R(I, a)\) becomes the target for regret matching.
 
 The same logic applies to the strategy: instead of updating a strategy table, generate (information set, strategy) examples and train the strategy network.
 
@@ -228,16 +228,16 @@ For the project, you will implement vanilla CFR. Once you understand it concrete
 
 The regret network's prediction target is not cumulative regret but **instantaneous counterfactual regret** — how much better each action would have been than the current strategy at this information set in this traversal:
 
-\\[ \hat{A}_i(I, a) = v_i(I, a) - v_i(I) = v_i(I, a) - \sum_{a'} \sigma_i(I, a') \cdot v_i(I, a') \\]
+\[ \hat{A}_i(I, a) = v_i(I, a) - v_i(I) = v_i(I, a) - \sum_{a'} \sigma_i(I, a') \cdot v_i(I, a') \]
 
 **Decoding:**
-- \\(v_i(I, a)\\): expected utility if action \\(a\\) were always taken at \\(I\\)
-- \\(v_i(I)\\): expected utility under the current mixed strategy
-- \\(\hat{A}_i(I, a)\\): the "advantage" of \\(a\\) over the average — positive means \\(a\\) is better than the current mix
+- \(v_i(I, a)\): expected utility if action \(a\) were always taken at \(I\)
+- \(v_i(I)\): expected utility under the current mixed strategy
+- \(\hat{A}_i(I, a)\): the "advantage" of \(a\) over the average — positive means \(a\) is better than the current mix
 
 ### Why advantages, not values
 
-Regret matching only cares about relative differences between actions: \\(\sigma^{t+1}(a) \propto \max(0, R^t(a))\\). A constant offset added to all regrets cancels out in the normalization and does not affect the resulting strategy. Predicting advantages (automatically zero-centered across actions at any given information set) removes this irrelevant degree of freedom and stabilizes training.
+Regret matching only cares about relative differences between actions: \(\sigma^{t+1}(a) \propto \max(0, R^t(a))\). A constant offset added to all regrets cancels out in the normalization and does not affect the resulting strategy. Predicting advantages (automatically zero-centered across actions at any given information set) removes this irrelevant degree of freedom and stabilizes training.
 
 In the satellite-vs-jammer spectrum game, raw node values span -100 to +1; advantages span roughly -5 to +5 — a much easier regression target.
 
@@ -313,7 +313,7 @@ print(f"Strategy sums: {adv_net.get_strategy(dummy).sum(-1)[:3]}")  # all 1.0
 
 While the advantage network predicts instantaneous regrets (used to drive the current strategy), the **strategy network** predicts the **time-averaged strategy** — the Nash approximation returned at the end of CFR training.
 
-In tabular CFR, the average strategy is maintained by accumulating \\(\sigma_\text{sum}(I, a) += \sigma^t(I, a)\\) each iteration. The strategy network fits this accumulated average directly, weighted by the player's reach probability at each information set each iteration.
+In tabular CFR, the average strategy is maintained by accumulating \(\sigma_\text{sum}(I, a) += \sigma^t(I, a)\) each iteration. The strategy network fits this accumulated average directly, weighted by the player's reach probability at each information set each iteration.
 
 ### Why it is a separate network
 
@@ -381,7 +381,7 @@ For each incoming item x at position t in the stream:
     Else: with probability capacity/t, replace a random buffer entry with x
 ```
 
-After processing any number of items, every item has equal probability \\(\text{capacity}/t\\) of being in the buffer — no bias toward recent data.
+After processing any number of items, every item has equal probability \(\text{capacity}/t\) of being in the buffer — no bias toward recent data.
 
 ```python
 import random
@@ -423,13 +423,13 @@ Use `ReservoirBuffer` for the strategy network (all iterations equal weight). Fo
 
 ### Batch size and training frequency
 
-Run \\(K \cdot |\mathcal{I}_i|\\) traversals before each network update (\\(K \in [5, 20]\\), \\(|\mathcal{I}_i|\\) = estimated info sets for player \\(i\\)). Too few traversals → overfitting to recent data; too many → network lags behind the true regret function. Mini-batch size 256–1024 is typical; gradient clipping (norm 1.0) prevents variance spikes from high-magnitude importance weights.
+Run \(K \cdot |\mathcal{I}_i|\) traversals before each network update (\(K \in [5, 20]\), \(|\mathcal{I}_i|\) = estimated info sets for player \(i\)). Too few traversals → overfitting to recent data; too many → network lags behind the true regret function. Mini-batch size 256–1024 is typical; gradient clipping (norm 1.0) prevents variance spikes from high-magnitude importance weights.
 
 ### Warm-up period before iterates are useful
 
 The advantage network is randomly initialized, so its early predictions are meaningless. Using them to guide strategy immediately would flood the buffer with misleading regret estimates. The standard fix:
 
-1. Run \\(T_\text{warmup} = 10\\)–100 iterations with **uniform strategy** (ignoring the network).
+1. Run \(T_\text{warmup} = 10\)–100 iterations with **uniform strategy** (ignoring the network).
 2. Collect regret estimates into the buffer under this uniform play.
 3. Train the network once on the initial buffer.
 4. Switch to network-guided play.

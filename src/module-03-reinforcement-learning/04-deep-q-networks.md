@@ -67,15 +67,15 @@ A direct table-cell change. With a neural network, we cannot directly assign a v
 
 The TD target is the same as before:
 
-\\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta) \\]
+\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta) \]
 
-(The notation \\(Q(s, a; \theta)\\) emphasizes that Q is computed by a network with parameters \\(\theta\\).)
+(The notation \(Q(s, a; \theta)\) emphasizes that Q is computed by a network with parameters \(\theta\).)
 
 We define a loss function: how far is the network's current prediction from the target?
 
-\\[ L(\theta) = \left( Q(s, a; \theta) - \text{target} \right)^2 \\]
+\[ L(\theta) = \left( Q(s, a; \theta) - \text{target} \right)^2 \]
 
-This is just MSE loss between the prediction and the target. Then we use gradient descent on \\(\theta\\) to reduce the loss. The chain rule (Module 1, lesson 7) and PyTorch's autograd handle the rest.
+This is just MSE loss between the prediction and the target. Then we use gradient descent on \(\theta\) to reduce the loss. The chain rule (Module 1, lesson 7) and PyTorch's autograd handle the rest.
 
 ```python
 def compute_loss(q_net, state, action, reward, next_state, done, gamma):
@@ -115,7 +115,7 @@ In RL, the agent generates samples by interacting with the environment. Consecut
 
 In our naive update, the target is:
 
-\\[ r + \gamma \max_{a'} Q(s', a'; \theta) \\]
+\[ r + \gamma \max_{a'} Q(s', a'; \theta) \]
 
 Notice θ on both sides. The target depends on the current network parameters. When we update θ to reduce the loss, the target also changes, because it is computed using the same network. This is like trying to hit a moving target: every time you move toward where the target was, the target moves to a new location.
 
@@ -209,11 +209,11 @@ Standard replay samples uniformly at random. Priority replay samples with probab
 
 The sampling probability for transition i:
 
-\\[ P(i) = \frac{|\delta_i|^\alpha}{\sum_j |\delta_j|^\alpha} \\]
+\[ P(i) = \frac{|\delta_i|^\alpha}{\sum_j |\delta_j|^\alpha} \]
 
 **Decoding:**
-- \\(|\delta_i|\\): the absolute TD error for transition i (how wrong our prediction was)
-- \\(\alpha\\): controls the degree of prioritization (\\(\alpha = 0\\) is uniform sampling; \\(\alpha = 1\\) is fully proportional)
+- \(|\delta_i|\): the absolute TD error for transition i (how wrong our prediction was)
+- \(\alpha\): controls the degree of prioritization (\(\alpha = 0\) is uniform sampling; \(\alpha = 1\) is fully proportional)
 - New transitions are assigned maximum priority until their TD error is computed at first training
 
 Priority replay is used in Prioritized Experience Replay (PER), a common DQN extension. It requires an importance sampling correction to account for the non-uniform sampling distribution, and a data structure (sum-tree) to make priority sampling efficient. For the scope of this lesson, uniform replay is the baseline — priority replay is a well-known enhancement worth knowing about.
@@ -238,15 +238,15 @@ In SSA scheduling, this warmup period is especially important: early transitions
 
 ## Trick 2: Target networks
 
-Maintain a second network with the same architecture, called the **target network**, with parameters \\(\theta^-\\) (theta-minus, the convention). The target network's parameters are kept frozen, updated only periodically (every N training steps) to match the main network.
+Maintain a second network with the same architecture, called the **target network**, with parameters \(\theta^-\) (theta-minus, the convention). The target network's parameters are kept frozen, updated only periodically (every N training steps) to match the main network.
 
 The TD target is computed using the target network:
 
-\\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta^-) \\]
+\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta^-) \]
 
 The loss is still computed using the main network:
 
-\\[ L(\theta) = \left( Q(s, a; \theta) - \text{target} \right)^2 \\]
+\[ L(\theta) = \left( Q(s, a; \theta) - \text{target} \right)^2 \]
 
 This solves Problem 2: the target is now stable for a stretch of training updates (it changes only every N steps when we sync the target network to match the main network). The main network can train against this stable target without chasing a moving goal.
 
@@ -254,7 +254,7 @@ This solves Problem 2: the target is now stable for a stretch of training update
 
 The original DQN paper used a **hard update**: every C training steps, copy the online network's weights directly into the target network. Between updates, the target network is completely frozen.
 
-\\[ \theta^- \leftarrow \theta \quad \text{every C steps} \\]
+\[ \theta^- \leftarrow \theta \quad \text{every C steps} \]
 
 ```python
 import torch.nn as nn
@@ -274,13 +274,13 @@ The hard update creates a step function for the target: it is constant for C ste
 
 An alternative used in many modern algorithms: **soft update** (also called Polyak averaging). Rather than copying the weights periodically, blend the target network slightly toward the online network at every training step.
 
-\\[ \theta^- \leftarrow \tau \cdot \theta + (1 - \tau) \cdot \theta^- \\]
+\[ \theta^- \leftarrow \tau \cdot \theta + (1 - \tau) \cdot \theta^- \]
 
 **Decoding:**
-- \\(\tau\\) (tau): a small blending coefficient, typically 0.005 or smaller
-- \\(\theta\\): the online network's current weights
-- \\(\theta^-\\): the target network's current weights
-- With \\(\tau = 0.005\\), each step moves the target 0.5% of the way toward the online network
+- \(\tau\) (tau): a small blending coefficient, typically 0.005 or smaller
+- \(\theta\): the online network's current weights
+- \(\theta^-\): the target network's current weights
+- With \(\tau = 0.005\), each step moves the target 0.5% of the way toward the online network
 
 ```python
 def soft_update(online_net: nn.Module, target_net: nn.Module, tau: float = 0.005):
@@ -452,7 +452,7 @@ Even with experience replay and target networks, DQN can fail in predictable way
 
 The `max` in the TD target introduces a systematic upward bias:
 
-\\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta^-) \\]
+\[ \text{target} = r + \gamma \max_{a'} Q(s', a'; \theta^-) \]
 
 The `max` over noisy Q-value estimates tends to pick the most overestimated value. If Q-values have random noise (they always do, especially early in training), the max over noisy estimates is higher in expectation than the true max over the true values. This bias accumulates over many bootstrapping steps and causes Q-values to grow without bound in the worst case.
 
@@ -469,11 +469,11 @@ Double DQN decouples these two operations:
 - Use the **online network** to select which action is best in the next state
 - Use the **target network** to evaluate the Q-value of that action
 
-\\[ \text{target}_{\text{Double DQN}} = r + \gamma \cdot Q\left(s', \arg\max_{a'} Q(s', a'; \theta); \, \theta^-\right) \\]
+\[ \text{target}_{\text{Double DQN}} = r + \gamma \cdot Q\left(s', \arg\max_{a'} Q(s', a'; \theta); \, \theta^-\right) \]
 
 **Decoding:**
-- \\(\arg\max_{a'} Q(s', a'; \theta)\\): the online network selects the best action
-- \\(Q(\ldots; \theta^-)\\): the target network evaluates that specific action's Q-value
+- \(\arg\max_{a'} Q(s', a'; \theta)\): the online network selects the best action
+- \(Q(\ldots; \theta^-)\): the target network evaluates that specific action's Q-value
 - Since the selector (online) and evaluator (target) have different parameters, the same overestimation cannot dominate both
 
 ```python
