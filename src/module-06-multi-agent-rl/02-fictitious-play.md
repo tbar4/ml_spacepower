@@ -159,6 +159,62 @@ for w in window_sizes:
 
 After a few hundred rounds, both players' empirical frequencies should approach 1/3 for each regime, reflecting the Nash mixed strategy. The convergence is not monotone — players may oversample a regime for a while before correcting — but the time-average converges.
 
+```rust
+# extern crate rand;
+// rand = "0.10"
+use rand::{Rng, RngExt, SeedableRng};
+
+// 3×3 radar tasking game: Red gets +1 for matching regime, -1 for mismatching.
+// Blue wants to mismatch. Best response = regime with highest expected payoff.
+fn best_response(rng: &mut impl Rng, freq_opp: &[f64; 3], want_match: bool) -> usize {
+    let eu: [f64; 3] = [0, 1, 2].map(|i| {
+        (0..3_usize).map(|j| {
+            let raw = if i == j { 1.0_f64 } else { -1.0_f64 };
+            (if want_match { raw } else { -raw }) * freq_opp[j]
+        }).sum()
+    });
+    let max_eu = eu.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let candidates: Vec<usize> = (0..3).filter(|&i| (eu[i] - max_eu).abs() < 1e-10).collect();
+    // Break ties uniformly
+    candidates[(rng.random::<f64>() * candidates.len() as f64) as usize]
+}
+
+fn main() {
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(42);
+    // Uniform prior (1 observation of each regime before any play)
+    let mut count_red  = [1.0_f64; 3];   // Blue's belief about Red
+    let mut count_blue = [1.0_f64; 3];   // Red's belief about Blue
+    let mut hist_red   = Vec::new();
+
+    for _ in 0..2000 {
+        let s_r: f64 = count_red.iter().sum();
+        let s_b: f64 = count_blue.iter().sum();
+        let freq_red  = [count_red[0]/s_r,  count_red[1]/s_r,  count_red[2]/s_r];
+        let freq_blue = [count_blue[0]/s_b, count_blue[1]/s_b, count_blue[2]/s_b];
+
+        let a_red  = best_response(&mut rng, &freq_blue, true);   // Red wants match
+        let a_blue = best_response(&mut rng, &freq_red,  false);  // Blue wants mismatch
+
+        count_blue[a_blue] += 1.0;
+        count_red[a_red]   += 1.0;
+        hist_red.push(a_red);
+    }
+
+    let s_r: f64 = count_red.iter().sum();
+    let s_b: f64 = count_blue.iter().sum();
+    println!("Red  empirical: LEO={:.3}  MEO={:.3}  GEO={:.3}",
+             count_red[0]/s_r, count_red[1]/s_r, count_red[2]/s_r);
+    println!("Blue empirical: LEO={:.3}  MEO={:.3}  GEO={:.3}",
+             count_blue[0]/s_b, count_blue[1]/s_b, count_blue[2]/s_b);
+    println!("Nash target:    LEO=0.333  MEO=0.333  GEO=0.333");
+
+    for &w in &[100_usize, 500, 1000, 2000] {
+        let leo = hist_red[..w].iter().filter(|&&a| a == 0).count() as f64 / w as f64;
+        println!("  After {:4} rounds: Red LEO freq = {:.3}  (target 0.333)", w, leo);
+    }
+}
+```
+
 ## When fictitious play fails: cyclic games
 
 Fictitious play does not converge in all games. The canonical failure case is **Rock-Paper-Scissors** (or its SSA analog).

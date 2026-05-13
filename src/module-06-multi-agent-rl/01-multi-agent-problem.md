@@ -374,6 +374,62 @@ print("Independent Q-learning may cycle or settle on a suboptimal equilibrium.")
 print("Coordination (even simple leader-follower) achieves the efficient Nash outcome.")
 ```
 
+```rust
+# extern crate rand;
+// rand = "0.10"
+use rand::{Rng, RngExt, SeedableRng};
+
+fn eps_greedy(rng: &mut impl Rng, q: &[f64; 2], eps: f64) -> usize {
+    if rng.random::<f64>() < eps { (rng.random::<f64>() < 0.5) as usize }
+    else { if q[0] >= q[1] { 0 } else { 1 } }
+}
+
+fn main() {
+    // Spectrum coordination game payoffs[a1][a2] = (r1, r2)
+    // (A,A)=(-1,-1), (A,B)=(+2,+2), (B,A)=(+2,+2), (B,B)=(-1,-1)
+    let payoff = [[(-1.0_f64, -1.0_f64), (2.0, 2.0)],
+                  [(2.0, 2.0),           (-1.0, -1.0)]];
+    let (alpha, n_ep) = (0.1_f64, 5_000_usize);
+    let (eps0, eps1)  = (1.0_f64, 0.05_f64);
+
+    // --- Independent Q-learning ---
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(7);
+    let (mut q1, mut q2) = ([0.0_f64; 2], [0.0_f64; 2]);
+    let (mut collisions, mut reward_sum) = (0_usize, 0.0_f64);
+
+    for ep in 0..n_ep {
+        let eps = (eps1 + (eps0 - eps1) * (1.0 - ep as f64 / n_ep as f64)).max(eps1);
+        let a1 = eps_greedy(&mut rng, &q1, eps);
+        let a2 = eps_greedy(&mut rng, &q2, eps);
+        let (r1, r2) = payoff[a1][a2];
+        q1[a1] += alpha * (r1 - q1[a1]);
+        q2[a2] += alpha * (r2 - q2[a2]);
+        if ep >= n_ep - 500 { if a1 == a2 { collisions += 1; } reward_sum += r1; }
+    }
+    println!("Independent Q-learning (last 500 ep):");
+    println!("  Q1=[A:{:.3} B:{:.3}]  Q2=[A:{:.3} B:{:.3}]", q1[0], q1[1], q2[0], q2[1]);
+    println!("  Collision rate: {:.1}%  Avg reward/agent: {:.3}",
+             collisions as f64 / 5.0, reward_sum / 500.0);
+
+    // --- Leader-follower coordination (Op2 always complements Op1) ---
+    let mut rng2 = rand::rngs::SmallRng::seed_from_u64(7);
+    let mut q1c = [0.0_f64; 2];
+    let (mut coll_c, mut rew_c) = (0_usize, 0.0_f64);
+
+    for ep in 0..n_ep {
+        let eps = (eps1 + (eps0 - eps1) * (1.0 - ep as f64 / n_ep as f64)).max(eps1);
+        let a1 = eps_greedy(&mut rng2, &q1c, eps);
+        let a2 = 1 - a1;   // follower always picks the opposite channel
+        let (r1, _) = payoff[a1][a2];
+        q1c[a1] += alpha * (r1 - q1c[a1]);
+        if ep >= n_ep - 500 { if a1 == a2 { coll_c += 1; } rew_c += r1; }
+    }
+    println!("\nLeader-follower (last 500 ep):");
+    println!("  Collision rate: {:.1}%  Avg reward/agent: {:.3}",
+             coll_c as f64 / 5.0, rew_c / 500.0);
+}
+```
+
 The output will show that independent Q-learning often produces significant collision rates and lower average rewards than the coordinated approach. The collision rate under independent Q-learning can remain well above zero even after 5,000 episodes because neither agent has any mechanism to resolve the coordination ambiguity — when both Q-values are nearly equal, random tie-breaking leads to collisions roughly 50% of the time.
 
 The lesson: even in the simplest possible coordination game, independent Q-learning fails to reliably find a coordinated equilibrium. The remaining lessons in this module are algorithms designed to overcome this failure.

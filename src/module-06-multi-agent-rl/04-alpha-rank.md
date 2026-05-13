@@ -268,6 +268,74 @@ for i, row in enumerate(T):
     print(f"  {strategy_names[i][:8]:<10}" + "".join(f"{v:>8.3f}" for v in row))
 ```
 
+```rust
+// No external crates — pure arithmetic using f64::exp.
+
+fn fixation_probability(payoff_ij: f64, payoff_ii: f64, alpha: f64, n: usize) -> f64 {
+    let delta = payoff_ij - payoff_ii;  // fitness advantage of invader over resident
+    if delta.abs() < 1e-10 { return 1.0 / n as f64; }  // neutral drift
+    let num = 1.0 - (-alpha * delta).exp();
+    let den = 1.0 - (-alpha * n as f64 * delta).exp();
+    if den.abs() < 1e-15 { return 1.0 / n as f64; }
+    (num / den).clamp(0.0, 1.0)
+}
+
+fn transition_matrix(a: &[Vec<f64>], alpha: f64, n_pop: usize) -> Vec<Vec<f64>> {
+    let ns = a.len();
+    let mut t = vec![vec![0.0_f64; ns]; ns];
+    for i in 0..ns {
+        for j in 0..ns {
+            if i == j { continue; }
+            // j invades a population of i: j plays against i (a[j][i]), i plays itself (a[i][i])
+            t[i][j] = fixation_probability(a[j][i], a[i][i], alpha, n_pop) / (ns - 1) as f64;
+        }
+        let row_sum: f64 = t[i].iter().sum();
+        t[i][i] = 1.0 - row_sum;
+    }
+    t
+}
+
+fn stationary_distribution(t: &[Vec<f64>], max_iter: usize, tol: f64) -> Vec<f64> {
+    let ns = t.len();
+    let mut pi = vec![1.0 / ns as f64; ns];
+    for _ in 0..max_iter {
+        // pi_new[j] = sum_i pi[i] * t[i][j]
+        let mut pi_new = vec![0.0_f64; ns];
+        for i in 0..ns { for j in 0..ns { pi_new[j] += pi[i] * t[i][j]; } }
+        let max_diff = pi.iter().zip(&pi_new).map(|(a, b)| (a - b).abs())
+                         .fold(0.0_f64, f64::max);
+        let s: f64 = pi_new.iter().map(|&x| x.max(0.0)).sum();
+        pi = pi_new.into_iter().map(|x| x.max(0.0) / s).collect();
+        if max_diff < tol { break; }
+    }
+    pi
+}
+
+fn main() {
+    let names = ["Greedy", "Balanced", "Predictive", "Adversarial", "Uniform", "Historical"];
+    let a: Vec<Vec<f64>> = vec![
+        vec![ 0.0, -0.3, -0.5,  0.8,  1.2,  0.4],  // Greedy
+        vec![ 0.3,  0.0, -0.2,  0.9,  1.4,  0.6],  // Balanced
+        vec![ 0.5,  0.2,  0.0,  1.1,  1.6,  0.8],  // Predictive
+        vec![-0.8, -0.9, -1.1,  0.0,  0.5, -0.3],  // Adversarial
+        vec![-1.2, -1.4, -1.6, -0.5,  0.0, -0.9],  // Uniform
+        vec![-0.4, -0.6, -0.8,  0.3,  0.9,  0.0],  // Historical
+    ];
+
+    let t = transition_matrix(&a, 50.0, 100);
+    let scores = stationary_distribution(&t, 10_000, 1e-10);
+
+    let mut ranked: Vec<(usize, f64)> = scores.iter().cloned().enumerate().collect();
+    ranked.sort_by(|x, y| y.1.partial_cmp(&x.1).unwrap());
+
+    println!("{:<4} {:<15} {:>8}", "Rank", "Strategy", "Score");
+    println!("{}", "-".repeat(30));
+    for (pos, (i, score)) in ranked.iter().enumerate() {
+        println!("{:<4} {:<15} {:>8.4}", pos + 1, names[*i], score);
+    }
+}
+```
+
 The output will show a clear ranking of the six strategies. Predictive and Balanced typically score highest because they consistently beat most other strategies in the tournament. Uniform (random) should score lowest because it loses to almost everything. The Alpha-rank scores are proportional to how long an evolving population spends using each strategy when strategies compete and spread according to their tournament performance.
 
 ## Connection to reinforcement learning
