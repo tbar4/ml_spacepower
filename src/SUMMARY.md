@@ -19,6 +19,7 @@
   - [Escalation dynamics, crisis stability, and the ML deterrence framework](module-sp-spacepower-theory/05-escalation-and-ml-deterrence.md)
   - [From strategic theory to wargame design](module-sp-spacepower-theory/06-strategy-to-wargame-design.md)
   - [Battle networks, space battle management, and the AI-enabled decision loop](module-sp-spacepower-theory/07-battle-networks-and-sbm.md)
+  - [Project: wargame design brief and deterrence-by-detection assessment](module-sp-spacepower-theory/project.md)
 
 - [Module 1: Foundations](module-01-foundations/00-overview.md)
   - [Probability, distributions, and expectation](module-01-foundations/01-probability-distributions-expectation.md)
