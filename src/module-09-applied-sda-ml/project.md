@@ -335,6 +335,83 @@ def build_feature_vector(rec_prev: dict, rec_curr: dict,
         rec_curr['bstar'], f107, dt_hours, float(obj_class),
     ], dtype=np.float32)
 
+```rust
+// Pure stdlib — no external crates needed.
+use std::f64::consts::PI;
+
+const J2: f64 = 1.08263e-3;
+const RE: f64 = 6378.137;   // km
+const GM: f64 = 398600.4418; // km³/s²
+
+fn mean_motion_to_sma(n_rev_per_min: f64) -> f64 {
+    let n_rad_per_sec = n_rev_per_min * 2.0 * PI / 60.0;
+    (GM / n_rad_per_sec.powi(2)).powf(1.0 / 3.0)
+}
+
+fn compute_j2_raan_rate(n_rev_per_min: f64, a_km: f64, e: f64, i_deg: f64) -> f64 {
+    let n_rad_per_sec = n_rev_per_min * 2.0 * PI / 60.0;
+    let i_rad = i_deg.to_radians();
+    let raan_dot = -1.5 * n_rad_per_sec * J2 * (RE / a_km).powi(2)
+        / (1.0 - e * e).powi(2)
+        * i_rad.cos();
+    raan_dot.to_degrees() * 86400.0   // rad/s → deg/day
+}
+
+/// Returns [dn_dt, de_dt, di_dt, draan_dt, bstar, f107, dt_hours, obj_class]
+/// or None if dt_days is too small.
+fn build_feature_vector(
+    prev_n: f64, prev_e: f64, prev_i: f64, prev_raan: f64, prev_bstar: f64,
+    curr_n: f64, curr_e: f64, curr_i: f64, curr_raan: f64,
+    dt_days: f64, f107: f64, obj_class: f64,
+) -> Option<[f64; 8]> {
+    if dt_days < 1e-6 { return None; }
+    let dn_dt = (curr_n - prev_n) / dt_days;
+    let de_dt = (curr_e - prev_e) / dt_days;
+    let di_dt = (curr_i - prev_i) / dt_days;
+
+    let a_km    = mean_motion_to_sma(prev_n);
+    let j2_rate = compute_j2_raan_rate(prev_n, a_km, prev_e, prev_i);
+    // Subtract predicted J2 drift so only non-J2 RAAN changes register
+    let mut raan_residual = curr_raan - (prev_raan + j2_rate * dt_days);
+    raan_residual = ((raan_residual + 180.0) % 360.0) - 180.0;  // wrap to [-180, 180)
+    let draan_dt = raan_residual / dt_days;
+
+    Some([dn_dt, de_dt, di_dt, draan_dt, prev_bstar, f107, dt_days * 24.0, obj_class])
+}
+
+fn main() {
+    // ISS-like object: ~15.5 rev/day at 51.6° inclination
+    let n_rev_per_min = 15.5 / 1440.0;
+    let a_km = mean_motion_to_sma(n_rev_per_min);
+    let j2_rate = compute_j2_raan_rate(n_rev_per_min, a_km, 0.0006, 51.6);
+
+    println!("Semi-major axis: {:.2} km  (expected ~6780 km)", a_km);
+    println!("J2 RAAN drift:   {:.4} deg/day  (expected ~-7 deg/day)", j2_rate);
+
+    // Simulate a quiet day: curr_raan follows J2 prediction exactly → draan_dt ≈ 0
+    let quiet = build_feature_vector(
+        n_rev_per_min, 0.0006, 51.64, 22.45, 1.3e-4,
+        n_rev_per_min + 1e-8, 0.0006, 51.64, 22.45 + j2_rate * 1.0,
+        1.0, 150.0, 2.0,
+    );
+    // Simulate a maneuver day: mean motion jumps by 0.1%
+    let maneuver = build_feature_vector(
+        n_rev_per_min, 0.0006, 51.64, 22.45, 1.3e-4,
+        n_rev_per_min * 1.001, 0.0006, 51.64, 22.45 + j2_rate * 1.0,
+        1.0, 150.0, 2.0,
+    );
+
+    if let (Some(q), Some(m)) = (quiet, maneuver) {
+        println!("\n{:<12}  {:>12}  {:>12}", "Feature", "Quiet day", "Maneuver day");
+        let labels = ["dn_dt", "de_dt", "di_dt", "draan_dt", "bstar", "f107", "dt_h", "obj_class"];
+        for (label, (qv, mv)) in labels.iter().zip(q.iter().zip(m.iter())) {
+            println!("{:<12}  {:>12.4e}  {:>12.4e}", label, qv, mv);
+        }
+    }
+}
+```
+
+`raan_residual = ((raan_residual + 180.0) % 360.0) - 180.0` wraps the angle to \([-180°, 180°)\) — the same modular arithmetic as the Python version, since Rust's `%` on `f64` is the IEEE remainder (same sign as dividend).
 
 def gridded_history_to_window(
     gridded:    list[Optional[dict]],
