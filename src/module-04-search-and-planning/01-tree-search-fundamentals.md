@@ -302,6 +302,85 @@ Savings: 1 fewer leaf evaluation (the pruned subtree had 2 children skipped, 1 i
 
 On a tree with branching factor 35 (chess) and depth 10, the savings are measured in orders of magnitude.
 
+```rust
+// No external crates needed — pure recursive enum, no stdlib beyond println!
+
+enum GameNode {
+    Leaf(f64),
+    Internal(Vec<GameNode>),
+}
+
+impl GameNode {
+    fn minimax(&self, is_maximizer: bool, visited: &mut usize) -> f64 {
+        *visited += 1;
+        match self {
+            GameNode::Leaf(v) => *v,
+            GameNode::Internal(children) => {
+                if is_maximizer {
+                    children.iter()
+                        .map(|c| c.minimax(false, visited))
+                        .fold(f64::NEG_INFINITY, f64::max)
+                } else {
+                    children.iter()
+                        .map(|c| c.minimax(true, visited))
+                        .fold(f64::INFINITY, f64::min)
+                }
+            }
+        }
+    }
+
+    fn alphabeta(&self, alpha: f64, beta: f64, is_maximizer: bool, visited: &mut usize) -> f64 {
+        *visited += 1;
+        match self {
+            GameNode::Leaf(v) => *v,
+            GameNode::Internal(children) => {
+                let mut alpha = alpha;
+                let mut beta = beta;
+                if is_maximizer {
+                    let mut value = f64::NEG_INFINITY;
+                    for child in children {
+                        value = value.max(child.alphabeta(alpha, beta, false, visited));
+                        alpha = alpha.max(value);
+                        if alpha >= beta { break; }  // minimizer won't allow this branch
+                    }
+                    value
+                } else {
+                    let mut value = f64::INFINITY;
+                    for child in children {
+                        value = value.min(child.alphabeta(alpha, beta, true, visited));
+                        beta = beta.min(value);
+                        if alpha >= beta { break; }  // maximizer won't allow this branch
+                    }
+                    value
+                }
+            }
+        }
+    }
+}
+
+fn main() {
+    use GameNode::{Internal, Leaf};
+    // Same 9-leaf tree: boost [8,3,2], drift [5,4,6], dodge [1,9,7]
+    let root = Internal(vec![
+        Internal(vec![Leaf(8.0), Leaf(3.0), Leaf(2.0)]),
+        Internal(vec![Leaf(5.0), Leaf(4.0), Leaf(6.0)]),
+        Internal(vec![Leaf(1.0), Leaf(9.0), Leaf(7.0)]),
+    ]);
+
+    let mut mm_visited = 0;
+    let mm_value = root.minimax(true, &mut mm_visited);
+
+    let mut ab_visited = 0;
+    let ab_value = root.alphabeta(f64::NEG_INFINITY, f64::INFINITY, true, &mut ab_visited);
+
+    println!("Minimax value: {} (visited {} nodes)", mm_value, mm_visited);
+    println!("Alpha-beta value: {} (visited {} nodes)", ab_value, ab_visited);
+    println!("Savings: {} fewer evaluations", mm_visited - ab_visited);
+}
+```
+
+`Vec<GameNode>` stores children on the heap, so the recursive enum needs no explicit `Box`. The `fold(f64::NEG_INFINITY, f64::max)` pattern replaces Python's `max(... for ...)` generator.
+
 ---
 
 ## Iterative deepening

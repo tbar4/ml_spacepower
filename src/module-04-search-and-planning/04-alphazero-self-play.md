@@ -342,6 +342,43 @@ def compute_temperature(move_number: int, schedule: str = "step",
 
 The step schedule (AlphaZero's original approach) is simple and effective. Cosine annealing provides a smoother transition that some implementations find trains more stably.
 
+```rust
+// No external crates — uses std::f64::consts::PI for cosine annealing.
+
+fn compute_temperature(
+    move_number: usize, schedule: &str,
+    cutoff: usize, decay_start: usize, decay_end: usize, min_temp: f64,
+) -> f64 {
+    if schedule == "step" {
+        return if move_number < cutoff { 1.0 } else { 0.0 };
+    }
+    if move_number < decay_start { return 1.0; }
+    if move_number >= decay_end  { return min_temp; }
+    let progress = (move_number - decay_start) as f64 / (decay_end - decay_start) as f64;
+    match schedule {
+        "linear" => 1.0 - progress * (1.0 - min_temp),
+        "cosine"  => {
+            min_temp + 0.5 * (1.0 + (std::f64::consts::PI * progress).cos()) * (1.0 - min_temp)
+        }
+        other => panic!("Unknown schedule: {}", other),
+    }
+}
+
+fn main() {
+    let moves = [0_usize, 10, 15, 20, 30, 40];
+    println!("{:>5}  {:>7}  {:>7}  {:>7}", "Move", "Step", "Linear", "Cosine");
+    for &m in &moves {
+        println!(
+            "{:>5}  {:>7.3}  {:>7.3}  {:>7.3}",
+            m,
+            compute_temperature(m, "step",   15, 10, 40, 0.05),
+            compute_temperature(m, "linear", 15, 10, 40, 0.05),
+            compute_temperature(m, "cosine", 15, 10, 40, 0.05),
+        );
+    }
+}
+```
+
 ---
 
 ## Evaluating training progress
@@ -437,6 +474,37 @@ for i, win_rate in enumerate(simulated_win_rates):
     new_rating = tracker.update(win_rate, iteration=i+1)
     print(f"    => {'REPLACE' if tracker.should_replace(win_rate) else 'keep'} best network")
 ```
+
+```rust
+// No external crates — pure f64 math.
+
+fn expected_score(rating_a: f64, rating_b: f64) -> f64 {
+    1.0 / (1.0 + 10_f64.powf((rating_b - rating_a) / 400.0))
+}
+
+fn main() {
+    let k = 32.0_f64;
+    let initial = 1000.0_f64;
+    let win_rates = [0.45_f64, 0.48, 0.52, 0.56, 0.60, 0.62, 0.65, 0.58, 0.61, 0.63];
+
+    let mut champion = initial;
+    for (i, &wr) in win_rates.iter().enumerate() {
+        // New network always starts from initial rating
+        let expected = expected_score(initial, champion);
+        let new_rating = initial + k * (wr - expected);
+        let replace = wr > 0.55;
+        println!(
+            "Iter {:>2}: challenger {:.0}  champion {:.0}  wr={:.0}%  new={:.0}  {}",
+            i + 1, initial, champion, wr * 100.0, new_rating,
+            if replace { "REPLACE" } else { "keep" }
+        );
+        // champion rating tracks the most recent checkpoint
+        champion = new_rating;
+    }
+}
+```
+
+`10_f64.powf(x)` is Rust's equivalent of Python's `10 ** x` for floating-point exponents.
 
 ### When to replace the best model
 

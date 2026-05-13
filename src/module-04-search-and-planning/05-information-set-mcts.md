@@ -133,6 +133,41 @@ One subtlety in IS-MCTS: the visit count \\(N(s, a)\\) accumulated at an inner n
 
 For the SSA wargame, this means: two determinizations with different adversary satellite positions but identical own-satellite positions and identical sensor readings so far are mapped to the same information-set node for the purposes of sharing visit counts.
 
+```rust
+// No external crates — pure f64 math demonstrating the PUCT formula.
+
+fn puct_score(w: f64, n: f64, parent_n: f64, prior: f64, c: f64) -> f64 {
+    if n == 0.0 { return f64::INFINITY; }
+    w / n + c * prior * parent_n.sqrt() / (1.0 + n)
+}
+
+fn main() {
+    let parent_n = 40.0_f64;
+    let c = 1.5_f64;
+
+    // (name, W, N, prior probability from policy network)
+    let children = [("A", 14.0_f64, 20.0_f64, 0.50_f64),
+                    ("B",  6.0,     15.0,      0.20),
+                    ("C",  4.0,      5.0,      0.30)];
+
+    println!("{:<6} {:>6} {:>5} {:>6} {:>11}", "Child", "W/N", "N", "Prior", "PUCT");
+    let scores: Vec<f64> = children.iter()
+        .map(|&(_, w, n, p)| puct_score(w, n, parent_n, p, c))
+        .collect();
+    let best = scores.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    for (&(name, w, n, prior), &score) in children.iter().zip(scores.iter()) {
+        println!(
+            "{:<6} {:>6.3} {:>5.0} {:>6.2} {:>11.3}{}",
+            name, w / n, n, prior, score,
+            if score == best { "  <-- select" } else { "" }
+        );
+    }
+}
+```
+
+The PUCT exploration term \\(c \cdot p(a) \cdot \sqrt{N} / (1 + N(a))\\) differs from UCT's \\(\sqrt{\ln N / N(a)}\\): it is weighted by the policy prior, so a high-probability action retains a larger exploration bonus even after many visits. This allows the neural network's prior to guide early search without completely overriding the accumulated statistics.
+
 ```python
 import math
 

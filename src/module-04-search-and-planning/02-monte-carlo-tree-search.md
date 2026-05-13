@@ -248,6 +248,40 @@ UCT scores (c = 1.41, ln(40) ≈ 3.69):
 
 Child C has the highest UCT score even though it has been visited least. Its 80% win rate plus the exploration bonus outweighs A's higher absolute win count. MCTS will select C next, collect more data, and eventually the estimates will converge.
 
+```rust
+// No external crates — pure f64 math.
+
+fn uct_score(w: f64, n: f64, parent_n: f64, c: f64) -> f64 {
+    w / n + c * (parent_n.ln() / n).sqrt()
+}
+
+fn main() {
+    let parent_n = 40.0_f64;
+    let c = 1.41_f64;
+
+    // (name, W, N) — same three children as the table above
+    let children = [("A", 14.0_f64, 20.0_f64),
+                    ("B",  6.0,     15.0),
+                    ("C",  4.0,      5.0)];
+
+    println!("{:<6} {:>7} {:>9} {:>9} {:>10}", "Child", "W/N", "Explore", "UCT", "Select?");
+    let scores: Vec<f64> = children.iter()
+        .map(|&(_, w, n)| uct_score(w, n, parent_n, c))
+        .collect();
+    let best_score = scores.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    for ((&(name, w, n), &score)) in children.iter().zip(scores.iter()) {
+        println!(
+            "{:<6} {:>7.3} {:>9.3} {:>9.3} {:>10}",
+            name, w / n,
+            c * (parent_n.ln() / n).sqrt(),
+            score,
+            if score == best_score { "<-- select" } else { "" }
+        );
+    }
+}
+```
+
 ---
 
 ## MCTS as approximate minimax
