@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+checkpoints/
+training_history.json
+.pytest_cache/

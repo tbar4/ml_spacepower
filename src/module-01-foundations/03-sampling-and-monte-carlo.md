@@ -66,27 +66,27 @@ That is not exactly 300, but it is in the right ballpark. With 10 samples, you g
 
 ## The formula for Monte Carlo estimation
 
-Suppose you want to estimate \\(\mathbb{E}[f(X)]\\), the expected value of a function \\(f\\) applied to a random variable \\(X\\).
+Suppose you want to estimate \(\mathbb{E}[f(X)]\), the expected value of a function \(f\) applied to a random variable \(X\).
 
 Instead of computing the infinite (or intractable) sum, you:
 
-1. Draw \\(N\\) samples \\(x_1, x_2, \ldots, x_N\\) from the distribution of \\(X\\)
-2. Compute \\(f(x_i)\\) for each sample
+1. Draw \(N\) samples \(x_1, x_2, \ldots, x_N\) from the distribution of \(X\)
+2. Compute \(f(x_i)\) for each sample
 3. Average the results
 
 The Monte Carlo estimate is written:
 
-\\[ \hat{\mu} = \frac{1}{N} \sum_{i=1}^{N} f(x_i) \\]
+\[ \hat{\mu} = \frac{1}{N} \sum_{i=1}^{N} f(x_i) \]
 
 **Decoding the symbols:**
 
-**\\(\hat{\mu}\\)**: Read as "mu hat." The Greek letter mu (\\(\mu\\)) is conventional notation for a mean or expected value. The hat (\\(\hat{}\\)) means "estimated." So \\(\hat{\mu}\\) is "our estimate of the true mean." The hat distinguishes the estimate (which we computed from samples) from the true value (which we might never know exactly).
+**\(\hat{\mu}\)**: Read as "mu hat." The Greek letter mu (\(\mu\)) is conventional notation for a mean or expected value. The hat (\(\hat{}\)) means "estimated." So \(\hat{\mu}\) is "our estimate of the true mean." The hat distinguishes the estimate (which we computed from samples) from the true value (which we might never know exactly).
 
-**\\(\frac{1}{N}\\)**: Divide by \\(N\\), the number of samples. This is just computing an average.
+**\(\frac{1}{N}\)**: Divide by \(N\), the number of samples. This is just computing an average.
 
-**\\(\sum_{i=1}^{N}\\)**: Add up the following thing for i from 1 to N. Same summation sign as in lesson 1, now looping over samples rather than outcomes.
+**\(\sum_{i=1}^{N}\)**: Add up the following thing for i from 1 to N. Same summation sign as in lesson 1, now looping over samples rather than outcomes.
 
-**\\(f(x_i)\\)**: Apply function \\(f\\) to the i-th sample. In the debris example, f(x) = the cost of that pass (1,000 if collision, 0 if not).
+**\(f(x_i)\)**: Apply function \(f\) to the i-th sample. In the debris example, f(x) = the cost of that pass (1,000 if collision, 0 if not).
 
 **Reading it in English**: "Draw N samples, compute f for each one, add them all up, divide by N to get the average." That is the entire thing.
 
@@ -98,13 +98,13 @@ The Monte Carlo estimate is written:
 
 "Unbiased" means that if you ran your Monte Carlo estimator many times (each time drawing a fresh set of N samples), the average of your estimates would equal the true expectation. There is no systematic error in one direction or the other. Individual runs might be too high or too low, but they are wrong in a random, symmetric way.
 
-**Property 2: The error shrinks as \\(1/\sqrt{N}\\).**
+**Property 2: The error shrinks as \(1/\sqrt{N}\).**
 
 The standard error (a measure of how wrong a typical estimate is) follows this formula:
 
-\\[ \text{standard error} = \frac{\sigma}{\sqrt{N}} \\]
+\[ \text{standard error} = \frac{\sigma}{\sqrt{N}} \]
 
-Where \\(\sigma\\) (sigma, the Greek lowercase letter for standard deviation) describes how spread out your samples are, and \\(N\\) is the number of samples.
+Where \(\sigma\) (sigma, the Greek lowercase letter for standard deviation) describes how spread out your samples are, and \(N\) is the number of samples.
 
 **Decoding**: the standard error gets smaller as N gets bigger. But it shrinks by a square root factor. To get twice as accurate, you need four times as many samples. To get ten times as accurate, you need one hundred times as many samples.
 
@@ -130,29 +130,29 @@ The 1/√N trade-off tells us the error shrinks. But what is the *shape* of that
 
 **The CLT, stated plainly:**
 
-Take N independent random variables \\(X_1, X_2, \ldots, X_N\\), all drawn from the same distribution with mean \\(\mu\\) and variance \\(\sigma^2\\). Their average
+Take N independent random variables \(X_1, X_2, \ldots, X_N\), all drawn from the same distribution with mean \(\mu\) and variance \(\sigma^2\). Their average
 
-\\[ \bar{X}_N = \frac{1}{N} \sum_{i=1}^N X_i \\]
+\[ \bar{X}_N = \frac{1}{N} \sum_{i=1}^N X_i \]
 
-is itself a random variable. As N grows, the distribution of \\(\bar{X}_N\\) approaches a Normal distribution centered at \\(\mu\\) with standard deviation \\(\sigma/\sqrt{N}\\), regardless of what the original distribution looks like.
+is itself a random variable. As N grows, the distribution of \(\bar{X}_N\) approaches a Normal distribution centered at \(\mu\) with standard deviation \(\sigma/\sqrt{N}\), regardless of what the original distribution looks like.
 
 **Decoding:**
 
-**\\(\bar{X}_N\\)**: The sample mean of N draws — our Monte Carlo estimate \\(\hat{\mu}\\). It is random because different draws produce different averages.
+**\(\bar{X}_N\)**: The sample mean of N draws — our Monte Carlo estimate \(\hat{\mu}\). It is random because different draws produce different averages.
 
 **"Approaches a Normal distribution"**: The bell curve. Even if each individual sample comes from a wildly non-Normal distribution (like a Bernoulli, which only takes values 0 or 1), the average of many such samples looks Normal.
 
 **"Regardless of the original distribution shape"**: This is the remarkable part. It does not matter whether you are averaging collision indicators (Bernoulli), damage costs (heavy-tailed), or orbital period perturbations (roughly Normal). The sample mean is always approximately Normal for large N.
 
-**Why this validates MC estimation.** Our MC estimate \\(\hat{\mu}\\) is the sample mean. The CLT tells us that \\(\hat{\mu}\\) is approximately Normally distributed around the true mean \\(\mu\\). This means we can write:
+**Why this validates MC estimation.** Our MC estimate \(\hat{\mu}\) is the sample mean. The CLT tells us that \(\hat{\mu}\) is approximately Normally distributed around the true mean \(\mu\). This means we can write:
 
-\\[ \hat{\mu} \approx \mathcal{N}\!\left(\mu,\; \frac{\sigma^2}{N}\right) \\]
+\[ \hat{\mu} \approx \mathcal{N}\!\left(\mu,\; \frac{\sigma^2}{N}\right) \]
 
 And because Normal distributions are well-understood, we can compute confidence intervals directly:
 
-\\[ \mu \in \left[\hat{\mu} - 1.96\frac{\hat{\sigma}}{\sqrt{N}},\;\; \hat{\mu} + 1.96\frac{\hat{\sigma}}{\sqrt{N}}\right] \quad \text{with 95\% confidence} \\]
+\[ \mu \in \left[\hat{\mu} - 1.96\frac{\hat{\sigma}}{\sqrt{N}},\;\; \hat{\mu} + 1.96\frac{\hat{\sigma}}{\sqrt{N}}\right] \quad \text{with 95\% confidence} \]
 
-where \\(\hat{\sigma}\\) is the sample standard deviation, estimated from the same N samples. You do not need to know the true \\(\sigma\\) in advance.
+where \(\hat{\sigma}\) is the sample standard deviation, estimated from the same N samples. You do not need to know the true \(\sigma\) in advance.
 
 **Practical consequence**: after running your MC estimator, you can quote not just the estimate but its uncertainty. In SSA terms: "our MC estimate of conjunction probability is 0.0043, with a 95% CI of [0.0038, 0.0048] based on 10,000 simulations." That kind of statement is only possible because of the CLT.
 
@@ -200,6 +200,74 @@ print(f"True value inside CI:     {ci_lo <= p_true <= ci_hi}")
 
 The Bernoulli distribution could not look less Normal — it only ever takes values 0 or 1. Yet when you average 500 of them, the distribution of those averages is essentially a bell curve. That is the CLT in action.
 
+The same demonstration in Rust. Cargo dependencies for every Rust example in this lesson (versions chosen to match the Rust Playground's catalog so the mdbook "play" button works):
+
+```toml
+[dependencies]
+ndarray = "0.17"
+rand = "0.10"
+rand_distr = "0.6"
+```
+
+A wrinkle if you copy the code into a fresh playground tab outside mdbook: the playground has these crates built and ready, but they aren't pre-declared in `Cargo.toml`, so `use ndarray::...` on its own won't resolve. You need a stray `extern crate ndarray;` (and the same for `rand`, `rand_distr`) at the top of the file. mdbook's `#` line-prefix trick hides those declarations from the rendered page but still includes them when the "play" button ships the code to the playground, which is what the leading hidden lines in each block below are doing.
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+use ndarray::{Array1, Array2, Axis};
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(0);
+
+    let p_true = 0.30_f64;
+    let n_per_estimate = 500;
+    let n_estimates = 10_000;
+
+    // Each row: one MC experiment of n_per_estimate Bernoulli(p_true) flips.
+    // 1.0 = collision, 0.0 = no collision. rand_distr has a Bernoulli type,
+    // but rolling it by hand here keeps the example self-contained.
+    let samples = Array2::<f64>::from_shape_fn(
+        (n_estimates, n_per_estimate),
+        |_| if rng.random::<f64>() < p_true { 1.0 } else { 0.0 },
+    );
+
+    // Each MC estimate is the mean of one row.
+    let sample_means: Array1<f64> = samples.mean_axis(Axis(1)).unwrap();
+
+    let theoretical_std = (p_true * (1.0 - p_true) / n_per_estimate as f64).sqrt();
+
+    // ndarray's .std(ddof) takes the degrees-of-freedom correction. Pass 1.0
+    // to match PyTorch and NumPy (Bessel's correction). 0.0 gives population std.
+    let mc_mean = sample_means.mean().unwrap();
+    let mc_std  = sample_means.std(1.0);
+    println!("True mean:                {p_true:.4}");
+    println!("Mean of MC estimates:     {mc_mean:.4}");
+    println!("Std of MC estimates:      {mc_std:.6}");
+    println!("Theoretical std (CLT):    {theoretical_std:.6}");
+
+    let within_95 = sample_means
+        .iter()
+        .filter(|&&m| ((m - p_true) / theoretical_std).abs() <= 1.96)
+        .count() as f64
+        / n_estimates as f64;
+    println!("Fraction within 1.96σ:    {within_95:.4}");
+
+    // 95% confidence interval from a single MC run.
+    let single_run = samples.row(0);
+    let estimate = single_run.mean().unwrap();
+    let std_est  = single_run.std(1.0);
+    let ci_lo = estimate - 1.96 * std_est / (n_per_estimate as f64).sqrt();
+    let ci_hi = estimate + 1.96 * std_est / (n_per_estimate as f64).sqrt();
+    println!("\nSingle run estimate:      {estimate:.4}");
+    println!("95% CI:                   [{ci_lo:.4}, {ci_hi:.4}]");
+    println!("True value inside CI:     {}", ci_lo <= p_true && p_true <= ci_hi);
+}
+```
+
+One thing worth flagging about the imports: `rand::Rng` is the base RNG trait (formerly `RngCore`), and `rand::RngExt` is the extension trait that gives you `.random()`, `.random_range()`, and friends. You import both: `Rng` to use as a trait bound in function signatures, `RngExt` to call the convenience methods. This is a recent rearrangement (rand 0.10); older code you'll find online uses `rng.gen()` directly.
+
 ---
 
 ## Watching the convergence happen
@@ -242,6 +310,45 @@ for N in [10, 100, 1_000, 10_000, 100_000]:
 
 When you run this, you will see the error and standard deviation shrink roughly by a factor of 3 each time N increases by a factor of 10 (because √10 ≈ 3.16). That is the 1/√N convergence, made visible.
 
+And in Rust:
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+use ndarray::Array1;
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+use std::f64::consts::PI;
+
+fn estimate_eclipse_fraction(n: usize, rng: &mut impl Rng) -> f64 {
+    // Sample n random positions along a circular orbit (uniform angles in [0, 2π)).
+    let angles = Array1::<f64>::from_shape_fn(n, |_| rng.random::<f64>() * 2.0 * PI);
+    let angle_deg = angles.mapv(|a| a.to_degrees());
+    let in_eclipse = angle_deg.mapv(|d| if (110.0..=250.0).contains(&d) { 1.0 } else { 0.0 });
+    in_eclipse.mean().unwrap()
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(42);
+
+    let true_fraction = (250.0_f64 - 110.0) / 360.0;
+    println!("True fraction (simplified model): {true_fraction:.4}");
+    println!();
+
+    for n in [10, 100, 1_000, 10_000, 100_000] {
+        // Run 5 times to see the spread.
+        let runs: Vec<f64> = (0..5).map(|_| estimate_eclipse_fraction(n, &mut rng)).collect();
+        let runs = Array1::from(runs);
+        let mean  = runs.mean().unwrap();
+        let std   = runs.std(1.0);
+        let error = (mean - true_fraction).abs();
+        println!("N={n:>6}: mean={mean:.4}, std={std:.4}, error={error:.4}");
+    }
+}
+```
+
+The pattern `from_shape_fn(n, |_| ...)` is the workhorse for building random arrays without pulling in `ndarray-rand`. You'll see it again in every subsequent example.
+
 ---
 
 ## The canonical Monte Carlo example: estimating pi
@@ -279,6 +386,37 @@ With N = 100, you might get 3.08 or 3.24, off by a noticeable amount. With N = 1
 
 Notice that going from 100 samples to 1,000,000 samples is a factor of 10,000 increase in computation, but the accuracy only improved from roughly ±0.05 to roughly ±0.002, a factor of 25. That is the 1/√N scaling at work. Getting two more decimal places of pi costs 10,000 times more samples.
 
+```rust
+# extern crate ndarray;
+# extern crate rand;
+use ndarray::{Array2, Axis};
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+use std::f64::consts::PI;
+
+fn estimate_pi(n: usize, rng: &mut impl Rng) -> f64 {
+    // n points uniform in [0,1] x [0,1]. Each call to rng draws one coordinate.
+    let points = Array2::<f64>::from_shape_fn((n, 2), |_| rng.random::<f64>());
+    let distance_squared = points.mapv(|x| x * x).sum_axis(Axis(1));
+    let inside = distance_squared.mapv(|d| if d <= 1.0 { 1.0 } else { 0.0 });
+    4.0 * inside.mean().unwrap()
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(42);
+
+    println!("True pi:  {PI:.6}");
+    println!();
+    for n in [100, 1_000, 10_000, 100_000, 1_000_000] {
+        let estimate = estimate_pi(n, &mut rng);
+        let error = (estimate - PI).abs();
+        println!("N={n:>7}: estimate={estimate:.5}, error={error:.5}");
+    }
+}
+```
+
+`sum_axis(Axis(1))` is the direct equivalent of PyTorch's `sum(dim=1)`. The `Axis(1)` newtype is ndarray being explicit about which dimension you mean, so you can't accidentally collapse the wrong one. You'll see this everywhere from here on.
+
 ---
 
 ## Variance reduction: getting more accuracy without more samples
@@ -314,27 +452,27 @@ If the integrand (the thing you are averaging) is concentrated in a small region
 
 ### The formula
 
-Suppose you want to estimate \\(\mathbb{E}_p[f(X)] = \int f(x)\, p(x)\, dx\\), but sampling from \\(p\\) is inefficient because \\(f(x)\\) is large only in a small region.
+Suppose you want to estimate \(\mathbb{E}_p[f(X)] = \int f(x)\, p(x)\, dx\), but sampling from \(p\) is inefficient because \(f(x)\) is large only in a small region.
 
-Choose a proposal distribution \\(q\\) that assigns higher probability to the region where \\(f(x)\\) is large. Then:
+Choose a proposal distribution \(q\) that assigns higher probability to the region where \(f(x)\) is large. Then:
 
-\\[ \mathbb{E}_p[f(X)] = \int f(x)\, p(x)\, dx = \int f(x)\, \frac{p(x)}{q(x)}\, q(x)\, dx = \mathbb{E}_q\!\left[f(X)\, \frac{p(x)}{q(x)}\right] \\]
+\[ \mathbb{E}_p[f(X)] = \int f(x)\, p(x)\, dx = \int f(x)\, \frac{p(x)}{q(x)}\, q(x)\, dx = \mathbb{E}_q\!\left[f(X)\, \frac{p(x)}{q(x)}\right] \]
 
 The importance sampling estimator is:
 
-\\[ \hat{\mu}_{\text{IS}} = \frac{1}{N} \sum_{i=1}^{N} f(x_i) \cdot \frac{p(x_i)}{q(x_i)}, \quad x_i \sim q \\]
+\[ \hat{\mu}_{\text{IS}} = \frac{1}{N} \sum_{i=1}^{N} f(x_i) \cdot \frac{p(x_i)}{q(x_i)}, \quad x_i \sim q \]
 
 **Decoding the symbols:**
 
-**\\(q(x)\\)**: The proposal distribution — the distribution you actually sample from. You choose \\(q\\); the art of importance sampling is choosing it well.
+**\(q(x)\)**: The proposal distribution — the distribution you actually sample from. You choose \(q\); the art of importance sampling is choosing it well.
 
-**\\(p(x)\\)**: The original distribution you want to average under.
+**\(p(x)\)**: The original distribution you want to average under.
 
-**\\(p(x_i)/q(x_i)\\)**: The importance weight for sample \\(x_i\\). If \\(q\\) over-samples a region relative to \\(p\\), the weight is less than 1 (down-weighting the over-sampled points). If \\(q\\) under-samples a region, the weight is greater than 1.
+**\(p(x_i)/q(x_i)\)**: The importance weight for sample \(x_i\). If \(q\) over-samples a region relative to \(p\), the weight is less than 1 (down-weighting the over-sampled points). If \(q\) under-samples a region, the weight is greater than 1.
 
-**Reading in English**: "Draw samples from a smarter distribution \\(q\\), then multiply each sample's contribution by a correction factor that accounts for how \\(q\\) distorts the sampling."
+**Reading in English**: "Draw samples from a smarter distribution \(q\), then multiply each sample's contribution by a correction factor that accounts for how \(q\) distorts the sampling."
 
-The estimator is still unbiased: \\(\mathbb{E}_q[\hat{\mu}_{\text{IS}}] = \mathbb{E}_p[f(X)]\\).
+The estimator is still unbiased: \(\mathbb{E}_q[\hat{\mu}_{\text{IS}}] = \mathbb{E}_p[f(X)]\).
 
 ### SSA example: estimating conjunction probability for rare close approaches
 
@@ -403,11 +541,92 @@ print(f"Std of IS estimates:         {torch.tensor(is_runs).std().item():.6f}")
 
 The importance sampling estimator concentrates its computational budget on the dangerous region, dramatically reducing variance for the same N.
 
+The Rust translation is more interesting than the others because `rand_distr::Normal` gives you sampling but not log-density. You have to roll the log-PDF yourself, which is a useful exercise:
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+# extern crate rand_distr;
+use ndarray::Array1;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
+use rand_distr::{Distribution, Normal};
+use std::f64::consts::PI;
+
+// Log-PDF of a univariate Normal(mu, sigma). PyTorch's Normal.log_prob does
+// this; rand_distr deliberately separates "sample from this distribution"
+// (its job) from "evaluate this density" (statrs's job or yours).
+fn normal_log_prob(x: f64, mu: f64, sigma: f64) -> f64 {
+    let z = (x - mu) / sigma;
+    -0.5 * z * z - sigma.ln() - 0.5 * (2.0 * PI).ln()
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(7);
+
+    let mu_sep    = 500.0_f64;
+    let sigma_sep = 200.0_f64;
+    let threshold = 100.0_f64;
+
+    // True answer: Φ((threshold - μ)/σ) = Φ(-2.0). Computing the Normal CDF
+    // in Rust requires the error function, which isn't in std. statrs would
+    // give it, but we already know the answer for this example.
+    let true_prob = 0.02275_f64;
+    println!("True conjunction probability: {true_prob:.6}");
+
+    // --- Naive Monte Carlo: sample from p, check below threshold. ---
+    let n = 50_000;
+    let p_dist = Normal::new(mu_sep, sigma_sep).unwrap();
+    let samples_naive = Array1::<f64>::from_shape_fn(n, |_| p_dist.sample(&mut rng));
+    let mc_naive = samples_naive
+        .mapv(|x| if x < threshold { 1.0 } else { 0.0 })
+        .mean()
+        .unwrap();
+    println!("\nNaive MC (N={n}):   estimate={mc_naive:.6}");
+    println!("  Relative error: {:.2}%", 100.0 * (mc_naive - true_prob).abs() / true_prob);
+
+    // --- Importance sampling: draw from q centered on the dangerous region. ---
+    let q_mu    = 0.0_f64;
+    let q_sigma = 50.0_f64;
+    let q_dist  = Normal::new(q_mu, q_sigma).unwrap();
+    let samples_is = Array1::<f64>::from_shape_fn(n, |_| q_dist.sample(&mut rng));
+
+    // Importance weights: p(x) / q(x), computed in log-space for stability.
+    let log_w = samples_is.mapv(|x|
+        normal_log_prob(x, mu_sep, sigma_sep) - normal_log_prob(x, q_mu, q_sigma));
+    let w   = log_w.mapv(f64::exp);
+    let f_x = samples_is.mapv(|x| if x < threshold { 1.0 } else { 0.0 });
+    let mc_is = (&f_x * &w).mean().unwrap();
+    println!("\nImportance sampling (N={n}):   estimate={mc_is:.6}");
+    println!("  Relative error: {:.2}%", 100.0 * (mc_is - true_prob).abs() / true_prob);
+
+    // --- Compare variance across many independent runs. ---
+    let n_runs = 200;
+    let mut naive_runs = Vec::with_capacity(n_runs);
+    let mut is_runs    = Vec::with_capacity(n_runs);
+    for _ in 0..n_runs {
+        let s = Array1::<f64>::from_shape_fn(n, |_| p_dist.sample(&mut rng));
+        naive_runs.push(s.mapv(|x| if x < threshold { 1.0 } else { 0.0 }).mean().unwrap());
+
+        let sq = Array1::<f64>::from_shape_fn(n, |_| q_dist.sample(&mut rng));
+        let lw = sq.mapv(|x| normal_log_prob(x, mu_sep, sigma_sep) - normal_log_prob(x, q_mu, q_sigma));
+        let f  = sq.mapv(|x| if x < threshold { 1.0 } else { 0.0 });
+        is_runs.push((&f * &lw.mapv(f64::exp)).mean().unwrap());
+    }
+    let naive = Array1::from(naive_runs);
+    let is    = Array1::from(is_runs);
+    println!("\nStd of naive MC estimates:   {:.6}", naive.std(1.0));
+    println!("Std of IS estimates:         {:.6}", is.std(1.0));
+}
+```
+
+Two things worth flagging here. First, `&f_x * &w` (using references) is how you do elementwise multiplication of two ndarrays without consuming them. Drop the references and the arrays get moved into the operation, which usually isn't what you want. Second, hand-rolling `normal_log_prob` made the math explicit: this is just `-z²/2 - log σ - ½ log(2π)`, with `z = (x - μ)/σ`. PyTorch's `log_prob` is doing exactly that arithmetic for you.
+
 ### The critical warning: coverage
 
-Importance sampling can fail catastrophically if the proposal \\(q\\) does not cover the full support of \\(p\\). Specifically, wherever \\(p(x) > 0\\) but \\(q(x) = 0\\), the weight \\(p(x)/q(x)\\) is infinite — those samples can never be drawn, so their contribution is permanently lost, and the estimator is **biased** (no longer corrects to the true expectation).
+Importance sampling can fail catastrophically if the proposal \(q\) does not cover the full support of \(p\). Specifically, wherever \(p(x) > 0\) but \(q(x) = 0\), the weight \(p(x)/q(x)\) is infinite — those samples can never be drawn, so their contribution is permanently lost, and the estimator is **biased** (no longer corrects to the true expectation).
 
-The practical rule: \\(q\\) should have heavier tails than \\(p\\), not lighter. A proposal with lighter tails will create regions where \\(p(x)/q(x)\\) is astronomically large — and the few samples that land there will dominate the estimate, causing high variance and instability. In SSA terms: if your proposal distribution only covers "near-nominal" conjunction geometries, you will miss the contribution of extreme-approach scenarios entirely.
+The practical rule: \(q\) should have heavier tails than \(p\), not lighter. A proposal with lighter tails will create regions where \(p(x)/q(x)\) is astronomically large — and the few samples that land there will dominate the estimate, causing high variance and instability. In SSA terms: if your proposal distribution only covers "near-nominal" conjunction geometries, you will miss the contribution of extreme-approach scenarios entirely.
 
 ---
 
@@ -419,25 +638,25 @@ Each rollout is one sample. The winning probability estimate improves as more ro
 
 ### The MCTS value estimate as a Monte Carlo average
 
-In MCTS, each node in the search tree tracks two quantities: \\(W\\) (total wins accumulated from rollouts through this node) and \\(N\\) (total visits). The value estimate is simply:
+In MCTS, each node in the search tree tracks two quantities: \(W\) (total wins accumulated from rollouts through this node) and \(N\) (total visits). The value estimate is simply:
 
-\\[ \hat{V}(\text{node}) = \frac{W}{N} \\]
+\[ \hat{V}(\text{node}) = \frac{W}{N} \]
 
-This is exactly a Monte Carlo average of rollout outcomes (each rollout returns 1 for a win and 0 for a loss). By the CLT, this estimate is approximately Normal around the true win probability, with standard deviation \\(\sim 1/(2\sqrt{N})\\) (for win probabilities near 0.5). With 40 rollouts, the standard error is about 0.079; with 400 rollouts it falls to 0.025 — a 3× improvement for a 10× cost.
+This is exactly a Monte Carlo average of rollout outcomes (each rollout returns 1 for a win and 0 for a loss). By the CLT, this estimate is approximately Normal around the true win probability, with standard deviation \(\sim 1/(2\sqrt{N})\) (for win probabilities near 0.5). With 40 rollouts, the standard error is about 0.079; with 400 rollouts it falls to 0.025 — a 3× improvement for a 10× cost.
 
 ### The UCB exploration-exploitation tradeoff
 
 MCTS does not distribute rollouts uniformly across all child nodes. It uses the Upper Confidence Bound (UCB) formula to balance exploration and exploitation:
 
-\\[ \text{UCB}(\text{node}) = \frac{W_i}{N_i} + c \sqrt{\frac{\ln N_{\text{parent}}}{N_i}} \\]
+\[ \text{UCB}(\text{node}) = \frac{W_i}{N_i} + c \sqrt{\frac{\ln N_{\text{parent}}}{N_i}} \]
 
 **Decoding:**
 
-**\\(W_i / N_i\\)**: The exploitation term — the current value estimate for child \\(i\\). Prefer nodes with high estimated value.
+**\(W_i / N_i\)**: The exploitation term — the current value estimate for child \(i\). Prefer nodes with high estimated value.
 
-**\\(c \sqrt{\ln N_{\text{parent}} / N_i}\\)**: The exploration term. When \\(N_i\\) is small, this term is large — under-visited nodes get a bonus. The \\(\ln N_{\text{parent}}\\) in the numerator grows slowly, preventing the exploration bonus from dominating forever.
+**\(c \sqrt{\ln N_{\text{parent}} / N_i}\)**: The exploration term. When \(N_i\) is small, this term is large — under-visited nodes get a bonus. The \(\ln N_{\text{parent}}\) in the numerator grows slowly, preventing the exploration bonus from dominating forever.
 
-**\\(c\\)**: A hyperparameter controlling the exploration-exploitation trade-off. Common values are \\(\sqrt{2}\\) or 1.0; in practice it is tuned per domain.
+**\(c\)**: A hyperparameter controlling the exploration-exploitation trade-off. Common values are \(\sqrt{2}\) or 1.0; in practice it is tuned per domain.
 
 The UCB formula is optimal in the bandit setting (proven by Auer, Cesa-Bianchi, and Fischer, 2002): it minimizes regret (the gap between UCB's cumulative reward and that of always choosing the best arm) at a logarithmic rate. In a game tree, this means MCTS concentrates rollouts on the most promising lines while guaranteeing no subtree is permanently neglected.
 
@@ -488,6 +707,79 @@ for rollout in range(1, 401):
 
 After 40 rollouts the estimates are noisy; after 400, they have converged close to the true values and the algorithm reliably identifies child 1 as the best. This is the 1/√N improvement made concrete in a game-tree context.
 
+The Rust version. Note how the per-node stats become a couple of `Vec<f64>`s; you'll see this same shape (visit counts, accumulated values) in the real MCTS implementation in Module 4, just wrapped in a proper tree.
+
+```rust
+# extern crate rand;
+use rand::{RngExt, SeedableRng};
+use rand::rngs::StdRng;
+
+fn ucb_score(w: f64, n: f64, n_total: f64, c: f64) -> f64 {
+    if n == 0.0 {
+        f64::INFINITY            // unvisited nodes get infinite priority
+    } else {
+        w / n + c * (n_total.ln() / n).sqrt()
+    }
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(3);
+
+    let true_win_probs = [0.45_f64, 0.60, 0.35];
+    let n_children = true_win_probs.len();
+
+    let mut w = vec![0.0_f64; n_children];
+    let mut n = vec![0.0_f64; n_children];
+    let mut n_total = 0_u32;
+    let c = 2.0_f64.sqrt();
+
+    let (best_idx, &best_prob) = true_win_probs
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+        .unwrap();
+    println!("True win probs: {:?}", true_win_probs);
+    println!("Best child: {best_idx} (prob={best_prob:.2})");
+    println!();
+
+    let checkpoints = [10, 40, 100, 200, 400];
+
+    for rollout in 1..=400 {
+        // Select child with highest UCB score.
+        let (selected, _) = (0..n_children)
+            .map(|i| (i, ucb_score(w[i], n[i], (n_total + 1) as f64, c)))
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+            .unwrap();
+
+        // Rollout: Bernoulli draw from this child's true win probability.
+        let outcome = if rng.random::<f64>() < true_win_probs[selected] { 1.0 } else { 0.0 };
+        w[selected] += outcome;
+        n[selected] += 1.0;
+        n_total += 1;
+
+        if checkpoints.contains(&rollout) {
+            let estimates: Vec<f64> = (0..n_children)
+                .map(|i| if n[i] > 0.0 { w[i] / n[i] } else { 0.0 })
+                .collect();
+            let (best, _) = estimates
+                .iter()
+                .enumerate()
+                .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                .unwrap();
+            let visits: Vec<i64> = n.iter().map(|&x| x as i64).collect();
+            let est_str: Vec<String> = estimates.iter().map(|e| format!("{:.3}", e)).collect();
+            println!(
+                "After {rollout:>3} rollouts: estimates=[{}], visits={:?}, best={best}",
+                est_str.join(", "),
+                visits
+            );
+        }
+    }
+}
+```
+
+The repeated `partial_cmp(...).unwrap()` is the Rust tax for working with floats: `f64` doesn't implement `Ord` because of NaN, so you can't just call `.max()` on an iterator of floats. In production code you'd wrap this in a helper. For now, see it for what it is and move on.
+
 The first M in MCCFR (Monte Carlo Counterfactual Regret Minimization) refers to the same idea. Instead of computing counterfactual regret over all possible game trajectories, MCCFR samples trajectories and estimates the regret from those samples. It converges to the correct solution as the number of samples grows, at the 1/√N rate.
 
 ---
@@ -500,15 +792,15 @@ So far we have been accumulating MC estimates in linear probability space. For m
 
 The standard fix is to work in log-space and use the log-sum-exp identity to safely aggregate:
 
-\\[ \log\left(\sum_i e^{a_i}\right) = a_{\max} + \log\left(\sum_i e^{a_i - a_{\max}}\right) \\]
+\[ \log\left(\sum_i e^{a_i}\right) = a_{\max} + \log\left(\sum_i e^{a_i - a_{\max}}\right) \]
 
 **Decoding:**
 
-**\\(a_{\max}\\)**: The maximum of the \\(a_i\\) values. Shifting all values down by \\(a_{\max}\\) before exponentiating keeps the numbers in a safe range — the largest term becomes \\(e^0 = 1\\) and all others are smaller.
+**\(a_{\max}\)**: The maximum of the \(a_i\) values. Shifting all values down by \(a_{\max}\) before exponentiating keeps the numbers in a safe range — the largest term becomes \(e^0 = 1\) and all others are smaller.
 
 **Why it works**: The two forms are mathematically equal; the second just avoids numerical overflow/underflow by keeping all exponentials near 1.
 
-For Monte Carlo in log-space, the pattern is: compute \\(\log f(x_i)\\) for each sample, then use `torch.logsumexp` to aggregate.
+For Monte Carlo in log-space, the pattern is: compute \(\log f(x_i)\) for each sample, then use `torch.logsumexp` to aggregate.
 
 ### When to accumulate in log-space vs. linear space
 
@@ -517,6 +809,7 @@ For Monte Carlo in log-space, the pattern is: compute \\(\log f(x_i)\\) for each
 
 ```python
 import torch
+import math
 
 torch.manual_seed(11)
 
@@ -572,6 +865,70 @@ print(f"\nLog-space MC estimate:             {math.exp(log_mean_estimate):.6f}")
 
 The underflow from 500 factors of 0.97 to exactly 0.0 is the silent-OOM equivalent for numerical computation: the program runs, returns an answer, and the answer is completely wrong. Log-space accumulation prevents this.
 
+The Rust version. There's no `torch.logsumexp` here, but writing one yourself is six lines and shows exactly what the trick is doing:
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+# extern crate rand_distr;
+use ndarray::{Array1, Array2, Axis};
+use rand::{RngExt, SeedableRng};
+use rand::rngs::StdRng;
+use rand_distr::{Distribution, StandardNormal};
+
+// Numerically safe log(sum(exp(x_i))). Subtract the max before exponentiating
+// so the largest term is e^0 = 1 and everything else is smaller. PyTorch's
+// torch.logsumexp does the same thing under the hood.
+fn logsumexp(xs: &Array1<f64>) -> f64 {
+    let max = xs.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let s: f64 = xs.iter().map(|&x| (x - max).exp()).sum();
+    max + s.ln()
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(11);
+
+    let p_survive = 0.97_f64;
+    let n_passes = 50_usize;
+    let n_simulations = 10_000;
+
+    // --- Naive Bernoulli MC: 1 if all passes survived, 0 if any collision. ---
+    let outcomes = Array2::<f64>::from_shape_fn(
+        (n_simulations, n_passes),
+        |_| if rng.random::<f64>() < p_survive { 1.0 } else { 0.0 },
+    );
+    let survived_all = outcomes.map_axis(Axis(1), |row| row.iter().product::<f64>());
+    let mc_linear = survived_all.mean().unwrap();
+
+    // --- Demonstrate underflow in f32. ---
+    // 100 factors of 0.97 is fine; 500 factors collapses to exactly 0.0.
+    let product_100: f32 = (0..100).map(|_| 0.97_f32).product();
+    let product_500: f32 = (0..500).map(|_| 0.97_f32).product();
+    let log_sum_100 = 100.0 * 0.97_f64.ln();
+    let log_sum_500 = 500.0 * 0.97_f64.ln();
+
+    println!("True 50-pass survival probability: {:.6}", p_survive.powi(n_passes as i32));
+    println!("MC estimate (Bernoulli draws):     {mc_linear:.6}");
+    println!();
+    println!("100-factor product in f32:         {product_100:.8}");
+    println!("100-factor log-sum (exact):        {:.8}", log_sum_100.exp());
+    println!();
+    println!("500-factor product in f32:         {product_500}");          // 0.0
+    println!("500-factor log-space result:       {:.8e}", log_sum_500.exp());
+
+    // --- Log-space MC accumulation with the logsumexp helper. ---
+    // Each "sample" is a log-probability that 50 passes survived, plus a bit
+    // of Gaussian noise to simulate MC variation across simulations.
+    let log_contributions = Array1::<f64>::from_shape_fn(n_simulations, |_| {
+        p_survive.ln() * n_passes as f64 + StandardNormal.sample(&mut rng) * 0.05
+    });
+    let log_mean = logsumexp(&log_contributions) - (n_simulations as f64).ln();
+    println!("\nLog-space MC estimate:             {:.6}", log_mean.exp());
+}
+```
+
+The `f64::max` fold pattern (`fold(f64::NEG_INFINITY, f64::max)`) is the canonical Rust way to take a max over floats; the same NaN-ordering issue from the MCTS example is why this exists. You will see this fold throughout numerical Rust code.
+
 ---
 
 ## Common pitfalls
@@ -580,7 +937,7 @@ The underflow from 500 factors of 0.97 to exactly 0.0 is the silent-OOM equivale
 
 **Pitfall 2: Forgetting the 1/√N cost.** Going from ±5% error to ±0.5% error requires 100× more samples, not 10×. MC is powerful but the variance reduction is sublinear.
 
-**Pitfall 3: Importance sampling with thin-tailed proposals.** If \\(q\\) has lighter tails than \\(p\\), importance weights in the tails blow up. The estimator becomes dominated by a handful of extreme samples. Always verify that \\(q\\) covers the support of \\(p\\) and has heavier tails.
+**Pitfall 3: Importance sampling with thin-tailed proposals.** If \(q\) has lighter tails than \(p\), importance weights in the tails blow up. The estimator becomes dominated by a handful of extreme samples. Always verify that \(q\) covers the support of \(p\) and has heavier tails.
 
 **Pitfall 4: Ignoring numerical underflow.** Multiplying together many probabilities in linear float32 will silently underflow to 0. Use log-space accumulation whenever you are multiplying more than ~50 independent probabilities.
 
@@ -590,12 +947,12 @@ The underflow from 500 factors of 0.97 to exactly 0.0 is the silent-OOM equivale
 
 ## Key Takeaways
 
-- **Monte Carlo estimation** replaces an intractable sum or integral with an average over N random samples: \\(\hat{\mu} = \frac{1}{N}\sum f(x_i)\\). The estimate is unbiased and converges at rate \\(\sigma/\sqrt{N}\\).
+- **Monte Carlo estimation** replaces an intractable sum or integral with an average over N random samples: \(\hat{\mu} = \frac{1}{N}\sum f(x_i)\). The estimate is unbiased and converges at rate \(\sigma/\sqrt{N}\).
 - **The Central Limit Theorem** guarantees that the sample mean is approximately Normally distributed around the true mean for large N, regardless of the underlying distribution shape. This is why confidence intervals on MC estimates work, and why you can quote uncertainty alongside any MC result.
-- **Importance sampling** corrects for sampling from a non-uniform proposal \\(q\\) by reweighting each sample by \\(p(x_i)/q(x_i)\\). It is a powerful variance reducer for rare-event estimation (like dangerous conjunctions) but catastrophically fails if \\(q\\) does not cover the support of \\(p\\).
+- **Importance sampling** corrects for sampling from a non-uniform proposal \(q\) by reweighting each sample by \(p(x_i)/q(x_i)\). It is a powerful variance reducer for rare-event estimation (like dangerous conjunctions) but catastrophically fails if \(q\) does not cover the support of \(p\).
 - **MCTS value estimates** are Monte Carlo averages of rollout outcomes. The UCB formula (exploitation + exploration bonus) directs rollouts efficiently across the tree, providing logarithmic regret in the bandit sense. More rollouts give better estimates at the 1/√N rate.
 - **Log-space accumulation** (via the log-sum-exp trick) is essential when multiplying together many small probabilities. Naive linear-space products silently underflow to 0 in float32, producing wrong answers with no error signal.
-- The 1/√N trade-off is **fundamental and unavoidable** for plain MC. All variance reduction techniques (baselines, importance sampling, control variates) reduce \\(\sigma\\), not the √N denominator — they get you more accuracy per sample, but the rate of improvement remains sublinear.
+- The 1/√N trade-off is **fundamental and unavoidable** for plain MC. All variance reduction techniques (baselines, importance sampling, control variates) reduce \(\sigma\), not the √N denominator — they get you more accuracy per sample, but the rate of improvement remains sublinear.
 
 ---
 

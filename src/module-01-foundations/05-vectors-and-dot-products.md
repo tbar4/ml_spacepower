@@ -170,6 +170,26 @@ norm = torch.linalg.norm(v)
 print(norm.item())  # approximately 6394
 ```
 
+Rust uses `ndarray` for vector operations. Cargo dependencies for every Rust block in this lesson (matched to the Playground catalog so the mdbook "play" button works):
+
+```toml
+[dependencies]
+ndarray = "0.17"
+```
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let v = Array1::from_vec(vec![6371.0_f64, 500.0, -200.0, 7.2, 0.3, -0.1]);
+    let norm = v.mapv(|x| x * x).sum().sqrt();
+    println!("{norm:.0}"); // approximately 6394
+}
+```
+
+`.mapv(|x| x * x)` applies the closure element-wise and returns a new array; `.sum()` collapses it to a scalar `f64`; `.sqrt()` is the standard float method.
+
 ---
 
 ## L1 norm and other norms
@@ -223,6 +243,25 @@ print(f"L∞ norm (max abs):    {linf.item():.4f} km")  # 2.1
 # L∞ norm: "the worst single coordinate is 2.1 km off"
 # L1 norm: used in sparse sensor selection regularization
 ```
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let err = Array1::from_vec(vec![0.5_f64, -2.1, 0.8, 0.002, -0.004, 0.001]);
+
+    let l2 = err.mapv(|x| x * x).sum().sqrt();
+    let l1: f64 = err.mapv(f64::abs).sum();
+    let linf = err.mapv(f64::abs).iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    println!("L2 norm (Euclidean): {l2:.4}"); // ~2.27
+    println!("L1 norm (sum abs):   {l1:.4}"); // ~3.41
+    println!("L∞ norm (max abs):   {linf:.4}"); // 2.1
+}
+```
+
+`.mapv(f64::abs)` uses `f64::abs` as a function pointer (signature `fn(f64) -> f64`). `.iter().cloned().fold(f64::NEG_INFINITY, f64::max)` walks the array finding the maximum; `f64::max` is a two-argument function `fn(f64, f64) -> f64` that returns the larger value.
 
 ---
 
@@ -294,6 +333,44 @@ safe_dir = safe_normalize(relative_velocity)
 print(f"Safe normalize of zero: {safe_dir.tolist()}")  # [0.0, 0.0, 0.0]
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn safe_normalize(v: &Array1<f64>, eps: f64) -> Array1<f64> {
+    let norm = v.mapv(|x| x * x).sum().sqrt();
+    if norm < eps {
+        Array1::zeros(v.len())
+    } else {
+        v.mapv(|x| x / norm)
+    }
+}
+
+fn main() {
+    let position = Array1::from_vec(vec![4500.0_f64, 3200.0, -1100.0]);
+    let norm = position.mapv(|x| x * x).sum().sqrt();
+    let look_vector = position.mapv(|x| x / norm);
+
+    println!("Position magnitude: {norm:.2} km");
+    println!("Look vector norm:   {:.6}", look_vector.mapv(|x| x * x).sum().sqrt()); // 1.000000
+
+    // Cosine similarity of two satellite pointing directions
+    let pos_sat2 = Array1::from_vec(vec![4450.0_f64, 3250.0, -1050.0]);
+    let norm2 = pos_sat2.mapv(|x| x * x).sum().sqrt();
+    let look_sat2 = pos_sat2.mapv(|x| x / norm2);
+
+    let cos_sim: f64 = (&look_vector * &look_sat2).sum();
+    println!("Cosine similarity:  {cos_sim:.6}");
+
+    // Safe normalize handles the zero-vector edge case
+    let zero = Array1::<f64>::zeros(3);
+    let safe = safe_normalize(&zero, 1e-8);
+    println!("Safe normalize of zero: {:?}", safe.as_slice().unwrap());
+}
+```
+
+`v.mapv(|x| x / norm)` divides every element by the scalar `norm` — ndarray does not overload `/` between `&Array` and `f64` directly, so `.mapv` is the idiomatic path. `&Array1 * &Array1` is element-wise; `.sum()` collapses to `f64`.
+
 ---
 
 ## Projection
@@ -363,6 +440,36 @@ print(f"\nReconstruction check (should be {dv.tolist()}):")
 print(f"  {reconstructed.tolist()}")
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let r1 = Array1::from_vec(vec![6800.0_f64, 0.0, 0.0]);
+    let r2 = Array1::from_vec(vec![6790.0_f64, 50.0, 10.0]);
+    let dv = Array1::from_vec(vec![-0.5_f64, 7.2, 0.1]);
+
+    // Radial unit vector from r1 to r2
+    let radial_vec = &r2 - &r1;
+    let radial_norm = radial_vec.mapv(|x| x * x).sum().sqrt();
+    let radial_unit = radial_vec.mapv(|x| x / radial_norm);
+
+    // Project dv onto the radial direction
+    let radial_speed: f64 = (&dv * &radial_unit).sum();
+    let radial_component = radial_unit.mapv(|x| x * radial_speed);
+    let tangential_component = &dv - &radial_component;
+
+    println!("Radial approach speed: {radial_speed:.4} km/s");
+    println!("  (negative = approaching, positive = separating)");
+
+    // Verify reconstruction
+    let reconstructed = &radial_component + &tangential_component;
+    println!("Reconstruction: {:?}", reconstructed.as_slice().unwrap());
+}
+```
+
+`&r2 - &r1` is element-wise subtraction between two array references — ndarray infers the shape from the operands and returns an owned `Array1<f64>`.
+
 The radial speed here is small, meaning the primary motion is tangential (the satellites are mostly moving past each other, not closing directly). This is the geometric content of the projection.
 
 ---
@@ -414,6 +521,22 @@ print((v * w).sum().item())      # -3.0
 print(torch.dot(v, w).item())    # -3.0
 print((v @ w).item())            # -3.0
 ```
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let v = Array1::from_vec(vec![2.0_f64, 3.0, -1.0]);
+    let w = Array1::from_vec(vec![4.0_f64, -2.0, 5.0]);
+
+    // Element-wise product then sum — the definition of dot product
+    let dot: f64 = (&v * &w).sum();
+    println!("{dot}"); // -3
+}
+```
+
+`&v * &w` is element-wise multiplication of two array references; `.sum()` collapses the result to a scalar. ndarray has no dedicated `.dot()` for 1D arrays, so this pattern is the standard idiom.
 
 ---
 
@@ -492,6 +615,45 @@ print(f"Overtaking: {cos_overtake.item():.3f}   (angle: {torch.rad2deg(torch.aco
 print(f"Crossing:   {cos_cross.item():.3f}   (angle: {torch.rad2deg(torch.acos(cos_cross)).item():.1f}°)")
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn dot(a: &Array1<f64>, b: &Array1<f64>) -> f64 {
+    (a * b).sum()
+}
+
+fn norm(a: &Array1<f64>) -> f64 {
+    a.mapv(|x| x * x).sum().sqrt()
+}
+
+fn main() {
+    let v1         = Array1::from_vec(vec![7.5_f64, 0.0, 0.0]);
+    let v2_headon  = Array1::from_vec(vec![-7.5_f64, 0.0, 0.0]);
+    let v2_overtake = Array1::from_vec(vec![6.8_f64, 0.1, 0.0]);
+    let v2_cross   = Array1::from_vec(vec![0.0_f64, 7.5, 0.0]);
+
+    let dot_headon   = dot(&v1, &v2_headon);
+    let dot_overtake = dot(&v1, &v2_overtake);
+    let dot_cross    = dot(&v1, &v2_cross);
+
+    println!("Head-on:    {dot_headon:.1}");   // -56.25
+    println!("Overtaking: {dot_overtake:.1}"); // 51.0
+    println!("Crossing:   {dot_cross:.1}");    // 0.0
+
+    let norm_v1 = norm(&v1);
+    let cos_headon   = dot_headon   / (norm_v1 * norm(&v2_headon));
+    let cos_overtake = dot_overtake / (norm_v1 * norm(&v2_overtake));
+    let cos_cross    = dot_cross    / (norm_v1 * norm(&v2_cross));
+
+    println!("Head-on cosine:    {cos_headon:.3}  ({:.1}°)", cos_headon.acos().to_degrees());
+    println!("Overtaking cosine: {cos_overtake:.3}  ({:.1}°)", cos_overtake.acos().to_degrees());
+    println!("Crossing cosine:   {cos_cross:.3}  ({:.1}°)", cos_cross.acos().to_degrees());
+}
+```
+
+`.acos().to_degrees()` is available directly on `f64` — no extra import needed. Note that `cos_cross` will be exactly `0.0`, and `f64::acos(0.0) = π/2` radians = 90°.
+
 The head-on geometry gives a highly negative cosine (angle ≈ 180°), the crossing geometry gives zero (exactly 90°), and the overtaking geometry gives a high positive value (small angle, similar direction).
 
 ---
@@ -566,6 +728,22 @@ score_A = torch.dot(o, w_A)
 score_B = torch.dot(o, w_B)
 print(f"Strategy A score: {score_A.item():.2f}")  # 0.98
 print(f"Strategy B score: {score_B.item():.2f}")  # 0.68
+```
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let o   = Array1::from_vec(vec![0.8_f64, 0.2, 0.1, 0.6]);
+    let w_a = Array1::from_vec(vec![1.0_f64, 0.3, 0.0, 0.2]);
+    let w_b = Array1::from_vec(vec![0.1_f64, 0.0, 0.0, 1.0]);
+
+    let score_a: f64 = (&o * &w_a).sum();
+    let score_b: f64 = (&o * &w_b).sum();
+    println!("Strategy A score: {score_a:.2}"); // 0.98
+    println!("Strategy B score: {score_b:.2}"); // 0.68
+}
 ```
 
 In a neural network, the weight vectors are learned from data rather than hand-designed. But the scoring mechanism is exactly this dot product. When we stack many weight vectors in the next lesson, we compute scores for many strategies simultaneously. That is a matrix-vector multiplication.

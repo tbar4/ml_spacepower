@@ -62,6 +62,45 @@ dt = 0.1
 t = torch.arange(0.0, 20.0 + dt, dt)  # shape: (T,) where T = 201
 ```
 
+The Rust setup uses named `Array1` vectors and an explicit `Vec<f64>` time grid. Cargo dependencies for all Rust blocks in this project:
+
+```toml
+[dependencies]
+ndarray    = "0.17"
+rand       = "0.10"
+rand_distr = "0.6"
+```
+
+This block also covers **Step 2** (nominal minimum distance), since step 2 has no Python code — it is left as an exercise in the Python path but is straightforward to include here:
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn main() {
+    let r0_a = Array1::from_vec(vec![  0.0_f64, 0.0, 0.0]);  // km
+    let r0_b = Array1::from_vec(vec![100.0_f64, 0.5, 0.0]);  // km
+    let v_a  = Array1::from_vec(vec![  7.5_f64, 0.0, 0.0]);  // km/s
+    let v_b  = Array1::from_vec(vec![ -7.5_f64, 0.0, 0.0]);  // km/s
+
+    // Time grid: 0.0, 0.1, ..., 20.0 s — 201 points
+    let t_grid: Vec<f64> = (0..=200).map(|i| i as f64 * 0.1).collect();
+    println!("Time grid: {} points", t_grid.len());
+
+    // Step 2: nominal minimum distance (no uncertainty, deterministic)
+    let nominal_min_dist = t_grid.iter().map(|&t| {
+        let ra   = &r0_a + &v_a.mapv(|x| x * t);
+        let rb   = &r0_b + &v_b.mapv(|x| x * t);
+        let diff = &ra - &rb;
+        diff.mapv(|x| x * x).sum().sqrt()
+    }).fold(f64::INFINITY, f64::min);
+
+    println!("Nominal minimum distance: {nominal_min_dist:.4} km"); // ~0.5 km
+}
+```
+
+`iter().map(...).fold(f64::INFINITY, f64::min)` replaces PyTorch's `.min(dim=1)` with an explicit minimum scan over the time grid. `f64::min` is a two-argument function `fn(f64, f64) -> f64` that returns the smaller value.
+
 ### Step 2: Compute the nominal minimum distance
 
 Before adding noise, do the deterministic version. This is a sanity check and gives you something to compare your Monte Carlo estimate against. Propagate linearly: \\(\mathbf{r}(t) = \mathbf{r}_0 + \mathbf{v} \cdot t\\). For each \\(t\\), compute \\(|\mathbf{r}_A(t) - \mathbf{r}_B(t)|\\). Find the minimum over the time window.
@@ -111,6 +150,70 @@ def estimate_pc(N, sigma=0.10, threshold=1.0):
     return pc.item(), min_dists
 ```
 
+The Rust version uses explicit loops instead of PyTorch's 3D broadcasting — which makes the computation easier to follow and is idiomatic Rust:
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+# extern crate rand_distr;
+use ndarray::Array1;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
+use rand_distr::{Distribution, Normal};
+
+fn estimate_pc(
+    r0_a: &Array1<f64>,
+    r0_b: &Array1<f64>,
+    v_a:  &Array1<f64>,
+    v_b:  &Array1<f64>,
+    t_grid: &[f64],
+    n: usize,
+    sigma: f64,
+    threshold: f64,
+    rng: &mut StdRng,
+) -> f64 {
+    let normal = Normal::new(0.0_f64, sigma).unwrap();
+    let mut n_conj = 0usize;
+
+    for _ in 0..n {
+        // Sample position perturbations: δA, δB ~ N(0, σ²I)
+        let delta_a: Array1<f64> = (0..3).map(|_| normal.sample(rng)).collect();
+        let delta_b: Array1<f64> = (0..3).map(|_| normal.sample(rng)).collect();
+
+        let r0a = r0_a + &delta_a;
+        let r0b = r0_b + &delta_b;
+
+        // Minimum Euclidean distance over the time window
+        let min_dist = t_grid.iter().map(|&t| {
+            let ra   = &r0a + &v_a.mapv(|x| x * t);
+            let rb   = &r0b + &v_b.mapv(|x| x * t);
+            let diff = &ra - &rb;
+            diff.mapv(|x| x * x).sum().sqrt()
+        }).fold(f64::INFINITY, f64::min);
+
+        if min_dist < threshold {
+            n_conj += 1;
+        }
+    }
+
+    n_conj as f64 / n as f64
+}
+
+fn main() {
+    let r0_a = Array1::from_vec(vec![  0.0_f64, 0.0, 0.0]);
+    let r0_b = Array1::from_vec(vec![100.0_f64, 0.5, 0.0]);
+    let v_a  = Array1::from_vec(vec![  7.5_f64, 0.0, 0.0]);
+    let v_b  = Array1::from_vec(vec![ -7.5_f64, 0.0, 0.0]);
+    let t_grid: Vec<f64> = (0..=200).map(|i| i as f64 * 0.1).collect();
+
+    let mut rng = StdRng::seed_from_u64(42);
+    let pc = estimate_pc(&r0_a, &r0_b, &v_a, &v_b, &t_grid, 1_000, 0.10, 1.0, &mut rng);
+    println!("Pc estimate (N=1000): {pc:.4}");
+}
+```
+
+`(0..3).map(|_| normal.sample(rng)).collect::<Array1<f64>>()` builds a length-3 array from the Normal sampler. `Normal::new(0.0, sigma)` takes mean and standard deviation; it returns a `Result` because negative sigma would be invalid, hence `.unwrap()`. The `rng` is threaded through so the caller controls seeding.
+
 If the broadcasting is making your head hurt, write it with a `for` loop first, get correct numbers, then refactor to vectorized form. Vectorized PyTorch will be 10 to 100 times faster, which matters when we crank \\(N\\) up.
 
 ### Step 4: Convergence study
@@ -125,6 +228,69 @@ for N in [100, 1_000, 10_000, 100_000]:
     runs_t = torch.tensor(runs)
     print(f"N={N:>6}: Pc mean = {runs_t.mean():.4f}, std = {runs_t.std():.4f}")
 ```
+
+The complete convergence study in Rust — includes the full `estimate_pc` function so it runs as-is on the Playground:
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+# extern crate rand_distr;
+use ndarray::Array1;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
+use rand_distr::{Distribution, Normal};
+
+fn estimate_pc(
+    r0_a: &Array1<f64>, r0_b: &Array1<f64>,
+    v_a: &Array1<f64>,  v_b: &Array1<f64>,
+    t_grid: &[f64], n: usize,
+    sigma: f64, threshold: f64,
+    rng: &mut StdRng,
+) -> f64 {
+    let normal = Normal::new(0.0_f64, sigma).unwrap();
+    let mut n_conj = 0usize;
+    for _ in 0..n {
+        let delta_a: Array1<f64> = (0..3).map(|_| normal.sample(rng)).collect();
+        let delta_b: Array1<f64> = (0..3).map(|_| normal.sample(rng)).collect();
+        let r0a = r0_a + &delta_a;
+        let r0b = r0_b + &delta_b;
+        let min_dist = t_grid.iter().map(|&t| {
+            let diff = &(&r0a + &v_a.mapv(|x| x * t)) - &(&r0b + &v_b.mapv(|x| x * t));
+            diff.mapv(|x| x * x).sum().sqrt()
+        }).fold(f64::INFINITY, f64::min);
+        if min_dist < threshold { n_conj += 1; }
+    }
+    n_conj as f64 / n as f64
+}
+
+fn main() {
+    let r0_a = Array1::from_vec(vec![  0.0_f64, 0.0, 0.0]);
+    let r0_b = Array1::from_vec(vec![100.0_f64, 0.5, 0.0]);
+    let v_a  = Array1::from_vec(vec![  7.5_f64, 0.0, 0.0]);
+    let v_b  = Array1::from_vec(vec![ -7.5_f64, 0.0, 0.0]);
+    let t_grid: Vec<f64> = (0..=200).map(|i| i as f64 * 0.1).collect();
+
+    for &n in &[100_usize, 1_000, 10_000, 100_000] {
+        // 10 independent runs, each with a different seed
+        let runs: Vec<f64> = (0..10u64)
+            .map(|seed| {
+                let mut rng = StdRng::seed_from_u64(seed);
+                estimate_pc(&r0_a, &r0_b, &v_a, &v_b, &t_grid, n, 0.10, 1.0, &mut rng)
+            })
+            .collect();
+
+        let mean = runs.iter().sum::<f64>() / runs.len() as f64;
+        let std  = {
+            let var = runs.iter().map(|x| (x - mean).powi(2)).sum::<f64>()
+                      / (runs.len() - 1) as f64;  // Bessel's correction
+            var.sqrt()
+        };
+        println!("N={n:>7}: Pc mean = {mean:.4}, std = {std:.4}");
+    }
+}
+```
+
+Each seed creates a fresh `StdRng` so the 10 runs are independent but reproducible — re-running the program gives the same numbers. The std should shrink roughly by a factor of √10 each time N increases by 10×, confirming lesson 3's convergence guarantee.
 
 Your absolute \\(P_c\\) value will depend on your scenario and threshold. The point is the convergence behavior, not any specific number.
 

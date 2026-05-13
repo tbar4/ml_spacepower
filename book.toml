@@ -5,9 +5,8 @@ src = "src"
 title = "ML for Spacepower Simulations"
 
 [output.html]
-mathjax-support = true
 fold.enable = true
-level = 0 
+level = 0
 
 [preprocessor.toc]
 command = "mdbook-toc"
@@ -15,3 +14,7 @@ command = "mdbook-toc"
 [preprocessor.quiz]
 [preprocessor.repl]
 python.enable = true
+
+[preprocessor.katex]
+block-delimiter = { left = "\\[", right = "\\]" }
+inline-delimiter = { left = "\\(", right = "\\)" }

@@ -114,6 +114,40 @@ print(f"  Numerical: {numerical_gradient(sigmoid, t2):.8f}")
 print(f"  Analytic:  {s * (1 - s):.8f}")
 ```
 
+The numerical gradient is pure arithmetic — no ML library needed. The Rust version requires no external crates:
+
+```rust
+fn numerical_gradient(f: impl Fn(f64) -> f64, x: f64, eps: f64) -> f64 {
+    (f(x + eps) - f(x - eps)) / (2.0 * eps)
+}
+
+fn h(t: f64) -> f64 { t * t }                            // true derivative: 2t
+fn g(t: f64) -> f64 { t * t * t - 2.0 * t }              // true derivative: 3t^2 - 2
+fn sigmoid(t: f64) -> f64 { 1.0 / (1.0 + (-t).exp()) }   // true derivative: σ(t)(1-σ(t))
+
+fn main() {
+    let eps = 1e-5_f64;
+
+    let t0 = 3.0_f64;
+    println!("h(t) = t^2 at t={t0}:");
+    println!("  Numerical: {:.8}", numerical_gradient(h, t0, eps));
+    println!("  Analytic:  {:.8}", 2.0 * t0);                    // 6.0
+
+    let t1 = 2.0_f64;
+    println!("g(t) = t^3 - 2t at t={t1}:");
+    println!("  Numerical: {:.8}", numerical_gradient(g, t1, eps));
+    println!("  Analytic:  {:.8}", 3.0 * t1 * t1 - 2.0);         // 10.0
+
+    let t2 = 0.5_f64;
+    let s = sigmoid(t2);
+    println!("σ(t) at t={t2}:");
+    println!("  Numerical: {:.8}", numerical_gradient(sigmoid, t2, eps));
+    println!("  Analytic:  {:.8}", s * (1.0 - s));
+}
+```
+
+Functions are passed as `impl Fn(f64) -> f64` — any closure or named function fits. `(-t).exp()` computes \\(e^{-t}\\) using `f64::exp`.
+
 Kneusel's *Math for Deep Learning* Ch. 8 covers numerical differentiation in depth and explains when the finite difference approximation can fail due to floating-point precision (when ε is too small, subtraction of nearly equal numbers loses precision).
 
 ---
@@ -229,6 +263,40 @@ print(f"\nAutograd sigmoid'(0.5):  {x_grad.grad.item():.8f}")
 manual_s = torch.sigmoid(torch.tensor(0.5))
 print(f"Manual  sigmoid'(0.5):   {(manual_s * (1 - manual_s)).item():.8f}")
 ```
+
+The derivative formulas are the same computation regardless of framework. Cargo dependency: `ndarray = "0.17"` (same as lessons 5 and 6).
+
+```rust
+# extern crate ndarray;
+use ndarray::Array1;
+
+fn sigmoid(x: f64) -> f64 { 1.0 / (1.0 + (-x).exp()) }
+fn relu(x: f64) -> f64 { x.max(0.0) }
+
+fn main() {
+    let x = Array1::from_vec(vec![-2.0_f64, -0.5, 0.0, 0.5, 2.0]);
+
+    // Sigmoid and its derivative σ(x)(1 - σ(x))
+    let sigma   = x.mapv(sigmoid);
+    let dsigma  = sigma.mapv(|s| s * (1.0 - s));
+    println!("Sigmoid values:    {:?}", sigma.as_slice().unwrap());
+    println!("Sigmoid gradients: {:?}", dsigma.as_slice().unwrap());
+
+    // ReLU and its derivative: 1 if x > 0, else 0
+    let relu_out = x.mapv(relu);
+    let drelu    = x.mapv(|v| if v > 0.0 { 1.0_f64 } else { 0.0 });
+    println!("\nReLU values:    {:?}", relu_out.as_slice().unwrap());
+    println!("ReLU gradients: {:?}", drelu.as_slice().unwrap());
+
+    // Tanh and its derivative 1 - tanh²(x)
+    let tanh_out = x.mapv(f64::tanh);
+    let dtanh    = tanh_out.mapv(|t| 1.0 - t * t);
+    println!("\nTanh values:    {:?}", tanh_out.as_slice().unwrap());
+    println!("Tanh gradients: {:?}", dtanh.as_slice().unwrap());
+}
+```
+
+The PyTorch autograd verification (`.backward()`) has no equivalent here — that is the point: these formulas are just math, not framework magic. The autograd system computes the same values by applying the same formulas automatically during the backward pass.
 
 ---
 
@@ -389,6 +457,45 @@ for x_test in [-1.0, 0.5, 2.0, 2.5, 5.0]:
           f"numeric={result['numeric']:+.6f}, "
           f"rel_err={result['relative_error']:.2e}  [{status}]")
 ```
+
+The gradient check itself is pure math — no autograd needed. The Rust version implements the Huber loss and its analytic gradient directly, then compares against the central difference:
+
+```rust
+fn huber_loss(x: f64, target: f64, delta: f64) -> f64 {
+    let err = x - target;
+    if err.abs() < delta { 0.5 * err * err } else { delta * (err.abs() - 0.5 * delta) }
+}
+
+fn huber_grad(x: f64, target: f64, delta: f64) -> f64 {
+    let err = x - target;
+    if err.abs() < delta { err } else { delta * err.signum() }
+}
+
+fn numerical_gradient(f: impl Fn(f64) -> f64, x: f64, eps: f64) -> f64 {
+    (f(x + eps) - f(x - eps)) / (2.0 * eps)
+}
+
+fn main() {
+    let target = 2.0_f64;
+    let delta  = 1.0_f64;
+    let eps    = 1e-5_f64;
+
+    println!("{:>6} | {:>12} | {:>12} | {:>10} | pass",
+             "x", "analytic", "numeric", "rel_err");
+    println!("{}", "-".repeat(55));
+
+    for &x_test in &[-1.0_f64, 0.5, 2.0, 2.5, 5.0] {
+        let analytic = huber_grad(x_test, target, delta);
+        let numeric  = numerical_gradient(|x| huber_loss(x, target, delta), x_test, eps);
+        let denom    = analytic.abs().max(numeric.abs()).max(1e-8);
+        let rel_err  = (analytic - numeric).abs() / denom;
+        println!("{x_test:>6.1} | {analytic:>+12.6} | {numeric:>+12.6} | {rel_err:>10.2e} | {}",
+                 if rel_err < 1e-5 { "PASS" } else { "FAIL" });
+    }
+}
+```
+
+`err.signum()` returns -1.0, 0.0, or 1.0 — Rust's built-in sign function for `f64`. The closure `|x| huber_loss(x, target, delta)` captures `target` and `delta` from the enclosing scope, making it a `Fn(f64) -> f64` that `numerical_gradient` accepts.
 
 In practice, when implementing a new loss function or custom layer for SSA (for example, a conjunction probability loss that uses orbital mechanics), running gradient checks like this before training saves enormous debugging time. If the check fails, the analytical gradient in your code is wrong — not the numerical one.
 

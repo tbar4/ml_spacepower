@@ -163,6 +163,38 @@ print(f"Row 1 dot product: {row1_dot.item()}")  # 1.02
 
 The `@` operator is Python's matrix multiplication operator. For a matrix times a vector, it does exactly the row-by-row dot products you just computed by hand.
 
+Rust uses `ndarray` for matrix operations. Cargo dependency for every Rust block in this lesson:
+
+```toml
+[dependencies]
+ndarray = "0.17"
+```
+
+```rust
+# extern crate ndarray;
+use ndarray::{Array1, Array2};
+
+fn main() {
+    let w = Array2::from_shape_vec((3, 4), vec![
+        1.0_f64, 0.5, 0.0, 0.2,
+        0.1,     0.0, 0.0, 1.0,
+        0.3,     0.8, 0.2, 0.1,
+    ]).unwrap();
+
+    let x = Array1::from_vec(vec![0.8_f64, 0.2, 0.1, 0.6]);
+
+    // .dot() on an (m×n) Array2 and an (n,) Array1 yields an (m,) Array1
+    let y = w.dot(&x);
+    println!("{:?}", y.as_slice().unwrap()); // [1.02, 0.68, 0.48]
+
+    // Row 0's dot product explicitly: element-wise product then sum
+    let row0_dot: f64 = w.row(0).iter().zip(x.iter()).map(|(a, b)| a * b).sum();
+    println!("Row 0 dot product: {row0_dot:.2}"); // 1.02
+}
+```
+
+`w.row(0)` returns an `ArrayView1` (a borrowed view into that row's memory); zipping it with `x.iter()` and summing the products is the definition of the dot product — the same thing `.dot()` does for every row simultaneously.
+
 ---
 
 ## Shape rules: why dimensions must match
@@ -237,6 +269,46 @@ rhs = B.T @ A.T
 print(f"(AB)^T = B^T A^T: {torch.allclose(lhs, rhs)}")  # True
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::Array2;
+
+fn main() {
+    let w = Array2::from_shape_vec((2, 3), vec![
+        1.0_f64, 2.0, 3.0,
+        4.0,     5.0, 6.0,
+    ]).unwrap();
+    println!("W shape:     {:?}", w.shape());      // [2, 3]
+    println!("W.t() shape: {:?}", w.t().shape());  // [3, 2]
+
+    // Symmetric matrix: a covariance matrix satisfies A == A.T
+    let cov = Array2::from_shape_vec((3, 3), vec![
+        4.0_f64, 0.5, 0.0,
+        0.5,     2.0, 0.1,
+        0.0,     0.1, 1.0,
+    ]).unwrap();
+    let is_symmetric = cov.iter().zip(cov.t().iter()).all(|(a, b)| (a - b).abs() < 1e-10);
+    println!("Covariance is symmetric: {is_symmetric}"); // true
+
+    // Verify the identity (AB)^T = B^T A^T with fixed matrices
+    let a = Array2::from_shape_vec((2, 3), vec![
+        1.0_f64, 2.0, 3.0,
+        4.0,     5.0, 6.0,
+    ]).unwrap(); // 2×3
+    let b = Array2::from_shape_vec((3, 2), vec![
+        1.0_f64, 0.0,
+        0.0,     1.0,
+        1.0,     1.0,
+    ]).unwrap(); // 3×2
+    let lhs = a.dot(&b).t().to_owned();                    // (AB)^T
+    let rhs = b.t().to_owned().dot(&a.t().to_owned());     // B^T A^T
+    let holds = lhs.iter().zip(rhs.iter()).all(|(x, y)| (x - y).abs() < 1e-10);
+    println!("(AB)^T = B^T A^T: {holds}"); // true
+}
+```
+
+`.t()` returns a transposed view without copying data; `.to_owned()` materializes it into an owned `Array2` so `.dot()` can use it as the right-hand operand. The symmetry check iterates over both the matrix and its transpose in lockstep — `cov.t()` shares the same memory as `cov`, just with strides swapped.
+
 ---
 
 ## Matrix-matrix multiplication
@@ -304,6 +376,31 @@ print("\nScores (observation x output):")
 print(Y_per_obs)
 ```
 
+```rust
+# extern crate ndarray;
+use ndarray::Array2;
+
+fn main() {
+    let x = Array2::from_shape_vec((2, 3), vec![
+        0.9_f64, 0.4, 0.1,  // observation 1
+        0.2,     0.8, 0.7,  // observation 2
+    ]).unwrap(); // (2 observations, 3 features)
+
+    let w2 = Array2::from_shape_vec((2, 3), vec![
+        1.0_f64, 0.5, 0.0,
+        0.0,     0.3, 1.0,
+    ]).unwrap(); // (2 outputs, 3 inputs)
+
+    // W2 @ X.T — shape (2 outputs, 2 observations)
+    let y = w2.dot(&x.t().to_owned());
+    println!("Scores (output × observation):\n{y:?}");
+
+    // X @ W2.T — shape (2 observations, 2 outputs), more common in ML batching
+    let y_per_obs = x.dot(&w2.t().to_owned());
+    println!("Scores (observation × output):\n{y_per_obs:?}");
+}
+```
+
 ### Matrix multiplication is NOT commutative
 
 This is a critical difference from scalar multiplication. For scalars, ab = ba. For matrices, **AB ≠ BA in general** — and often the product is not even defined in both orders.
@@ -333,6 +430,42 @@ y_sequential  = W2 @ (W1 @ x)
 y_combined    = combined @ x
 print(f"\nSequential equals combined: {torch.allclose(y_sequential, y_combined, atol=1e-5)}")
 # True — but note: W1 @ W2 would be nonsense (shape mismatch)
+```
+
+```rust
+# extern crate ndarray;
+use ndarray::{Array1, Array2};
+
+fn main() {
+    // Non-commutativity
+    let a = Array2::from_shape_vec((2, 2), vec![1.0_f64, 2.0, 3.0, 4.0]).unwrap();
+    let b = Array2::from_shape_vec((2, 2), vec![0.0_f64, 1.0, 1.0, 0.0]).unwrap();
+
+    let ab = a.dot(&b);
+    let ba = b.dot(&a);
+    let commutes = ab.iter().zip(ba.iter()).all(|(x, y)| (x - y).abs() < 1e-10);
+    println!("AB == BA: {commutes}"); // false
+
+    // Two-layer network collapsed into a single matrix product
+    let w1 = Array2::from_shape_vec((2, 3), vec![  // 3 inputs → 2 hidden
+         0.5_f64, -0.2,  0.8,
+         0.1,      0.7,  0.3,
+    ]).unwrap();
+    let w2 = Array2::from_shape_vec((3, 2), vec![  // 2 hidden → 3 outputs
+        1.0_f64, 0.0,
+        0.0,     1.0,
+        0.5,     0.5,
+    ]).unwrap();
+
+    let combined = w2.dot(&w1); // (3, 3): both layers as one matrix
+
+    let x = Array1::from_vec(vec![0.8_f64, 0.2, 0.1]);
+    let y_sequential = w2.dot(&w1.dot(&x));
+    let y_combined   = combined.dot(&x);
+
+    let matches = y_sequential.iter().zip(y_combined.iter()).all(|(a, b)| (a - b).abs() < 1e-10);
+    println!("Sequential == combined: {matches}"); // true
+}
 ```
 
 The non-commutativity of matrix multiplication is not just a mathematical curiosity — it encodes the directionality of data flow in a neural network. Layer 1 comes before layer 2, and \\(W_2 W_1\\) is not the same transformation as \\(W_1 W_2\\).
