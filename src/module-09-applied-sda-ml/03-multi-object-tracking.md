@@ -138,6 +138,27 @@ def sustained_anomaly_score(innovation_scores, window_days=7, baseline_mean=1.0)
     return sum(max(0, n - 1.5) for n in normalized)  # accumulate above-average days
 ```
 
+```rust
+fn sustained_anomaly_score(scores: &[f64], window_days: usize, baseline_mean: f64) -> f64 {
+    let window = &scores[scores.len().saturating_sub(window_days)..];
+    window.iter().map(|&s| (s / baseline_mean - 1.5).max(0.0)).sum()
+}
+
+fn main() {
+    // 10 days of Mahalanobis scores for a maneuvering object (rising trend)
+    let active = [1.2, 1.4, 1.1, 2.1, 2.8, 3.5, 4.1, 5.0, 6.2, 7.3];
+    // 10 days for a quiet well-tracked GEO satellite
+    let quiet  = [1.1, 0.9, 1.3, 1.0, 0.8, 1.2, 1.1, 0.9, 1.0, 1.1];
+
+    println!("CUSUM score (7-day window, maneuvering): {:.2}",
+             sustained_anomaly_score(&active, 7, 1.0));
+    println!("CUSUM score (7-day window, quiet):       {:.2}",
+             sustained_anomaly_score(&quiet,  7, 1.0));
+}
+```
+
+`scores.len().saturating_sub(window_days)` safely handles the case where fewer than `window_days` scores exist, returning index 0 rather than underflowing.
+
 This is a CUSUM (cumulative sum) control chart — a classic sequential anomaly detection method that is sensitive to sustained small deviations rather than single large spikes.
 
 **Correlated maneuvers across catalog**: If two objects in close orbital proximity both execute maneuvers within the same 24-hour window, this is a qualitatively different event than two independent maneuvers. Compute a correlation matrix over the catalog at each daily step:

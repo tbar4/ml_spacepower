@@ -152,6 +152,37 @@ def update_intent_belief(prior, likelihood, temperature=1.0):
     return posterior_unnorm / posterior_unnorm.sum()
 ```
 
+```rust
+fn update_intent_belief(prior: &[f64; 4], likelihood: &[f64; 4], temperature: f64) -> [f64; 4] {
+    let unnorm: [f64; 4] = std::array::from_fn(|i| prior[i] * likelihood[i].powf(temperature));
+    let total: f64 = unnorm.iter().sum();
+    std::array::from_fn(|i| unnorm[i] / total)
+}
+
+fn main() {
+    // [station-keeping, CAM, repositioning, RPO]
+    let mut belief = [0.20f64, 0.20, 0.20, 0.40];   // 40% prior RPO suspicion
+    let labels = ["SK", "CAM", "Repos", "RPO"];
+
+    // Three sequential TLE epochs with increasing RPO likelihood from HCW geometry
+    let observations: &[[f64; 4]] = &[
+        [0.10, 0.15, 0.20, 0.60],   // closing geometry visible
+        [0.05, 0.10, 0.15, 0.80],   // further closure, less ambiguous
+        [0.03, 0.05, 0.10, 0.90],   // approach trajectory nearly certain
+    ];
+
+    println!("Intent belief updates (temperature = 1.0):");
+    for (i, obs) in observations.iter().enumerate() {
+        belief = update_intent_belief(&belief, obs, 1.0);
+        print!("  After obs {}: ", i + 1);
+        for (label, &p) in labels.iter().zip(belief.iter()) {
+            print!("{label}={:.0}%  ", p * 100.0);
+        }
+        println!();
+    }
+}
+```
+
 The temperature parameter allows calibration between how quickly the belief updates (high temperature = more weight on new observations, lower temperature = more inertia from prior). For slow-moving approach campaigns, a lower temperature is appropriate; for sudden burn events, higher.
 
 ---
