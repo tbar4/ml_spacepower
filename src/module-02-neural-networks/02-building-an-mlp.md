@@ -81,6 +81,48 @@ output = z2
 print(f"Network output (trust score): {output.item():.4f}")
 ```
 
+> **Dependencies** (Rust blocks in this lesson): `ndarray = "0.17"` and `rand = "0.10"` in `[dependencies]`.
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+use ndarray::{Array1, Array2};
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(7);
+    let w = |rng: &mut StdRng| (rng.random::<f64>() - 0.5) * 0.6; // scale ~0.3 std
+
+    // Layer 1: 4 inputs -> 8 hidden (shape 8×4)
+    let w1 = Array2::from_shape_vec((8, 4), (0..32).map(|_| w(&mut rng)).collect()).unwrap();
+    let b1 = Array1::zeros(8);
+
+    // Layer 2: 8 hidden -> 1 output (shape 1×8)
+    let w2 = Array2::from_shape_vec((1, 8), (0..8).map(|_| w(&mut rng)).collect()).unwrap();
+    let b2 = Array1::zeros(1);
+
+    // Feature vector: [alert_confidence, approach_speed, miss_distance, time_to_tca]
+    let x = Array1::from_vec(vec![0.85, 7.2, 0.4, 1.5]);
+    println!("Input: {:?}", x.to_vec());
+
+    // Step 1: linear layer 1
+    let z1 = w1.dot(&x) + &b1;       // shape 8
+    println!("After linear 1: {:?}", z1.iter().map(|v| format!("{:.4}", v)).collect::<Vec<_>>());
+
+    // Step 2: ReLU — zero out negatives
+    let a1 = z1.mapv(|v| v.max(0.0)); // shape 8
+    println!("After ReLU:     {:?}", a1.iter().map(|v| format!("{:.4}", v)).collect::<Vec<_>>());
+
+    // Step 3: linear layer 2
+    let z2 = w2.dot(&a1) + &b2;      // shape 1
+    println!("Network output (trust score): {:.4}", z2[0]);
+    // Random weights — meaningless until trained; the shape flow is what matters.
+}
+```
+
+Shape flow: `x` is length 4, `w1.dot(&x)` contracts the 8×4 matrix with the 4-vector to produce length 8, `relu` leaves the shape unchanged, `w2.dot(&a1)` contracts 1×8 with length 8 to produce length 1. Identical to the Python trace above.
+
 Look at the shapes at each stage:
 - x: length 4
 - z1 = W1 @ x + b1: W1 is 8×4, x is length 4, result is length 8

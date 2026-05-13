@@ -81,6 +81,19 @@ mse_pytorch = F.mse_loss(y_pred, y_true)
 print(f"MSE (PyTorch): {mse_pytorch.item():.6f}")
 ```
 
+```rust
+fn main() {
+    let y_true = [0.80, 0.20, 0.95, 0.45_f64];
+    let y_pred = [0.72, 0.35, 0.91, 0.60_f64];
+
+    let mse: f64 = y_true.iter().zip(y_pred.iter())
+        .map(|(yt, yp)| (yp - yt).powi(2))
+        .sum::<f64>() / y_true.len() as f64;
+
+    println!("MSE: {:.6}", mse); // 0.013250
+}
+```
+
 Both should give the same answer: 0.013250.
 
 ### What MSE minimization looks like geometrically
@@ -140,6 +153,35 @@ print(f"Huber loss: {huber.item():.6f}")  # outlier's influence is bounded
 # td_loss = F.huber_loss(q_values.squeeze(), td_targets, delta=1.0)
 # td_loss.backward()
 ```
+
+```rust
+fn huber(y: f64, y_hat: f64, delta: f64) -> f64 {
+    let err = (y - y_hat).abs();
+    if err <= delta {
+        0.5 * (y - y_hat).powi(2)
+    } else {
+        delta * (err - 0.5 * delta)
+    }
+}
+
+fn main() {
+    let y_true = [0.80, 0.20, 0.95, 0.45, 0.10_f64];
+    let y_pred = [0.72, 0.35, 0.91, 0.60, 0.98_f64]; // last one is badly wrong
+
+    let n = y_true.len() as f64;
+    let mse: f64 = y_true.iter().zip(y_pred.iter())
+        .map(|(yt, yp)| (yp - yt).powi(2))
+        .sum::<f64>() / n;
+    let huber_loss: f64 = y_true.iter().zip(y_pred.iter())
+        .map(|(yt, yp)| huber(*yt, *yp, 1.0))
+        .sum::<f64>() / n;
+
+    println!("MSE loss:   {:.6}", mse);        // dominated by the (0.10, 0.98) outlier
+    println!("Huber loss: {:.6}", huber_loss); // outlier's gradient capped at delta=1.0
+}
+```
+
+The `if err <= delta` branch is the quadratic region (same as MSE); the `else` branch is linear. Huber loss's gradient in the linear region has magnitude `delta`, not the full error — that is the capping that keeps DQN training stable.
 
 ### When to use Huber loss
 
@@ -340,6 +382,24 @@ for pi, ce, mse in zip(p, ce_gradient, mse_gradient):
     print(f"{pi.item():>6.2f} | {ce.item():>10.4f} | {mse.item():>10.4f}")
 ```
 
+```rust
+fn main() {
+    // 10 predicted probabilities linearly spaced from 0.01 to 0.99
+    let n = 10_usize;
+    let probs: Vec<f64> = (0..n).map(|i| 0.01 + (0.98 / (n - 1) as f64) * i as f64).collect();
+
+    println!("{:>6} | {:>10} | {:>10}", "p", "CE grad", "MSE grad");
+    println!("{}", "-".repeat(32));
+    for &p in &probs {
+        let ce_grad  = p - 1.0;         // d(CE)/d(logit) = p - 1
+        let mse_grad = 2.0 * (p - 1.0); // d(MSE)/d(p)   = 2*(p - y), y=1
+        println!("{:>6.2} | {:>10.4} | {:>10.4}", p, ce_grad, mse_grad);
+    }
+    // CE gradient is half the MSE gradient — but the shape (large when wrong, small when right)
+    // is what matters, not the scale. Cross-entropy's log probability ensures the right behavior.
+}
+```
+
 ## The probabilistic interpretation of loss functions
 
 Every standard loss function is secretly a maximum likelihood estimator. Understanding this connection gives you a principled way to derive new loss functions when your problem is non-standard, and it explains why L2 regularization and Gaussian priors are the same thing.
@@ -488,6 +548,42 @@ print(f"PG loss:     {pg_loss.item():.4f}")
 print(f"Entropy:     {entropy.item():.4f}")
 print(f"Total loss:  {total_loss.item():.4f}")
 ```
+
+```rust
+fn softmax(z: &[f64]) -> Vec<f64> {
+    let max = z.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exps: Vec<f64> = z.iter().map(|&zi| (zi - max).exp()).collect();
+    let sum: f64 = exps.iter().sum();
+    exps.iter().map(|&e| e / sum).collect()
+}
+
+fn main() {
+    let logits = [1.5, 0.5, -0.3_f64]; // 3 sensor-tasking actions
+    let probs  = softmax(&logits);
+    let log_probs: Vec<f64> = probs.iter().map(|&p| p.ln()).collect();
+
+    let action    = 0_usize;   // selected action index
+    let advantage = 0.8_f64;   // this action was better than average
+
+    // Policy gradient loss: -log π(a|s) * A(s,a)
+    let pg_loss = -(log_probs[action] * advantage);
+
+    // Entropy H(π) = -Σ π(a) log π(a)
+    let entropy: f64 = probs.iter().zip(log_probs.iter())
+        .map(|(p, lp)| -p * lp)
+        .sum();
+    let beta       = 0.01_f64;
+    let total_loss = pg_loss - beta * entropy;
+
+    println!("PG loss:    {:.4}", pg_loss);
+    println!("Entropy:    {:.4}", entropy);
+    println!("Total loss: {:.4}", total_loss);
+    // Positive advantage -> pg_loss is negative (we want to increase this action's probability)
+    // Entropy bonus (- beta * H) subtracts from the loss, rewarding exploration
+}
+```
+
+No external crates needed. The math is straightforward: compute softmax probabilities, take their log (numerically safe since softmax outputs are strictly positive), then apply the policy gradient formula and entropy formula directly.
 
 ### Regret network loss (Deep CFR)
 

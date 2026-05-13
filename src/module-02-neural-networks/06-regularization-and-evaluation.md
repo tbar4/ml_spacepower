@@ -188,6 +188,54 @@ for epoch in range(max_epochs):
 early_stop.restore_best(model)  # restore weights from best validation epoch
 ```
 
+```rust
+struct EarlyStopping {
+    patience: usize,
+    min_delta: f64,
+    best_val_loss: f64,
+    epochs_without_improvement: usize,
+}
+
+impl EarlyStopping {
+    fn new(patience: usize, min_delta: f64) -> Self {
+        EarlyStopping { patience, min_delta, best_val_loss: f64::INFINITY, epochs_without_improvement: 0 }
+    }
+
+    /// Returns true if training should stop.
+    fn step(&mut self, val_loss: f64) -> bool {
+        if val_loss < self.best_val_loss - self.min_delta {
+            self.best_val_loss = val_loss;
+            self.epochs_without_improvement = 0;
+        } else {
+            self.epochs_without_improvement += 1;
+        }
+        self.epochs_without_improvement >= self.patience
+    }
+}
+
+fn main() {
+    // Simulated validation losses over 50 epochs: improves then overfits
+    let val_losses = [
+        0.44, 0.41, 0.38, 0.36, 0.35, 0.34, 0.34, 0.35, 0.36, 0.37,
+        0.38, 0.39, 0.40, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47,
+    ];
+
+    let mut stopper = EarlyStopping::new(5, 1e-4);
+    for (epoch, &val_loss) in val_losses.iter().enumerate() {
+        let should_stop = stopper.step(val_loss);
+        println!("Epoch {:>2}: val_loss={:.4}  best={:.4}  patience={}/{}",
+            epoch + 1, val_loss, stopper.best_val_loss,
+            stopper.epochs_without_improvement, stopper.patience);
+        if should_stop {
+            println!("Early stop at epoch {}  (best val_loss={:.4})", epoch + 1, stopper.best_val_loss);
+            break;
+        }
+    }
+}
+```
+
+Checkpoint saving (`restore_best`) is omitted — saving model weights requires PyTorch's state dict. The stopping logic itself is pure: track the best loss, count stale epochs, return `true` when patience is exhausted.
+
 The `patience` hyperparameter controls how many epochs of non-improvement to tolerate before stopping. A value of 10–20 is typical — enough to wait out temporary validation loss plateaus from learning rate fluctuations, but not so long that severe overfitting accumulates.
 
 The critical detail: save and restore the model from the best validation epoch, not the final epoch. Without this, early stopping detects overfitting but still deploys the overfit model.

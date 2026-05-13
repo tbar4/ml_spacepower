@@ -180,6 +180,27 @@ print(elu(x).tolist())
 # Negative values saturate toward -1; positive values pass through unchanged.
 ```
 
+```rust
+fn relu(x: f64) -> f64 { x.max(0.0) }
+fn leaky_relu(x: f64, alpha: f64) -> f64 { if x > 0.0 { x } else { alpha * x } }
+fn elu(x: f64, alpha: f64) -> f64 { if x > 0.0 { x } else { alpha * (x.exp() - 1.0) } }
+
+fn main() {
+    let pre = [-2.5_f64, -1.8, -3.1, -0.9, -2.2];
+
+    let relu_out:  Vec<f64> = pre.iter().map(|&x| relu(x)).collect();
+    let leaky_out: Vec<f64> = pre.iter().map(|&x| leaky_relu(x, 0.01)).collect();
+    let elu_out:   Vec<f64> = pre.iter().map(|&x| elu(x, 1.0)).collect();
+
+    let fmt = |v: &Vec<f64>| v.iter().map(|x| format!("{:.4}", x)).collect::<Vec<_>>();
+    println!("ReLU:       {:?}", fmt(&relu_out));   // all 0.0  — dead neurons
+    println!("Leaky ReLU: {:?}", fmt(&leaky_out));  // small negatives — gradient flows
+    println!("ELU:        {:?}", fmt(&elu_out));     // saturates toward -1 — smooth
+}
+```
+
+No external crates needed. `x.exp()` is the standard-library `f64::exp`. Leaky ReLU is a single conditional; ELU uses `exp` only for negative values.
+
 ### Which activation to use when
 
 | Situation | Recommended activation | Why |
@@ -254,6 +275,27 @@ print(probs.tolist())
 print(probs.sum().item())  # 1.0
 ```
 
+```rust
+fn softmax(z: &[f64]) -> Vec<f64> {
+    // Subtract max before exponentiating — prevents overflow for large logits.
+    // Mathematically equivalent to the plain formula since the constant cancels.
+    let max = z.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exps: Vec<f64> = z.iter().map(|&zi| (zi - max).exp()).collect();
+    let sum: f64 = exps.iter().sum();
+    exps.iter().map(|&e| e / sum).collect()
+}
+
+fn main() {
+    let logits = [1.0, 2.0, 0.5, -1.0_f64];
+    let probs = softmax(&logits);
+    println!("Probs: {:?}", probs.iter().map(|p| format!("{:.4}", p)).collect::<Vec<_>>());
+    println!("Sum:   {:.4}", probs.iter().sum::<f64>());
+    // [0.2241, 0.6093, 0.1359, 0.0306], sum = 1.0000
+}
+```
+
+No external crates needed. The max-subtraction trick (equivalent to PyTorch's internal `log-sum-exp`) is the numerically stable way to implement softmax: it prevents `f64::INFINITY` when logits are large. Lesson 3 discusses this in more detail.
+
 ### Why softmax for action distributions?
 
 In a policy network, the output is a probability distribution over actions. Softmax gives you this naturally: whatever raw scores the network produces, softmax converts them into valid probabilities. You can then sample from this distribution (using `Categorical(probs=...)` from lesson 1), or take the argmax for a deterministic greedy policy.
@@ -301,6 +343,31 @@ Sample output:
 | 10.0  | 0.2462 | 0.2718 | 0.2387 | 0.2433 |
 
 At T=0.1, action 1 has probability ≈ 1.0 (pure exploitation). At T=10.0, all four actions have nearly equal probability (near-uniform exploration). In RL implementations, you will often see temperature schedules that start high and decay over training epochs.
+
+```rust
+fn softmax_temp(z: &[f64], temperature: f64) -> Vec<f64> {
+    let max = z.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exps: Vec<f64> = z.iter().map(|&zi| ((zi / temperature) - max / temperature).exp()).collect();
+    let sum: f64 = exps.iter().sum();
+    exps.iter().map(|&e| e / sum).collect()
+}
+
+fn main() {
+    let logits = [1.0, 2.0, 0.5, -1.0_f64];
+    let temps   = [0.1, 0.5, 1.0, 2.0, 10.0_f64];
+
+    println!("{:>6}  {:>8}  {:>8}  {:>8}  {:>8}", "T", "p(a0)", "p(a1)", "p(a2)", "p(a3)");
+    println!("{}", "-".repeat(50));
+    for &t in &temps {
+        let p = softmax_temp(&logits, t);
+        println!("{:>6.1}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}", t, p[0], p[1], p[2], p[3]);
+    }
+    // T=0.1: near-greedy, action 1 dominates
+    // T=10.0: near-uniform, all actions roughly equal
+}
+```
+
+No external crates needed. Dividing each logit by `temperature` before the max-stable softmax is the only change from the basic version.
 
 ## Sigmoid: binary output decisions
 
@@ -384,6 +451,56 @@ print(f"Logits:      {logits.tolist()}")
 print(f"Probs:       {[f'{p:.3f}' for p in probs.tolist()]}")
 print(f"Predicted risk level: {['Low', 'Medium', 'High'][probs.argmax().item()]}")
 ```
+
+> **Dependencies for the Rust block below** (not needed for the blocks above):
+> `ndarray = "0.17"` and `rand = "0.10"` in `[dependencies]`.
+
+```rust
+# extern crate ndarray;
+# extern crate rand;
+use ndarray::{Array1, Array2};
+use rand::{Rng, RngExt, SeedableRng};
+use rand::rngs::StdRng;
+
+fn relu(x: &Array1<f64>) -> Array1<f64> { x.mapv(|v| v.max(0.0)) }
+
+fn softmax(x: &Array1<f64>) -> Array1<f64> {
+    let max = x.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exps = x.mapv(|v| (v - max).exp());
+    let sum  = exps.sum();
+    exps.mapv(|v| v / sum)
+}
+
+fn main() {
+    let mut rng = StdRng::seed_from_u64(42);
+    let randn = |rng: &mut StdRng| (rng.random::<f64>() - 0.5) * 1.0; // uniform [-0.5, 0.5]
+
+    // Layer 1: 3 inputs -> 8 hidden neurons
+    let w1 = Array2::from_shape_vec((8, 3), (0..24).map(|_| randn(&mut rng)).collect()).unwrap();
+    let b1 = Array1::zeros(8);
+
+    // Layer 2: 8 hidden -> 3 outputs (low / medium / high risk)
+    let w2 = Array2::from_shape_vec((3, 8), (0..24).map(|_| randn(&mut rng)).collect()).unwrap();
+    let b2 = Array1::zeros(3);
+
+    // Conjunction feature vector: [approach_speed km/s, miss_distance km, hours_to_TCA]
+    let x = Array1::from_vec(vec![7.5, 0.5, 2.0]);
+
+    // Forward pass: linear -> ReLU -> linear -> softmax
+    let h      = relu(&(w1.dot(&x) + &b1));
+    let logits = w2.dot(&h) + &b2;
+    let probs  = softmax(&logits);
+
+    let risk_levels = ["Low", "Medium", "High"];
+    println!("Probs: {:?}", probs.iter().map(|p| format!("{:.3}", p)).collect::<Vec<_>>());
+    let pred = probs.iter().enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0;
+    println!("Predicted risk level: {}", risk_levels[pred]);
+    // Weights are random — after training (lessons 3-4) the output becomes meaningful.
+}
+```
+
+The forward pass is identical in structure to the Python version: `w1.dot(&x) + &b1` is the matrix-vector multiply with bias, `relu()` gates negative values to zero, and `softmax()` converts logits to a probability distribution. The `randn` closure generates uniform \\([-0.5, 0.5]\\) weights (PyTorch uses normal with std=0.5; the distribution differs but the forward-pass structure is the same).
 
 The weights \\(W_1, W_2\\) and biases \\(b_1, b_2\\) are random right now. In lessons 3 and 4, we will train them from data. The structure of the forward pass is what matters here: linear → ReLU → linear → softmax.
 
