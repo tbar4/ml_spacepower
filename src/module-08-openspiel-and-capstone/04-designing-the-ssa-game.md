@@ -389,6 +389,88 @@ for infoset, group in sorted(adv_groups.items()):
               f"adv_reward={path['adversary_reward']}")
 ```
 
+```rust
+// Pure stdlib — no external crates needed.
+
+#[derive(Clone, Copy, Debug)]
+enum Opportunity { Yes, No }
+
+#[derive(Clone, Copy, Debug)]
+enum Intensity { NoManeuver, Light, Heavy }
+
+#[derive(Clone, Copy, Debug)]
+enum Allocation { Wide, Narrow, Off }
+
+fn opp_prob(opp: Opportunity) -> f64 {
+    match opp { Opportunity::Yes => 0.4, Opportunity::No => 0.6 }
+}
+
+fn detection_prob(intensity: Intensity, allocation: Allocation) -> f64 {
+    match (intensity, allocation) {
+        (Intensity::NoManeuver, Allocation::Off)    => 0.0,
+        (Intensity::NoManeuver, _)                  => 0.05,
+        (Intensity::Light,      Allocation::Wide)   => 0.50,
+        (Intensity::Light,      Allocation::Narrow) => 0.30,
+        (Intensity::Light,      Allocation::Off)    => 0.0,
+        (Intensity::Heavy,      Allocation::Wide)   => 0.65,
+        (Intensity::Heavy,      Allocation::Narrow) => 0.85,
+        (Intensity::Heavy,      Allocation::Off)    => 0.0,
+    }
+}
+
+fn adversary_payoff(opp: Opportunity, intensity: Intensity, detected: bool) -> f64 {
+    let value = match intensity {
+        Intensity::NoManeuver => return 0.0,
+        Intensity::Light => 1.0,
+        Intensity::Heavy => 2.0,
+    };
+    match (opp, detected) {
+        (Opportunity::Yes, false) => value,
+        (Opportunity::Yes, true)  => -3.0,
+        (Opportunity::No,  false) => 0.0,
+        (Opportunity::No,  true)  => -2.0,
+    }
+}
+
+fn main() {
+    let opportunities = [Opportunity::Yes, Opportunity::No];
+    let intensities   = [Intensity::NoManeuver, Intensity::Light, Intensity::Heavy];
+    let allocations   = [Allocation::Wide, Allocation::Narrow, Allocation::Off];
+
+    let mut total_prob = 0.0_f64;
+    let mut adv_yes_heavy = Vec::new();
+
+    for opp in opportunities {
+        for intensity in intensities {
+            for allocation in allocations {
+                let det_p = detection_prob(intensity, allocation);
+                for &detected in &[true, false] {
+                    let path_prob = opp_prob(opp)
+                        * if detected { det_p } else { 1.0 - det_p };
+                    let adv_rew = adversary_payoff(opp, intensity, detected);
+                    total_prob += path_prob;
+                    if matches!(opp, Opportunity::Yes)
+                        && matches!(intensity, Intensity::Heavy)
+                    {
+                        adv_yes_heavy.push((allocation, detected, path_prob, adv_rew));
+                    }
+                }
+            }
+        }
+    }
+    assert!((total_prob - 1.0).abs() < 1e-9);
+
+    println!("Adversary info set: opp=Yes, Intensity=Heavy");
+    for (alloc, det, prob, rew) in &adv_yes_heavy {
+        println!("  Alloc={:?}, Det={}: prob={:.4}, adv_reward={:.1}",
+                 alloc, det, prob, rew);
+    }
+    println!("Total path probability: {total_prob:.6}  (should be 1.0)");
+}
+```
+
+The `#[derive(Debug)]` on each enum is what makes `{:?}` print `Wide`, `Narrow`, etc. without a manual `Display` impl. The `match (intensity, allocation)` tuple pattern directly encodes the detection probability table — the same table you'd look up as a dictionary in Python, here verified exhaustive by the compiler.
+
 Expected output (first group):
 
 ```
