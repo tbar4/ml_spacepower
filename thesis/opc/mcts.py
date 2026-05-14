@@ -147,12 +147,17 @@ class MCTS:
         return node
 
     def _evaluate(self, node: Node) -> float:
-        """Evaluate a leaf node using the value network."""
-        player = node.parent.state.current_player() if node.parent else ATTACKER_ID
+        """Evaluate a leaf node using the value network.
+
+        The network is trained to predict the acting player's expected return
+        given their observation. We negate to convert to the parent's perspective,
+        which is what _backprop stores in each node's total_value.
+        """
+        player = node.state.current_player()
         obs = _obs_tensor(node.state, player)
         with torch.no_grad():
             _, value = self.network(obs)
-        return float(value.squeeze())
+        return -float(value.squeeze())
 
     def _backprop(self, search_path: list[Node], leaf_value: float):
         """Backpropagate value up the search path, negating at player switches."""

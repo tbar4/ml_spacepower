@@ -36,7 +36,8 @@ DEF_INIT_RADIUS = 40.0
 # ── Action encoding ───────────────────────────────────────────────────────────
 # Joint action = sum over i of (sat_i_action * 5^i), for i in {0,1,2}
 # Attacker per-satellite: 0=Hold, 1=+x, 2=-x, 3=+y, 4=-y
-# Defender per-satellite: 0=Hold, 1=Pursue nearest, 2=Monitor atk0, 3=Monitor atk1, 4=Monitor atk2
+# Defender per-satellite: 0=Hold, 1=Guard (move to PROXIMITY_THRESH intercept point on nearest
+#                         attacker's approach line), 2=Monitor atk0, 3=Monitor atk1, 4=Monitor atk2
 
 _N_SAT_ACTIONS = 5
 _N_JOINT = _N_SAT_ACTIONS ** NUM_SATS   # 125
@@ -280,16 +281,23 @@ class OPCState(pyspiel.State):
                 if self._atk_alive[target_atk]:
                     new_monitor_counts[target_atk] += 1.0
 
-        # Propagate defender satellites (pursuit or hold)
+        # Propagate defender satellites (guard or hold)
         for i, act in enumerate(sat_actions):
-            if act == 1:   # Pursue nearest surviving attacker
+            if act == 1:   # Guard: move to intercept point on nearest attacker's approach line
                 nearest = self._nearest_surviving_attacker(i)
                 if nearest is not None:
-                    direction = self._atk_pos[nearest] - self._def_pos[i]
-                    dist = np.linalg.norm(direction)
-                    if dist > 1e-6:
-                        step = min(PURSUIT_DV, dist)
-                        self._def_pos[i] += (direction / dist) * step
+                    atk_pos = self._atk_pos[nearest]
+                    atk_dist = np.linalg.norm(atk_pos)
+                    if atk_dist > 1e-6:
+                        # Guard point: stand at PROXIMITY_THRESH from origin in the
+                        # attacker's approach direction. This blocks the approach path
+                        # rather than chasing the attacker across the field.
+                        guard_pt = (atk_pos / atk_dist) * PROXIMITY_THRESH
+                        direction = guard_pt - self._def_pos[i]
+                        dist = np.linalg.norm(direction)
+                        if dist > 1e-6:
+                            step = min(PURSUIT_DV, dist)
+                            self._def_pos[i] += (direction / dist) * step
             # Hold and Monitor actions: defender satellite does not move
 
         # Check intercepts: defender satellites within INTERCEPT_RANGE of attackers
@@ -351,7 +359,7 @@ class OPCState(pyspiel.State):
             names = ["Hold", "+x", "-x", "+y", "-y"]
             return f"Atk[{','.join(names[a] for a in acts)}]"
         else:
-            names = ["Hold", "Pursue", "Mon0", "Mon1", "Mon2"]
+            names = ["Hold", "Guard", "Mon0", "Mon1", "Mon2"]
             return f"Def[{','.join(names[a] for a in acts)}]"
 
     def information_state_string(self, player):
